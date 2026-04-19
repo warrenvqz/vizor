@@ -258,6 +258,24 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+/* ── WEEKS MODAL ─────────────────────────────────────── */
+.wm-list { display:flex; flex-direction:column; gap:6px; max-height:320px; overflow-y:auto; padding:4px 0; }
+.wm-row { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:8px; }
+.wm-row.is-cur { border-color:var(--cyan); background:rgba(0,196,240,0.06); }
+.wm-num { font-size:11px; color:var(--muted); width:18px; text-align:right; font-weight:600; }
+.wm-date { flex:1; border:1px solid var(--border); background:var(--white); border-radius:6px; padding:5px 8px; font-size:12px; color:var(--text); font-family:inherit; }
+.wm-date:focus { outline:none; border-color:var(--cyan); }
+.wm-label { font-size:11px; color:var(--muted); font-weight:500; min-width:70px; }
+.wm-cur { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); cursor:pointer; user-select:none; }
+.wm-cur input { margin:0; cursor:pointer; }
+.wm-row.is-cur .wm-cur { color:var(--cyan); font-weight:600; }
+.wm-del { width:22px; height:22px; border:none; background:transparent; color:var(--muted); border-radius:5px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.wm-del:hover { background:rgba(239,68,68,0.1); color:var(--red); }
+.alloc-grid th.wk-head { cursor:pointer; }
+.alloc-grid th.wk-head:hover { background:var(--bg); }
+.alloc-grid th.wk-head .wk-edit { opacity:0; margin-left:4px; font-size:10px; }
+.alloc-grid th.wk-head:hover .wk-edit { opacity:0.6; }
 </style>
 </head>
 <body>
@@ -378,6 +396,28 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   </div>
 </div>
 
+<!-- WEEKS MODAL -->
+<div class="modal-bg" id="weeksModal" onclick="if(event.target===this)closeWeeksModal()">
+  <div class="modal-card" style="max-width:520px;">
+    <div class="sm-title">Edit weeks</div>
+    <div class="sm-sub">Set the date for each column and pick which one is "this week." Tasks stay attached to their week as you edit.</div>
+    <div class="sm-field" style="display:flex;gap:8px;align-items:center;">
+      <button class="sm-btn" type="button" onclick="weeksAutoFillFromToday()">Auto-fill from today</button>
+      <span style="font-size:11px;color:var(--muted);">Fills 7 consecutive Mondays starting this week.</span>
+    </div>
+    <div class="wm-list" id="wmList"></div>
+    <div class="sm-field">
+      <button class="sm-btn" type="button" onclick="weeksAddRow()" style="width:100%;">+ Add week</button>
+    </div>
+    <div class="sm-status" id="wmStatus"></div>
+    <div class="sm-row">
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeWeeksModal()">Cancel</button>
+      <button class="sm-btn primary" onclick="saveWeeksModal()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- SHEET IMPORT MODAL -->
 <div class="modal-bg" id="sheetModal" onclick="if(event.target===this)closeSheetModal()">
   <div class="modal-card">
@@ -463,6 +503,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
       <span class="view-title">Weekly Allocation</span>
       <button class="chip add" onclick="openCellModalForNew()">+ Add task</button>
       <button class="chip" onclick="openPersonModalForNew()">+ Add person</button>
+      <button class="chip" onclick="openWeeksModal()">📅 Edit weeks</button>
       <div class="spacer"></div>
       <span style="font-size:11px;color:var(--muted);">Current week: <b id="curWeekLabel">&mdash;</b> &middot; drag tasks from the right rail to staff them</span>
     </div>
@@ -648,8 +689,8 @@ function renderAllocationGrid() {
   let html = '<thead><tr>';
   html += '<th class="person-col">Person</th>';
   WEEKS.forEach((w, wi) => {
-    const cls = wi === CUR_WEEK ? 'cur-week' : '';
-    html += `<th class="${cls}">${escHTML(w)}</th>`;
+    const cls = 'wk-head ' + (wi === CUR_WEEK ? 'cur-week' : '');
+    html += `<th class="${cls}" onclick="openWeeksModal()" title="Click to edit week dates">${escHTML(w)}<span class="wk-edit">&#9998;</span></th>`;
   });
   html += '<th class="total-col">This week</th>';
   html += '</tr></thead><tbody>';
@@ -1316,6 +1357,173 @@ function deleteProjectFromModal() {
   const idx = PROJECTS.findIndex(pp => pp.id === id);
   if (idx >= 0) PROJECTS.splice(idx, 1);
   closeProjectModal(); renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WEEKS MODAL (edit column dates + current-week marker)
+// ══════════════════════════════════════════════════════════════════
+
+// Working copy of weeks while the modal is open.
+// Each row: { date: Date (Monday of that week), origIdx: number|null }
+// origIdx is the index in the live WEEKS array before editing (null = newly added).
+let _weeksDraft = [];
+let _weeksDraftCur = 0;
+
+function mondayOf(d) {
+  // Snap any Date to that week's Monday. Week starts Monday.
+  const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = out.getDay(); // 0=Sun..6=Sat
+  const offset = dow === 0 ? -6 : 1 - dow; // Sun → go back 6; others → back to Mon
+  out.setDate(out.getDate() + offset);
+  return out;
+}
+function fmtWkLabel(d) {
+  // "w/o M/D" — matches existing WEEKS format.
+  return `w/o ${d.getMonth() + 1}/${d.getDate()}`;
+}
+function fmtDateInput(d) {
+  // YYYY-MM-DD for <input type="date">
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function parseDateInput(s) {
+  // Parse YYYY-MM-DD as a LOCAL date (avoid UTC drift).
+  if (!s) return null;
+  const parts = s.split('-');
+  if (parts.length !== 3) return null;
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  return isNaN(d.getTime()) ? null : d;
+}
+// Guess a Date for an existing "w/o M/D" label. Year defaults to today's year; if
+// the resulting Monday is far in the past (>6mo back), bump it forward a year.
+function guessDateFromLabel(label) {
+  const m = String(label).match(/(\d{1,2})\/(\d{1,2})/);
+  const today = new Date();
+  if (!m) return mondayOf(today);
+  let y = today.getFullYear();
+  let d = new Date(y, Number(m[1]) - 1, Number(m[2]));
+  const diffMonths = (today - d) / (1000 * 60 * 60 * 24 * 30);
+  if (diffMonths > 6) d = new Date(y + 1, Number(m[1]) - 1, Number(m[2]));
+  else if (diffMonths < -6) d = new Date(y - 1, Number(m[1]) - 1, Number(m[2]));
+  return mondayOf(d);
+}
+
+function openWeeksModal() {
+  _weeksDraft = WEEKS.map((w, i) => ({ date: guessDateFromLabel(w), origIdx: i }));
+  _weeksDraftCur = CUR_WEEK;
+  renderWeeksModal();
+  document.getElementById('wmStatus').textContent = '';
+  document.getElementById('weeksModal').classList.add('show');
+}
+function closeWeeksModal() {
+  document.getElementById('weeksModal').classList.remove('show');
+}
+
+function renderWeeksModal() {
+  const el = document.getElementById('wmList');
+  const rows = _weeksDraft.map((row, i) => {
+    const label = fmtWkLabel(mondayOf(row.date));
+    const isCur = i === _weeksDraftCur;
+    return `<div class="wm-row ${isCur ? 'is-cur' : ''}">
+      <span class="wm-num">${i + 1}</span>
+      <input type="date" class="wm-date" value="${fmtDateInput(row.date)}"
+             onchange="weeksUpdateDate(${i}, this.value)">
+      <span class="wm-label">${escHTML(label)}</span>
+      <label class="wm-cur" title="Mark as current week">
+        <input type="radio" name="wmCur" ${isCur ? 'checked' : ''}
+               onchange="weeksSetCurrent(${i})">
+        current
+      </label>
+      <button class="wm-del" onclick="weeksRemoveRow(${i})" title="Remove">&times;</button>
+    </div>`;
+  }).join('');
+  el.innerHTML = rows || '<div style="font-size:12px;color:var(--muted);padding:8px;">No weeks. Click "+ Add week" or "Auto-fill from today".</div>';
+}
+
+function weeksUpdateDate(i, value) {
+  const d = parseDateInput(value);
+  if (!d) return;
+  _weeksDraft[i].date = mondayOf(d);
+  renderWeeksModal();
+}
+function weeksSetCurrent(i) {
+  _weeksDraftCur = i;
+  renderWeeksModal();
+}
+function weeksRemoveRow(i) {
+  if (_weeksDraft.length <= 1) {
+    document.getElementById('wmStatus').textContent = 'Need at least one week.';
+    return;
+  }
+  _weeksDraft.splice(i, 1);
+  if (_weeksDraftCur >= _weeksDraft.length) _weeksDraftCur = _weeksDraft.length - 1;
+  if (_weeksDraftCur < 0) _weeksDraftCur = 0;
+  renderWeeksModal();
+}
+function weeksAddRow() {
+  // Default: one week after the last week in the list (or this week if empty).
+  let base;
+  if (_weeksDraft.length) {
+    base = new Date(_weeksDraft[_weeksDraft.length - 1].date);
+    base.setDate(base.getDate() + 7);
+  } else {
+    base = mondayOf(new Date());
+  }
+  _weeksDraft.push({ date: mondayOf(base), origIdx: null });
+  renderWeeksModal();
+}
+function weeksAutoFillFromToday() {
+  const start = mondayOf(new Date());
+  _weeksDraft = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i * 7);
+    _weeksDraft.push({ date: d, origIdx: null });
+  }
+  _weeksDraftCur = 0;
+  renderWeeksModal();
+}
+
+function saveWeeksModal() {
+  if (!_weeksDraft.length) {
+    document.getElementById('wmStatus').textContent = 'Add at least one week.';
+    return;
+  }
+  // Sort by date ascending so columns read chronologically.
+  const sorted = _weeksDraft.slice().sort((a, b) => a.date - b.date);
+  // Track which original row is now "current" (by identity, since we sorted).
+  const curRow = _weeksDraft[_weeksDraftCur];
+  const newCurIdx = sorted.indexOf(curRow);
+
+  // Build label-map: old label → new label (for rows that survive).
+  // Rows whose origIdx is null were newly added; rows whose origIdx is absent
+  // from sorted were removed → their tasks lose their weekLabel (become "needs").
+  const oldLabels = WEEKS.slice();
+  const newLabels = sorted.map(r => fmtWkLabel(mondayOf(r.date)));
+  const survivorMap = {}; // oldLabel → newLabel
+  sorted.forEach((r, newI) => {
+    if (r.origIdx != null && oldLabels[r.origIdx] != null) {
+      survivorMap[oldLabels[r.origIdx]] = newLabels[newI];
+    }
+  });
+
+  // Remap tasks.
+  TASKS.forEach(t => {
+    if (!t.weekLabel) return;
+    if (Object.prototype.hasOwnProperty.call(survivorMap, t.weekLabel)) {
+      t.weekLabel = survivorMap[t.weekLabel];
+    } else {
+      // This week was deleted — task falls back to upcoming-needs.
+      t.weekLabel = null;
+    }
+  });
+
+  WEEKS = newLabels;
+  CUR_WEEK = Math.max(0, Math.min(newCurIdx >= 0 ? newCurIdx : 0, WEEKS.length - 1));
+  closeWeeksModal();
+  renderAll();
 }
 
 // Open the task modal pre-pointed at a specific project (new-task flow only).
