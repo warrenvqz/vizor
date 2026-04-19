@@ -22,6 +22,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .logo span { color:var(--cyan); }
 .breadcrumb { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px; }
 .breadcrumb strong { color:var(--text); font-weight:600; }
+.topnav-logo { display:flex; align-items:center; height:100%; padding:0 2px; text-decoration:none; }
+.topnav-logo img { height:18px; width:auto; display:block; }
+.topnav-divider { width:1px; height:20px; background:var(--border); margin:0 10px 0 8px; flex-shrink:0; }
 .spacer { flex:1; }
 .nav-views { display:flex; gap:2px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; }
 .vbtn { padding:4px 12px; border:none; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer; background:transparent; color:var(--muted); transition:all .15s; }
@@ -257,6 +260,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 /* ── AUTH GATE ──────────────────────────────────────── */
 .auth-gate { position:fixed; inset:0; background:var(--bg); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px; }
 .auth-box { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:28px 32px 24px; width:min(340px, 100%); box-shadow:0 6px 20px rgba(0,0,0,0.05); box-sizing:border-box; }
+.auth-logo { display:block; height:26px; width:auto; margin:0 0 16px; }
 .auth-title { font-size:17px; font-weight:700; color:var(--text); margin-bottom:4px; letter-spacing:-.01em; }
 .auth-sub { font-size:12px; color:var(--muted); margin-bottom:18px; }
 .auth-input { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:7px; font-size:14px; box-sizing:border-box; outline:none; transition:border-color .15s; background:var(--white); color:var(--text); }
@@ -379,6 +383,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   /* Topnav: compact, drop middle breadcrumb clutter, hamburger on each end. */
   .topnav { padding:0 8px; gap:4px; height:46px; }
   .breadcrumb { display:none; }                             /* hide "Team capacity" title on mobile */
+  .topnav-logo { display:none; }                            /* hide wordmark on mobile */
+  .topnav-divider { display:none; }                         /* hide logo/title divider on mobile */
   .spacer { display:none; }
   .topnav > div[style*="width:1px"] { display:none; }       /* vertical divider */
   .sheet-chip { display:none !important; }                  /* keep cloud chip as sync truth */
@@ -510,6 +516,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 <!-- AUTH GATE (light client-side password; not real security — hides the app from casual visitors) -->
 <div class="auth-gate" id="authGate">
   <form class="auth-box" onsubmit="return submitAuth(event)">
+    <img class="auth-logo" src="logo.svg" alt="Vizor">
     <div class="auth-title">Team capacity</div>
     <div class="auth-sub">Enter password to continue.</div>
     <input type="password" id="authPw" class="auth-input" autocomplete="current-password" autofocus spellcheck="false">
@@ -749,6 +756,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 <!-- TOP NAV -->
 <nav class="topnav">
   <button class="mb-tog mb-tog-sidebar" onclick="toggleMobileDrawer('sidebar')" aria-label="Open menu">&#9776;</button>
+  <a class="topnav-logo" href="/" title="Vizor" aria-label="Vizor"><img src="logo.svg" alt="Vizor"></a>
+  <div class="topnav-divider" aria-hidden="true"></div>
   <div class="breadcrumb"><strong id="navContext">Team capacity</strong></div>
   <div class="spacer"></div>
   <div class="nav-views">
