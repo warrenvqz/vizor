@@ -276,6 +276,39 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .alloc-grid th.wk-head:hover { background:var(--bg); }
 .alloc-grid th.wk-head .wk-edit { opacity:0; margin-left:4px; font-size:10px; }
 .alloc-grid th.wk-head:hover .wk-edit { opacity:0.6; }
+
+/* ── OVERVIEW ────────────────────────────────────────── */
+.ov-scroll { flex:1; overflow-y:auto; padding:16px; background:var(--bg); }
+.ov-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
+.ov-stat { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.ov-stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; margin-bottom:6px; }
+.ov-stat-val { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
+.ov-stat-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+.ov-section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); font-weight:600; margin:8px 0 10px; }
+.ov-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-bottom:24px; }
+.ov-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.ov-card-head { display:flex; align-items:center; gap:10px; }
+.ov-card-head .av { width:32px; height:32px; font-size:11px; }
+.ov-card-name { font-weight:600; font-size:14px; color:var(--text); }
+.ov-card-role { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
+.ov-donut-wrap { display:flex; align-items:center; gap:14px; }
+.ov-donut { flex-shrink:0; position:relative; }
+.ov-donut svg { display:block; }
+.ov-donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; }
+.ov-donut-total { font-size:18px; font-weight:700; color:var(--text); line-height:1; }
+.ov-donut-sub { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; margin-top:2px; }
+.ov-legend { flex:1; display:flex; flex-direction:column; gap:4px; min-width:0; }
+.ov-legend-row { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text); }
+.ov-legend-dot { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+.ov-legend-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ov-legend-val { color:var(--muted); font-variant-numeric:tabular-nums; }
+.ov-empty { font-size:11px; color:var(--muted); padding:20px 0; text-align:center; font-style:italic; }
+.ov-proj-row { display:grid; grid-template-columns:minmax(140px, 180px) 1fr 70px; gap:10px; align-items:center; padding:10px 14px; background:var(--white); border:1px solid var(--border); border-radius:8px; margin-bottom:6px; }
+.ov-proj-name { font-size:12px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:7px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ov-proj-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+.ov-proj-bar { display:flex; height:22px; border-radius:5px; overflow:hidden; background:var(--bg); }
+.ov-proj-seg { height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:600; min-width:0; overflow:hidden; white-space:nowrap; }
+.ov-proj-days { font-size:11px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -456,6 +489,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
     <button class="vbtn active" onclick="setView('planner',this)">&#128202; Planner</button>
     <button class="vbtn" onclick="setView('board',this)">&#128451; Board</button>
     <button class="vbtn" onclick="setView('projects',this)">&#128193; Projects</button>
+    <button class="vbtn" onclick="setView('overview',this)">&#128200; Overview</button>
   </div>
   <div style="width:1px;height:22px;background:var(--border);"></div>
   <button class="sheet-chip" id="sheetChip" onclick="openSheetModal()" title="Import from Google Sheet">
@@ -536,6 +570,18 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
     </div>
     <div class="up-view" style="flex:1;overflow-y:auto;">
       <div id="projectsList"></div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overviewView" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div class="view-bar">
+      <span class="view-title">Overview</span>
+      <div class="spacer"></div>
+      <span style="font-size:11px;color:var(--muted);">Who's working on what, at a glance</span>
+    </div>
+    <div class="ov-scroll">
+      <div id="overviewBody"></div>
     </div>
   </div>
 </main>
@@ -1611,8 +1657,166 @@ function setView(v, btn) {
   document.getElementById('plannerView').style.display  = v === 'planner'  ? 'flex' : 'none';
   document.getElementById('boardView').style.display    = v === 'board'    ? 'flex' : 'none';
   document.getElementById('projectsView').style.display = v === 'projects' ? 'flex' : 'none';
+  document.getElementById('overviewView').style.display = v === 'overview' ? 'flex' : 'none';
   if (v === 'board')    renderBoard();
   if (v === 'projects') renderProjectsView();
+  if (v === 'overview') renderOverview();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: OVERVIEW
+// ══════════════════════════════════════════════════════════════════
+function renderOverview() {
+  const el = document.getElementById('overviewBody');
+  if (!el) return;
+
+  // ── Team-wide stats ──────────────────────────────────────────
+  const activeProjects = PROJECTS.filter(p => p.status === 'active').length;
+  const upcomingProjects = PROJECTS.filter(p => p.status === 'upcoming').length;
+  const staffedTasks = TASKS.filter(isStaffed);
+  const totalAllocDays = staffedTasks.reduce((s, t) => s + (t.effortDays || 0), 0);
+  const capacityDays = PEOPLE.length * WEEKS.length * 5; // 5d/week per person
+  const utilPct = capacityDays ? Math.round((totalAllocDays / capacityDays) * 100) : 0;
+
+  let html = `<div class="ov-stats">
+    <div class="ov-stat">
+      <div class="ov-stat-lbl">Team</div>
+      <div class="ov-stat-val">${PEOPLE.length}</div>
+      <div class="ov-stat-sub">${PEOPLE.filter(p=>p.role==='design').length} design &middot; ${PEOPLE.filter(p=>p.role==='copy').length} copy</div>
+    </div>
+    <div class="ov-stat">
+      <div class="ov-stat-lbl">Projects</div>
+      <div class="ov-stat-val">${activeProjects}</div>
+      <div class="ov-stat-sub">active &middot; ${upcomingProjects} upcoming</div>
+    </div>
+    <div class="ov-stat">
+      <div class="ov-stat-lbl">Days allocated</div>
+      <div class="ov-stat-val">${totalAllocDays}d</div>
+      <div class="ov-stat-sub">across ${staffedTasks.length} tasks &middot; ${WEEKS.length} weeks</div>
+    </div>
+    <div class="ov-stat">
+      <div class="ov-stat-lbl">Team utilization</div>
+      <div class="ov-stat-val">${utilPct}%</div>
+      <div class="ov-stat-sub">${totalAllocDays}d of ${capacityDays}d capacity</div>
+    </div>
+  </div>`;
+
+  // ── Per-person cards ─────────────────────────────────────────
+  html += `<div class="ov-section-title">Who's working on what</div>`;
+  html += `<div class="ov-grid">`;
+  PEOPLE.forEach(person => {
+    html += renderOverviewPersonCard(person);
+  });
+  html += `</div>`;
+
+  // ── Per-project team summary ─────────────────────────────────
+  const projsWithWork = PROJECTS.filter(p =>
+    staffedTasks.some(t => t.projectId === p.id)
+  );
+  if (projsWithWork.length) {
+    html += `<div class="ov-section-title">Team on each project</div>`;
+    projsWithWork.forEach(proj => {
+      html += renderOverviewProjectRow(proj, staffedTasks);
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function renderOverviewPersonCard(person) {
+  // Sum this person's staffed days by project.
+  const byProj = {}; // projId → days
+  TASKS.forEach(t => {
+    if (!isStaffed(t) || t.assigneeId !== person.id) return;
+    byProj[t.projectId] = (byProj[t.projectId] || 0) + (t.effortDays || 0);
+  });
+  const totalDays = Object.values(byProj).reduce((a, b) => a + b, 0);
+  const entries = Object.entries(byProj)
+    .map(([pid, days]) => ({ proj: projectById(pid), days }))
+    .filter(e => e.proj)
+    .sort((a, b) => b.days - a.days);
+
+  const head = `<div class="ov-card-head">
+    <div class="av" style="background:${person.color};">${escHTML(person.initials)}</div>
+    <div>
+      <div class="ov-card-name">${escHTML(person.name)}</div>
+      <div class="ov-card-role">${escHTML(ROLE_META[person.role].label)}</div>
+    </div>
+  </div>`;
+
+  if (!totalDays) {
+    return `<div class="ov-card">${head}<div class="ov-empty">Not allocated to any project yet</div></div>`;
+  }
+
+  // Build donut segments. Stroke-dasharray circles, rotated -90° to start at 12 o'clock.
+  const size = 100, r = 38, stroke = 16;
+  const circ = 2 * Math.PI * r;
+  let offsetRun = 0;
+  const segs = entries.map(e => {
+    const frac = e.days / totalDays;
+    const arc = frac * circ;
+    const svg = `<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none"
+      stroke="${e.proj.color}" stroke-width="${stroke}"
+      stroke-dasharray="${arc.toFixed(2)} ${(circ - arc).toFixed(2)}"
+      stroke-dashoffset="${(-offsetRun).toFixed(2)}"
+      transform="rotate(-90 ${size/2} ${size/2})" />`;
+    offsetRun += arc;
+    return svg;
+  }).join('');
+
+  const donut = `<div class="ov-donut" style="width:${size}px;height:${size}px;">
+    <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--bg)" stroke-width="${stroke}" />
+      ${segs}
+    </svg>
+    <div class="ov-donut-center">
+      <div class="ov-donut-total">${totalDays}d</div>
+      <div class="ov-donut-sub">allocated</div>
+    </div>
+  </div>`;
+
+  const legend = `<div class="ov-legend">
+    ${entries.map(e => {
+      const pct = Math.round((e.days / totalDays) * 100);
+      return `<div class="ov-legend-row">
+        <span class="ov-legend-dot" style="background:${e.proj.color};"></span>
+        <span class="ov-legend-name">${escHTML(e.proj.name)}</span>
+        <span class="ov-legend-val">${e.days}d &middot; ${pct}%</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  return `<div class="ov-card">${head}<div class="ov-donut-wrap">${donut}${legend}</div></div>`;
+}
+
+function renderOverviewProjectRow(proj, staffedTasks) {
+  // Sum each person's days on this project.
+  const byPerson = {};
+  staffedTasks.forEach(t => {
+    if (t.projectId !== proj.id) return;
+    byPerson[t.assigneeId] = (byPerson[t.assigneeId] || 0) + (t.effortDays || 0);
+  });
+  const total = Object.values(byPerson).reduce((a, b) => a + b, 0);
+  if (!total) return '';
+  const entries = Object.entries(byPerson)
+    .map(([pid, days]) => ({ person: PEOPLE.find(p => p.id === pid), days }))
+    .filter(e => e.person)
+    .sort((a, b) => b.days - a.days);
+
+  const segs = entries.map(e => {
+    const pct = (e.days / total) * 100;
+    const showLabel = pct >= 12;
+    return `<div class="ov-proj-seg" style="background:${e.person.color};width:${pct}%;"
+      title="${escHTML(e.person.name)} — ${e.days}d">
+      ${showLabel ? escHTML(e.person.initials) : ''}
+    </div>`;
+  }).join('');
+
+  return `<div class="ov-proj-row">
+    <div class="ov-proj-name"><span class="ov-proj-dot" style="background:${proj.color};"></span>${escHTML(proj.name)}</div>
+    <div class="ov-proj-bar">${segs}</div>
+    <div class="ov-proj-days">${total}d &middot; ${entries.length} ${entries.length===1?'person':'people'}</div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1810,9 +2014,10 @@ function renderAll() {
   renderAllocationGrid();
   renderHeatmap();
   renderUpcomingPanel();
-  // Board/Projects views re-render on tab switch, but keep them fresh too:
+  // Board/Projects/Overview re-render on tab switch, but keep them fresh too:
   if (document.getElementById('boardView').style.display !== 'none')    renderBoard();
   if (document.getElementById('projectsView').style.display !== 'none') renderProjectsView();
+  if (document.getElementById('overviewView').style.display !== 'none') renderOverview();
   saveState();
 }
 loadState();
