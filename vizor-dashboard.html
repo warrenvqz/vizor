@@ -79,13 +79,32 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .pm-color { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform .1s; }
 .pm-color:hover { transform:scale(1.12); }
 .pm-color.selected { border-color:var(--dark); box-shadow:0 0 0 2px white inset; }
+.pm-cap-hint { font-size:10px; color:var(--muted); margin:4px 0 6px; line-height:1.4; }
+.pm-cap-reset { font-size:10px; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:4px; padding:2px 6px; cursor:pointer; font-weight:500; font-family:inherit; }
+.pm-cap-reset:hover { border-color:var(--cyan); color:var(--cyan); }
+.pm-cap-list { display:flex; flex-direction:column; gap:4px; max-height:240px; overflow-y:auto; padding:2px 0; }
+.pm-cap-row { display:flex; align-items:center; gap:10px; padding:6px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; }
+.pm-cap-row.is-reduced { background:#FFF7ED; border-color:#FDBA74; }
+.pm-cap-row.is-pto { background:#FEF2F2; border-color:#FCA5A5; }
+.pm-cap-row.is-cur { box-shadow:0 0 0 1px var(--cyan) inset; }
+.pm-cap-lbl { flex:1; font-size:11px; color:var(--text); font-weight:500; }
+.pm-cap-lbl .pm-cap-cur { font-size:9px; color:var(--cyan); font-weight:700; margin-left:6px; text-transform:uppercase; letter-spacing:.04em; }
+.pm-cap-input { width:58px; border:1px solid var(--border); background:var(--white); border-radius:5px; padding:4px 6px; font-size:12px; font-family:inherit; color:var(--text); text-align:center; }
+.pm-cap-input:focus { outline:none; border-color:var(--cyan); }
+.pm-cap-quick { display:flex; gap:2px; }
+.pm-cap-quick button { font-size:9px; padding:3px 6px; border:1px solid var(--border); background:var(--white); border-radius:4px; cursor:pointer; color:var(--muted); font-family:inherit; font-weight:600; }
+.pm-cap-quick button:hover { border-color:var(--cyan); color:var(--cyan); }
+.pm-cap-quick button.active { background:var(--cyan); color:white; border-color:var(--cyan); }
 .person-row { display:flex; align-items:center; gap:8px; }
 .person-info { flex:1; min-width:0; }
 .person-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .person-role { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-.week-cell { padding:4px; min-height:62px; min-width:120px; transition:background .1s; cursor:pointer; }
+.week-cell { padding:4px; min-height:62px; min-width:120px; transition:background .1s; cursor:pointer; position:relative; }
 .week-cell.cur-week { background:rgba(0,196,240,.03); }
 .week-cell.drag-over { background:rgba(0,196,240,.15); outline:2px dashed var(--cyan); outline-offset:-2px; }
+.week-cell.is-reduced { background-image:repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(148,163,184,0.08) 6px, rgba(148,163,184,0.08) 12px); }
+.week-cell.is-reduced.cur-week { background-image:repeating-linear-gradient(45deg, rgba(0,196,240,.03), rgba(0,196,240,.03) 6px, rgba(148,163,184,0.1) 6px, rgba(148,163,184,0.1) 12px); }
+.cap-badge { position:absolute; top:3px; right:4px; font-size:8px; font-weight:700; color:var(--muted); background:var(--white); border:1px solid var(--border); border-radius:3px; padding:1px 4px; letter-spacing:.02em; pointer-events:none; z-index:1; }
 .week-cell-inner { display:flex; flex-direction:column; gap:3px; min-height:54px; }
 .task-chip { display:flex; align-items:center; gap:4px; padding:4px 5px 4px 8px; border-radius:5px; font-size:10px; cursor:grab; background:white; border:1px solid var(--border); border-left-width:3px; transition:all .1s; line-height:1.2; }
 .task-chip:hover { border-color:var(--cyan); box-shadow:0 1px 3px rgba(0,0,0,.06); }
@@ -99,6 +118,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .total-cell { text-align:center; padding:10px 8px; vertical-align:middle; background:#FAFBFC; }
 .total-pct { font-size:15px; font-weight:800; line-height:1.1; }
 .total-days { font-size:9px; color:var(--muted); margin-top:2px; }
+.total-days-reduced { font-weight:700; color:var(--amber); }
 .total-over { color:var(--red); }
 .total-cap { color:var(--amber); }
 .total-ok { color:var(--green); }
@@ -395,6 +415,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
         <label class="sm-label">Color</label>
         <div class="pm-color-picker" id="pmColorPicker"></div>
       </div>
+    </div>
+    <div class="sm-field" id="pmCapacitySection">
+      <label class="sm-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Weekly availability</span>
+        <button type="button" class="pm-cap-reset" onclick="pmResetCapacity()" title="Set every week back to 5d">Reset all to 5d</button>
+      </label>
+      <div class="pm-cap-hint">Default is 5 days. Drop a week below 5 to mark PTO or partial availability — overload warnings use these numbers.</div>
+      <div class="pm-cap-list" id="pmCapList"></div>
     </div>
     <div class="sm-status" id="pmStatus"></div>
     <div class="sm-row">
@@ -727,6 +755,12 @@ const projectById = id => PROJECTS.find(p => p.id === id);
 // ══════════════════════════════════════════════════════════════════
 let WEEKS = ['w/o 4/24','w/o 5/01','w/o 5/08','w/o 5/15','w/o 5/22','w/o 5/29','w/o 6/05'];
 let CUR_WEEK = 3; // w/o 5/15
+
+// Per-person, per-week available-days override. Shape: { [personId]: { [weekLabel]: days } }.
+// A number here (e.g. 3 for "Sandra works Mon–Wed that week") replaces the default 5d capacity
+// when we compute utilization %. Missing entries fall back to DEFAULT_CAPACITY.
+const DEFAULT_CAPACITY = 5;
+let CAPACITY_OVERRIDES = {};
 const BOARD_TODAY    = new Date('2026-05-15');
 const BOARD_WEEK_END = new Date('2026-05-17');
 
@@ -787,13 +821,23 @@ function tasksFor(personId, weekLabel) {
 function weeklyDays(personId, weekLabel) {
   return tasksFor(personId, weekLabel).reduce((s,t) => s + (t.effortDays||0), 0);
 }
+// How many days this person is actually available in this week
+// (accounts for PTO / partial availability overrides).
+function getCapacity(personId, weekLabel) {
+  const v = CAPACITY_OVERRIDES[personId]?.[weekLabel];
+  return (typeof v === 'number' && !isNaN(v)) ? v : DEFAULT_CAPACITY;
+}
 function computeRollup() {
   const rollup = {};
   PEOPLE.forEach(p => {
     rollup[p.id] = {};
     WEEKS.forEach(w => {
       const days = weeklyDays(p.id, w);
-      rollup[p.id][w] = { days, pct: daysToPct(days) };
+      const capacity = getCapacity(p.id, w);
+      // pct is allocation / available capacity. Guard 0-day capacity (100% PTO) so division-by-0
+      // reads as "over" whenever anything is allocated, and "0%" when nothing is.
+      const pct = capacity > 0 ? (days / capacity) : (days > 0 ? 10 : 0);
+      rollup[p.id][w] = { days, capacity, pct };
     });
   });
   return rollup;
@@ -834,12 +878,18 @@ function renderAllocationGrid() {
     WEEKS.forEach(w => {
       const list = tasksFor(p.id, w);
       const isCur = w === curWk;
-      html += `<td class="week-cell ${isCur?'cur-week':''}"
+      const cap  = rollup[p.id][w].capacity;
+      const isReduced = cap < DEFAULT_CAPACITY;
+      const capBadge = isReduced
+        ? `<span class="cap-badge" title="${cap === 0 ? 'Out (PTO)' : cap + 'd available'} — click person to edit">${cap === 0 ? 'PTO' : cap + 'd'}</span>`
+        : '';
+      html += `<td class="week-cell ${isCur?'cur-week':''} ${isReduced?'is-reduced':''}"
         data-person="${p.id}" data-week="${escHTML(w)}"
         ondragover="onCellDragOver(event,this)"
         ondragleave="onCellDragLeave(event,this)"
         ondrop="onCellDrop(event,this)"
         onclick="onCellClick(event,this,'${p.id}','${escHTML(w)}')">
+        ${capBadge}
         <div class="week-cell-inner">`;
       list.forEach(t => {
         const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
@@ -858,9 +908,11 @@ function renderAllocationGrid() {
       html += `</div></td>`;
     });
     const totalPct = Math.round(cur.pct * 100);
+    const capLabel = cur.capacity === 0 ? 'PTO' : `${cur.capacity}d`;
+    const capCls   = cur.capacity < DEFAULT_CAPACITY ? 'total-days-reduced' : '';
     html += `<td class="total-cell">
       <div class="total-pct ${pctCls}">${totalPct}%</div>
-      <div class="total-days">${cur.days}d of 5d</div>
+      <div class="total-days ${capCls}">${cur.days}d of ${capLabel}</div>
     </td>`;
     html += '</tr>';
   });
@@ -955,7 +1007,8 @@ function renderHeatmap() {
       const c = capColor(r.pct);
       const lbl = r.pct > 0 ? Math.round(r.pct*100)+'%' : '';
       const cur = wi === CUR_WEEK ? 'outline:2px solid var(--dark);outline-offset:-1px;' : '';
-      const tt = `${p.name} — ${w}: ${r.days}d (${Math.round(r.pct*100)}%)`;
+      const capLbl = r.capacity === 0 ? 'PTO' : r.capacity + 'd available';
+      const tt = `${p.name} — ${w}: ${r.days}d of ${capLbl} (${Math.round(r.pct*100)}%)`;
       html += `<div class="hm-cell" style="background:${c.bg};color:${c.fg};${cur}"
         onmouseenter="showTip(event,'${escHTML(tt)}')"
         onmouseleave="hideTip()">${lbl}</div>`;
@@ -1284,6 +1337,9 @@ function unassignTask(taskId) {
 // ══════════════════════════════════════════════════════════════════
 let _personModalState = { mode:'new', personId:null };
 let _pmSelectedColor  = null;
+// Draft of this person's weekly capacity. Shape: { [weekLabel]: days }.
+// Populated on modal open from CAPACITY_OVERRIDES (plus defaults); committed on save.
+let _pmCapDraft = {};
 
 function initialsFromName(name) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -1319,6 +1375,10 @@ function openPersonModalForNew() {
   document.getElementById('pmDelete').style.display = 'none';
   document.getElementById('pmSave').textContent = 'Add';
   setPmStatus('', null);
+  // Fresh person starts with no overrides (all weeks default to 5d).
+  _pmCapDraft = {};
+  WEEKS.forEach(w => { _pmCapDraft[w] = DEFAULT_CAPACITY; });
+  renderPmCapList();
   document.getElementById('personModal').classList.add('show');
   setTimeout(() => document.getElementById('pmName').focus(), 50);
 }
@@ -1338,7 +1398,60 @@ function openPersonModalForEdit(personId) {
   document.getElementById('pmDelete').style.display = '';
   document.getElementById('pmSave').textContent = 'Save';
   setPmStatus('', null);
+  // Load this person's actual capacity per week (override if set, else default).
+  _pmCapDraft = {};
+  WEEKS.forEach(w => { _pmCapDraft[w] = getCapacity(personId, w); });
+  renderPmCapList();
   document.getElementById('personModal').classList.add('show');
+}
+
+// ── Weekly availability editor ────────────────────────────────
+function renderPmCapList() {
+  const list = document.getElementById('pmCapList');
+  if (!list) return;
+  const curWk = WEEKS[CUR_WEEK];
+  list.innerHTML = WEEKS.map(w => {
+    const v = _pmCapDraft[w];
+    const isReduced = v < DEFAULT_CAPACITY && v > 0;
+    const isPto     = v === 0;
+    const isCur     = w === curWk;
+    const rowCls = [
+      'pm-cap-row',
+      isReduced ? 'is-reduced' : '',
+      isPto     ? 'is-pto'     : '',
+      isCur     ? 'is-cur'     : ''
+    ].filter(Boolean).join(' ');
+    const quicks = [0, 3, 4, 5].map(n =>
+      `<button type="button" class="${v === n ? 'active' : ''}" onclick="pmSetCap('${escHTML(w)}', ${n})">${n === 0 ? 'PTO' : n + 'd'}</button>`
+    ).join('');
+    return `<div class="${rowCls}" data-wk="${escHTML(w)}">
+      <div class="pm-cap-lbl">${escHTML(w)}${isCur ? '<span class="pm-cap-cur">this week</span>' : ''}</div>
+      <div class="pm-cap-quick">${quicks}</div>
+      <input type="number" class="pm-cap-input" step="0.5" min="0" max="5"
+        value="${v}"
+        oninput="pmUpdateCap('${escHTML(w)}', this.value)"
+        aria-label="Days available for ${escHTML(w)}">
+    </div>`;
+  }).join('');
+}
+function pmSetCap(weekLabel, days) {
+  _pmCapDraft[weekLabel] = days;
+  renderPmCapList();
+}
+function pmUpdateCap(weekLabel, raw) {
+  let v = parseFloat(raw);
+  if (isNaN(v)) v = DEFAULT_CAPACITY;
+  v = Math.max(0, Math.min(DEFAULT_CAPACITY, v));
+  // Snap to 0.5 increments
+  v = Math.round(v * 2) / 2;
+  _pmCapDraft[weekLabel] = v;
+  // Don't re-render on every keystroke — let them finish typing. Just update the row class quietly.
+  // Only re-render if the value actually hit a quick-button value, to refresh the "active" state.
+  if ([0, 3, 4, 5].includes(v)) renderPmCapList();
+}
+function pmResetCapacity() {
+  WEEKS.forEach(w => { _pmCapDraft[w] = DEFAULT_CAPACITY; });
+  renderPmCapList();
 }
 
 function savePersonModal() {
@@ -1346,16 +1459,43 @@ function savePersonModal() {
   const role  = document.getElementById('pmRole').value;
   const color = _pmSelectedColor || PALETTE[0];
   if (!name) { setPmStatus('Name is required.', 'err'); return; }
+  // Snapshot any unsaved input-box edits (in case the user typed a number and hit Save before blurring).
+  document.querySelectorAll('#pmCapList .pm-cap-row').forEach(row => {
+    const wLbl = row.getAttribute('data-wk');
+    const inp  = row.querySelector('.pm-cap-input');
+    if (!wLbl || !inp) return;
+    let v = parseFloat(inp.value);
+    if (isNaN(v)) v = DEFAULT_CAPACITY;
+    v = Math.round(Math.max(0, Math.min(DEFAULT_CAPACITY, v)) * 2) / 2;
+    _pmCapDraft[wLbl] = v;
+  });
+
+  let personId;
   if (_personModalState.mode === 'new') {
     const idBase = name.toLowerCase().replace(/[^a-z0-9]+/g,'') || 'person';
-    const id = idBase + '_' + Date.now().toString(36);
-    PEOPLE.push({ id, name, role, color, initials: initialsFromName(name) });
+    personId = idBase + '_' + Date.now().toString(36);
+    PEOPLE.push({ id:personId, name, role, color, initials: initialsFromName(name) });
   } else {
     const p = personById(_personModalState.personId);
     if (!p) { setPmStatus('Person not found.', 'err'); return; }
     p.name = name; p.role = role; p.color = color;
     p.initials = initialsFromName(name);
+    personId = p.id;
   }
+
+  // Commit capacity draft. Only store entries that differ from the default
+  // (keeps serialized state small and the intent clear).
+  const overrides = {};
+  WEEKS.forEach(w => {
+    const v = _pmCapDraft[w];
+    if (typeof v === 'number' && v !== DEFAULT_CAPACITY) overrides[w] = v;
+  });
+  if (Object.keys(overrides).length) {
+    CAPACITY_OVERRIDES[personId] = overrides;
+  } else {
+    delete CAPACITY_OVERRIDES[personId];
+  }
+
   closePersonModal(); renderAll();
 }
 
@@ -1375,6 +1515,8 @@ function deletePersonFromModal() {
   }
   const idx = PEOPLE.findIndex(pp => pp.id === id);
   if (idx >= 0) PEOPLE.splice(idx, 1);
+  // Clean up this person's capacity overrides too.
+  delete CAPACITY_OVERRIDES[id];
   closePersonModal(); renderAll();
 }
 
@@ -1641,6 +1783,19 @@ function saveWeeksModal() {
     }
   });
 
+  // Remap capacity overrides the same way (and drop entries for deleted weeks).
+  Object.keys(CAPACITY_OVERRIDES).forEach(pid => {
+    const old = CAPACITY_OVERRIDES[pid];
+    const next = {};
+    Object.keys(old).forEach(oldLbl => {
+      if (Object.prototype.hasOwnProperty.call(survivorMap, oldLbl)) {
+        next[survivorMap[oldLbl]] = old[oldLbl];
+      }
+    });
+    if (Object.keys(next).length) CAPACITY_OVERRIDES[pid] = next;
+    else                           delete CAPACITY_OVERRIDES[pid];
+  });
+
   WEEKS = newLabels;
   CUR_WEEK = Math.max(0, Math.min(newCurIdx >= 0 ? newCurIdx : 0, WEEKS.length - 1));
   closeWeeksModal();
@@ -1750,7 +1905,9 @@ function renderOverview() {
   const upcomingProjects = PROJECTS.filter(p => p.status === 'upcoming').length;
   const staffedTasks = TASKS.filter(isStaffed);
   const totalAllocDays = staffedTasks.reduce((s, t) => s + (t.effortDays || 0), 0);
-  const capacityDays = PEOPLE.length * WEEKS.length * 5; // 5d/week per person
+  // Sum actual available capacity across every person × every week (PTO reduces this).
+  let capacityDays = 0;
+  PEOPLE.forEach(p => WEEKS.forEach(w => { capacityDays += getCapacity(p.id, w); }));
   const utilPct = capacityDays ? Math.round((totalAllocDays / capacityDays) * 100) : 0;
 
   let html = `<div class="ov-stats">
@@ -2046,6 +2203,9 @@ function applyImport(parsed) {
   PEOPLE.splice(0, PEOPLE.length, ...parsed.people);   // const array → mutate in place
   TASKS = parsed.tasks;
   _nextTaskId = parsed.tasks.length + 1;
+  // Sheet imports don't carry per-week PTO info, and people list may have changed —
+  // clear overrides so we don't orphan old entries under mismatched IDs.
+  CAPACITY_OVERRIDES = {};
   renderAll();
 }
 
@@ -2057,7 +2217,7 @@ const STORAGE_KEY = 'vizor.state.v1';
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId
+      PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, CAPACITY_OVERRIDES
     }));
   } catch (e) { /* quota exceeded or storage disabled — skip silently */ }
 }
@@ -2072,6 +2232,9 @@ function loadState() {
     if (Array.isArray(s.WEEKS))    WEEKS    = s.WEEKS;
     if (typeof s.CUR_WEEK    === 'number') CUR_WEEK    = s.CUR_WEEK;
     if (typeof s._nextTaskId === 'number') _nextTaskId = s._nextTaskId;
+    if (s.CAPACITY_OVERRIDES && typeof s.CAPACITY_OVERRIDES === 'object') {
+      CAPACITY_OVERRIDES = s.CAPACITY_OVERRIDES;
+    }
     return true;
   } catch (e) { return false; }
 }
@@ -2245,6 +2408,12 @@ function applyCloudState(s) {
     if (Array.isArray(s.WEEKS))    WEEKS    = s.WEEKS;
     if (typeof s.CUR_WEEK    === 'number') CUR_WEEK    = s.CUR_WEEK;
     if (typeof s._nextTaskId === 'number') _nextTaskId = s._nextTaskId;
+    if (s.CAPACITY_OVERRIDES && typeof s.CAPACITY_OVERRIDES === 'object') {
+      CAPACITY_OVERRIDES = s.CAPACITY_OVERRIDES;
+    } else if (s.CAPACITY_OVERRIDES === null || s.CAPACITY_OVERRIDES === undefined) {
+      // Older cloud data won't carry overrides — start with an empty set to stay consistent.
+      CAPACITY_OVERRIDES = {};
+    }
   } finally {
     // next tick, so the renderAll → saveState that follows doesn't trigger a push
     setTimeout(() => { _cloudSuppressPush = false; }, 0);
@@ -2256,7 +2425,7 @@ async function pushToCloud(manual) {
   if (!isCloudConnected()) return;
   setCloudStatus('syncing');
   try {
-    const body = { PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, _meta:{ updatedAt: Date.now() } };
+    const body = { PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, CAPACITY_OVERRIDES, _meta:{ updatedAt: Date.now() } };
     const res = await fetch(`${JSONBIN_BASE}/${_cloud.binId}`, {
       method: 'PUT',
       headers: {
