@@ -2358,6 +2358,30 @@ function applyImport(parsed) {
 // ══════════════════════════════════════════════════════════════════
 const STORAGE_KEY = 'vizor.state.v1';
 
+// One-time color migration: old vibrant hex codes → pastel equivalents.
+// Runs whenever we load state (local or cloud) so existing team records
+// (saved before the palette swap) get recolored automatically.
+const LEGACY_COLOR_MAP = {
+  '#00C4F0':'#7FC8D4', '#0EA5E9':'#9BB5DD', '#3B82F6':'#9BB5DD',
+  '#7C3AED':'#B298D4', '#8B5CF6':'#B298D4', '#A78BFA':'#B298D4',
+  '#10B981':'#A8CDA0', '#059669':'#A8CDA0', '#34D399':'#A8CDA0',
+  '#F59E0B':'#EDC874', '#FBBF24':'#EDC874',
+  '#EF4444':'#E28A8A', '#DC2626':'#E28A8A', '#F87171':'#E28A8A',
+  '#EC4899':'#E8A8B8', '#F97316':'#EDAB87', '#14B8A6':'#9FD3C7'
+};
+function migrateLegacyColors() {
+  let changed = false;
+  const fix = (hex) => {
+    if (!hex || typeof hex !== 'string') return hex;
+    const up = hex.toUpperCase();
+    if (LEGACY_COLOR_MAP[up]) { changed = true; return LEGACY_COLOR_MAP[up]; }
+    return hex;
+  };
+  PEOPLE.forEach(p => { p.color = fix(p.color); });
+  PROJECTS.forEach(p => { p.color = fix(p.color); });
+  return changed;
+}
+
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -2378,6 +2402,12 @@ function loadState() {
     if (typeof s._nextTaskId === 'number') _nextTaskId = s._nextTaskId;
     if (s.CAPACITY_OVERRIDES && typeof s.CAPACITY_OVERRIDES === 'object') {
       CAPACITY_OVERRIDES = s.CAPACITY_OVERRIDES;
+    }
+    if (migrateLegacyColors()) {
+      // persist the fix so we don't re-run on every load
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, CAPACITY_OVERRIDES
+      })); } catch (e) {}
     }
     return true;
   } catch (e) { return false; }
@@ -2545,6 +2575,7 @@ function disconnectCloud() {
 // ── Apply state pulled from cloud ────────────────────────────────
 function applyCloudState(s) {
   _cloudSuppressPush = true;
+  let migrated = false;
   try {
     if (Array.isArray(s.PEOPLE))   PEOPLE.splice(0, PEOPLE.length, ...s.PEOPLE);
     if (Array.isArray(s.PROJECTS)) PROJECTS = s.PROJECTS;
@@ -2558,9 +2589,14 @@ function applyCloudState(s) {
       // Older cloud data won't carry overrides — start with an empty set to stay consistent.
       CAPACITY_OVERRIDES = {};
     }
+    migrated = migrateLegacyColors();
   } finally {
     // next tick, so the renderAll → saveState that follows doesn't trigger a push
-    setTimeout(() => { _cloudSuppressPush = false; }, 0);
+    setTimeout(() => {
+      _cloudSuppressPush = false;
+      // If we recolored legacy data, push the fix back up so teammates see pastels too
+      if (migrated) { saveState(); }
+    }, 0);
   }
 }
 
