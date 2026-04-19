@@ -177,10 +177,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .board-col-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text); }
 .board-col-count { font-size:10px; color:var(--muted); background:white; border-radius:10px; padding:1px 8px; font-weight:600; }
 .board-col-scroll { overflow-y:auto; flex:1; padding-right:2px; }
-.board-card { background:white; border:1px solid var(--border); border-radius:7px; padding:9px 10px; margin-bottom:7px; transition:all .12s; }
+.board-card { background:white; border:1px solid var(--border); border-radius:7px; padding:9px 10px; margin-bottom:7px; transition:all .12s; cursor:grab; }
 .board-card:hover { border-color:var(--cyan); box-shadow:0 2px 8px rgba(0,0,0,0.05); transform:translateY(-1px); }
+.board-card:active { cursor:grabbing; }
+.board-card.dragging { opacity:.45; cursor:grabbing; }
 .board-card.done { opacity:.65; }
+.board-card.done.dragging { opacity:.35; }
 .board-card.done .bc-title { text-decoration:line-through; color:var(--muted); }
+.board-col.drop-target { outline:2px dashed var(--cyan); outline-offset:-3px; background:#ECF7FA; }
 .bc-project { display:inline-block; font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 6px; border-radius:3px; margin-bottom:6px; }
 .bc-title { font-size:12px; color:var(--text); font-weight:500; margin-bottom:8px; line-height:1.35; }
 .bc-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; }
@@ -1200,7 +1204,10 @@ function renderBoard() {
     const cards = list.length === 0
       ? `<div class="board-empty">No tasks</div>`
       : list.map(c => renderBoardCard(c, col)).join('');
-    return `<div class="board-col">
+    return `<div class="board-col" data-bucket="${col.key}"
+      ondragover="onBoardColDragOver(event,this)"
+      ondragleave="onBoardColDragLeave(event,this)"
+      ondrop="onBoardColDrop(event,this)">
       <div class="board-col-hdr">
         <div class="board-col-left">
           <div class="board-col-dot" style="background:${col.color};"></div>
@@ -1218,7 +1225,9 @@ function renderBoardCard(c, col) {
   const end  = parseMD(c.due);
   const overdue = col.key === 'today' && end && end < BOARD_TODAY && !c.done;
   const dateLbl = !c.due ? 'TBD' : overdue ? `⚠ Overdue · ${escHTML(c.due)}` : `Due ${escHTML(c.due)}`;
-  return `<div class="board-card ${c.done?'done':''}">
+  return `<div class="board-card ${c.done?'done':''}" draggable="true" data-tid="${c.id}"
+    ondragstart="onBoardCardDragStart(event,'${c.id}')"
+    ondragend="onBoardCardDragEnd(event)">
     <span class="bc-project" style="background:${proj.color}20;color:${proj.color};">${escHTML(proj.name)}</span>
     <div class="bc-title">${escHTML(c.name)}</div>
     <div class="bc-meta">
@@ -2007,6 +2016,78 @@ function onCellDrop(e, cell) {
   if (!t) return;
   t.assigneeId = cell.dataset.person;
   t.weekLabel  = cell.dataset.week;
+  renderAll();
+}
+
+// ── BOARD: drag cards between time-bucket columns ─────────────
+let _boardDragId = null;
+function onBoardCardDragStart(e, taskId) {
+  _boardDragId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', 'board:' + taskId);
+  e.currentTarget.classList.add('dragging');
+}
+function onBoardCardDragEnd(e) {
+  _boardDragId = null;
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.board-col.drop-target').forEach(el => el.classList.remove('drop-target'));
+}
+function onBoardColDragOver(e, col) {
+  // Only react to board-originated drags (not planner chips).
+  if (!_boardDragId) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  col.classList.add('drop-target');
+}
+function onBoardColDragLeave(e, col) {
+  // relatedTarget is the node the pointer moved into; ignore if still inside the same column
+  if (col.contains(e.relatedTarget)) return;
+  col.classList.remove('drop-target');
+}
+function onBoardColDrop(e, col) {
+  if (!_boardDragId) return;
+  e.preventDefault();
+  col.classList.remove('drop-target');
+  const taskId = _boardDragId;
+  _boardDragId = null;
+  const targetBucket = col.dataset.bucket;
+  moveTaskToBucket(taskId, targetBucket);
+}
+function _fmtMD(d) {
+  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0');
+}
+function _dueForBucket(bucket) {
+  if (bucket === 'today') return _fmtMD(BOARD_TODAY);
+  if (bucket === 'thisweek') {
+    // Middle of this-week range so it's clearly "this week" not "today"
+    const d = new Date(BOARD_TODAY); d.setDate(d.getDate() + 2);
+    return _fmtMD(d <= BOARD_WEEK_END ? d : BOARD_WEEK_END);
+  }
+  if (bucket === 'later') {
+    // Two weeks past the current week-end
+    const d = new Date(BOARD_WEEK_END); d.setDate(d.getDate() + 14);
+    return _fmtMD(d);
+  }
+  return null;
+}
+function moveTaskToBucket(taskId, targetBucket) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  const currentBucket = bucketForTask(t);
+  if (currentBucket === targetBucket) return;
+
+  if (targetBucket === 'done') {
+    t.done = true;
+  } else {
+    // Un-done (if applicable) and realign due date so the task actually lands in the target column.
+    t.done = false;
+    // Recompute with new done flag; if the due date already fits the target, leave it alone.
+    if (bucketForTask(t) !== targetBucket) {
+      const newDue = _dueForBucket(targetBucket);
+      if (newDue) t.due = newDue;
+    }
+  }
+  // renderAll() re-renders every view (Planner, Board, Projects, Overview) + saves + triggers cloud push.
   renderAll();
 }
 
