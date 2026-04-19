@@ -471,6 +471,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
     </div>
     <div class="alloc-hint">
       <b>Tip:</b> Each cell holds the tasks that person is on that week. <code>1d</code> = 20% of a 5-day week. The "This week" column shows their current-week load; the heatmap on the right shows all weeks.
+      <span style="float:right;"><a href="#" onclick="event.preventDefault(); resetState();" style="color:var(--muted);text-decoration:underline;">Reset to demo data</a></span>
     </div>
   </div>
 
@@ -1562,6 +1563,38 @@ function applyImport(parsed) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// PERSISTENCE (survives page reloads via localStorage)
+// ══════════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'vizor.state.v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId
+    }));
+  } catch (e) { /* quota exceeded or storage disabled — skip silently */ }
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (Array.isArray(s.PEOPLE))   PEOPLE.splice(0, PEOPLE.length, ...s.PEOPLE);
+    if (Array.isArray(s.PROJECTS)) PROJECTS = s.PROJECTS;
+    if (Array.isArray(s.TASKS))    TASKS    = s.TASKS;
+    if (Array.isArray(s.WEEKS))    WEEKS    = s.WEEKS;
+    if (typeof s.CUR_WEEK    === 'number') CUR_WEEK    = s.CUR_WEEK;
+    if (typeof s._nextTaskId === 'number') _nextTaskId = s._nextTaskId;
+    return true;
+  } catch (e) { return false; }
+}
+function resetState() {
+  if (!confirm('Reset all data back to the demo seed?\n\nThis removes every person, project, and task you\'ve added — cannot be undone.')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════
 function renderAll() {
@@ -1572,7 +1605,9 @@ function renderAll() {
   // Board/Projects views re-render on tab switch, but keep them fresh too:
   if (document.getElementById('boardView').style.display !== 'none')    renderBoard();
   if (document.getElementById('projectsView').style.display !== 'none') renderProjectsView();
+  saveState();
 }
+loadState();
 renderAll();
 </script>
 </body>
