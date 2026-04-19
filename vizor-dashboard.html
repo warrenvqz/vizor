@@ -349,6 +349,147 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .ov-proj-bar { display:flex; height:22px; border-radius:5px; overflow:hidden; background:var(--bg); }
 .ov-proj-seg { height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:600; min-width:0; overflow:hidden; white-space:nowrap; }
 .ov-proj-days { font-size:11px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ── MOBILE TOGGLES & BACKDROP (hidden by default) ──────── */
+.mb-tog { display:none; }
+.mb-backdrop { display:none; }
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE LAYOUT (≤768px)
+   All rules below are scoped to this query — desktop is untouched.
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  body { font-size:14px; overflow:hidden; }
+
+  /* Topnav: compact, drop middle breadcrumb clutter, hamburger on each end. */
+  .topnav { padding:0 8px; gap:4px; height:46px; }
+  .breadcrumb { font-size:13px; min-width:0; flex-shrink:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .spacer { display:none; }
+  .breadcrumb + .spacer { display:none; }
+  .topnav > div[style*="width:1px"] { display:none; }       /* vertical divider */
+  .sheet-chip { display:none !important; }                  /* keep cloud chip as sync truth */
+  .cloud-chip { padding:3px 8px 3px 6px; font-size:10px; height:24px; }
+  .cloud-chip span:not(.cloud-ico) { display:none; }        /* chip is icon-only on mobile */
+  .topnav .ibtn { display:none; }                           /* search + bell */
+  .topnav .av { width:26px; height:26px; font-size:9px; }
+
+  /* Nav view-switcher: icon-only so 4 tabs fit narrow screens. */
+  .nav-views { margin-left:auto; padding:2px; gap:0; }
+  .vbtn { padding:5px 9px; font-size:12px; }
+  .vbtn-lbl { display:none; }
+
+  /* Mobile toggle buttons (shown only here). */
+  .mb-tog { display:flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border:none; background:none;
+    border-radius:6px; font-size:16px; color:var(--text); cursor:pointer;
+    flex-shrink:0; font-family:inherit; }
+  .mb-tog:active { background:var(--bg); }
+  .mb-tog-sidebar { order:-1; }                              /* force to very left */
+
+  /* Body: main occupies full width; sidebar + rail become drawers. */
+  .body { display:block; height:calc(100vh - 46px); margin-top:46px; position:relative; overflow:hidden; }
+  .main { width:100%; height:100%; min-width:0; }
+
+  /* Sidebar → left drawer */
+  .sidebar { position:fixed; top:46px; bottom:0; left:0; width:82vw; max-width:300px;
+    z-index:150; transform:translateX(-100%); transition:transform .22s ease;
+    box-shadow:8px 0 24px rgba(0,0,0,0.2); overflow-y:auto; }
+  body.mb-sidebar-open .sidebar { transform:translateX(0); }
+
+  /* Right rail → right drawer */
+  .rp { position:fixed; top:46px; bottom:0; right:0; width:88vw; max-width:360px;
+    z-index:150; transform:translateX(100%); transition:transform .22s ease;
+    box-shadow:-8px 0 24px rgba(0,0,0,0.2); border-left:1px solid var(--border); }
+  body.mb-rail-open .rp { transform:translateX(0); }
+
+  /* Backdrop */
+  body.mb-drawer-open .mb-backdrop { display:block; position:fixed;
+    top:46px; left:0; right:0; bottom:0; background:rgba(15,23,42,0.5); z-index:140; }
+
+  /* View bar: wrap the button row on narrow screens instead of overflowing. */
+  .view-bar { flex-wrap:wrap; padding:8px 10px; gap:6px; }
+  .view-bar > span:last-child,
+  .view-bar .spacer + span { flex-basis:100%; margin-top:4px; }
+  .view-title { flex-basis:100%; margin-bottom:2px; }
+  .chip { font-size:11px; padding:5px 10px; }
+
+  /* Allocation grid: let it scroll horizontally, keep person col sticky but narrower. */
+  .alloc-grid { min-width:640px; }
+  .alloc-grid thead th.person-col { width:110px; }
+  .alloc-grid thead th { padding:8px 6px; font-size:9px; }
+  .person-cell .person-name { font-size:12px; }
+  .person-cell .person-role { font-size:9px; }
+  .week-cell { min-width:88px; min-height:56px; padding:3px; }
+  .task-chip { font-size:11px; padding:4px 4px 4px 7px; }   /* slightly larger for touch */
+  .tc-name { font-size:11px; }
+  .tc-days { font-size:10px; }
+  .tc-x { opacity:1; padding:0 6px; font-size:14px; }        /* always visible on touch */
+  .total-cell { padding:8px 4px; }
+  .total-pct { font-size:14px; }
+  .total-days { font-size:9px; }
+  .cap-badge { font-size:8px; padding:1px 3px; }
+  .alloc-hint { padding:8px 10px; font-size:10px; line-height:1.45; }
+  .alloc-hint span[style*="float:right"] { float:none !important; display:block; margin-top:4px; }
+
+  /* Board: 1 column instead of 4 — cards stack vertically and each scrolls the page. */
+  .board { padding:10px; }
+  .board-cols { grid-template-columns:1fr; gap:8px; }
+  .board-col { max-height:none; }
+
+  /* Projects view */
+  .up-view { padding:10px; }
+  .up-card { padding:12px; }
+  .up-card-name { font-size:14px; }
+  .up-roles { gap:6px; }
+
+  /* Overview: 2-col stats, single-col person cards, stacked project rows */
+  .ov-scroll { padding:10px; }
+  .ov-stats { grid-template-columns:repeat(2, 1fr); gap:8px; }
+  .ov-stat { padding:10px 12px; }
+  .ov-stat-val { font-size:18px; }
+  .ov-stat-sub { font-size:10px; }
+  .ov-grid { grid-template-columns:1fr; gap:10px; }
+  .ov-card { padding:12px; }
+  .ov-donut-wrap { flex-direction:column; align-items:stretch; gap:10px; }
+  .ov-donut { align-self:center; }
+  .ov-proj-row { grid-template-columns:1fr; gap:6px; padding:10px 12px; }
+  .ov-proj-days { text-align:left; }
+
+  /* Modals: almost full-width with safe padding, taller scroll area */
+  .modal-card { width:94vw; max-width:94vw; padding:16px; max-height:calc(100vh - 60px); overflow-y:auto; border-radius:10px; }
+  .sm-grid { grid-template-columns:1fr; gap:8px; }
+  .sm-row { flex-wrap:wrap; gap:6px; }
+  .sm-row .spacer { display:flex; flex:1; }                  /* re-enable in modals */
+  .sm-btn { padding:8px 12px; font-size:13px; }              /* touch-friendly */
+
+  /* Person-modal capacity list: stack quick buttons on a new line on skinny screens */
+  .pm-cap-row { flex-wrap:wrap; gap:6px; }
+  .pm-cap-lbl { flex-basis:100%; }
+  .pm-cap-quick { flex:1; }
+  .pm-cap-quick button { flex:1; padding:5px 4px; }
+  .pm-cap-input { width:52px; }
+
+  /* Weeks modal rows */
+  .wm-row { flex-wrap:wrap; gap:6px 10px; }
+  .wm-label { min-width:0; }
+  .wm-date { flex:1 1 120px; }
+
+  /* Heatmap inside drawer reads fine but give it breathing room */
+  .hm-name { width:48px; font-size:9px; }
+  .hm-wk-lbls { margin-left:54px; }
+
+  /* Tip popover */
+  .tip { max-width:92vw; font-size:11px; }
+}
+
+/* Very narrow phones (≤380px): shave a bit more */
+@media (max-width: 380px) {
+  .breadcrumb { font-size:12px; }
+  .nav-views { padding:2px; }
+  .vbtn { padding:4px 7px; }
+  .cloud-chip { padding:3px 6px; }
+  .topnav .av { display:none; }
+}
 </style>
 </head>
 <body>
@@ -583,13 +724,14 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 
 <!-- TOP NAV -->
 <nav class="topnav">
+  <button class="mb-tog mb-tog-sidebar" onclick="toggleMobileDrawer('sidebar')" aria-label="Open menu">&#9776;</button>
   <div class="breadcrumb"><strong id="navContext">Team capacity</strong></div>
   <div class="spacer"></div>
   <div class="nav-views">
-    <button class="vbtn active" onclick="setView('planner',this)">&#128202; Planner</button>
-    <button class="vbtn" onclick="setView('board',this)">&#128451; Board</button>
-    <button class="vbtn" onclick="setView('projects',this)">&#128193; Projects</button>
-    <button class="vbtn" onclick="setView('overview',this)">&#128200; Overview</button>
+    <button class="vbtn active" onclick="setView('planner',this)"><span class="vbtn-ico">&#128202;</span><span class="vbtn-lbl">Planner</span></button>
+    <button class="vbtn" onclick="setView('board',this)"><span class="vbtn-ico">&#128451;</span><span class="vbtn-lbl">Board</span></button>
+    <button class="vbtn" onclick="setView('projects',this)"><span class="vbtn-ico">&#128193;</span><span class="vbtn-lbl">Projects</span></button>
+    <button class="vbtn" onclick="setView('overview',this)"><span class="vbtn-ico">&#128200;</span><span class="vbtn-lbl">Overview</span></button>
   </div>
   <div style="width:1px;height:22px;background:var(--border);"></div>
   <button class="sheet-chip" id="sheetChip" onclick="openSheetModal()" title="Import from Google Sheet">
@@ -600,8 +742,10 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   </button>
   <button class="ibtn">&#128269;</button>
   <button class="ibtn">&#128276;</button>
+  <button class="mb-tog mb-tog-rail" onclick="toggleMobileDrawer('rail')" aria-label="Open capacity panel">&#128202;</button>
   <div class="av" style="background:#7C3AED;font-size:11px;">WV</div>
 </nav>
+<div class="mb-backdrop" onclick="closeMobileDrawers()"></div>
 
 <!-- BODY -->
 <div class="body">
@@ -2487,6 +2631,41 @@ function scheduleCloudPush() {
 setInterval(() => {
   if (isCloudConnected() && _cloudStatus !== 'syncing') updateCloudChip();
 }, 30000);
+
+// ══════════════════════════════════════════════════════════════════
+// MOBILE DRAWERS (no-ops on desktop; CSS decides visibility)
+// ══════════════════════════════════════════════════════════════════
+function toggleMobileDrawer(which) {
+  const cls = which === 'sidebar' ? 'mb-sidebar-open' : 'mb-rail-open';
+  const other = which === 'sidebar' ? 'mb-rail-open'  : 'mb-sidebar-open';
+  const body = document.body;
+  // Only one drawer open at a time
+  if (body.classList.contains(cls)) {
+    body.classList.remove(cls, 'mb-drawer-open');
+  } else {
+    body.classList.remove(other);
+    body.classList.add(cls, 'mb-drawer-open');
+  }
+}
+function closeMobileDrawers() {
+  document.body.classList.remove('mb-sidebar-open', 'mb-rail-open', 'mb-drawer-open');
+}
+// Esc closes drawers
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobileDrawers(); });
+// If the viewport widens back to desktop, drop any stuck drawer state.
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) closeMobileDrawers();
+});
+// Closing a drawer when the user taps a project / view tab is handy; wire that
+// via setView. The existing setView keeps working on desktop — we just also
+// close any open drawer so the content they tapped is actually visible.
+const _origSetView = typeof setView === 'function' ? setView : null;
+if (_origSetView) {
+  window.setView = function(v, btn) {
+    _origSetView(v, btn);
+    if (window.innerWidth <= 768) closeMobileDrawers();
+  };
+}
 
 // ══════════════════════════════════════════════════════════════════
 // INIT
