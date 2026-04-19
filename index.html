@@ -277,6 +277,26 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .alloc-grid th.wk-head .wk-edit { opacity:0; margin-left:4px; font-size:10px; }
 .alloc-grid th.wk-head:hover .wk-edit { opacity:0.6; }
 
+/* ── CLOUD SYNC CHIP ─────────────────────────────────── */
+.cloud-chip { display:flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--white); border-radius:999px; padding:4px 10px 4px 8px; font-size:11px; font-weight:500; color:var(--muted); cursor:pointer; height:26px; }
+.cloud-chip:hover { border-color:#CBD5E1; }
+.cloud-chip .cloud-ico { font-size:13px; }
+.cloud-chip.is-connected { color:var(--green); border-color:#D1FAE5; background:#F0FDF4; }
+.cloud-chip.is-syncing { color:var(--blue); border-color:#DBEAFE; background:#EFF6FF; }
+.cloud-chip.is-error { color:var(--red); border-color:#FECACA; background:#FEF2F2; }
+.cloud-chip.is-syncing .cloud-ico { animation:cloudSpin 1.2s linear infinite; }
+@keyframes cloudSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+.cm-help { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:11px; color:var(--text); line-height:1.55; margin-bottom:10px; }
+.cm-help b { color:var(--text); }
+.cm-help ol { margin:4px 0 0 18px; padding:0; }
+.cm-help li { margin-bottom:3px; }
+.cm-help a { color:var(--cyan); text-decoration:none; font-weight:600; }
+.cm-help a:hover { text-decoration:underline; }
+.cm-meta { font-size:11px; color:var(--muted); padding:8px 0; line-height:1.6; }
+.cm-meta b { color:var(--text); }
+.cm-meta .mono { font-family:ui-monospace,'SF Mono',Menlo,monospace; background:var(--bg); padding:1px 5px; border-radius:3px; font-size:10px; }
+
 /* ── OVERVIEW ────────────────────────────────────────── */
 .ov-scroll { flex:1; overflow-y:auto; padding:16px; background:var(--bg); }
 .ov-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
@@ -451,6 +471,58 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   </div>
 </div>
 
+<!-- CLOUD SYNC MODAL -->
+<div class="modal-bg" id="cloudModal" onclick="if(event.target===this)closeCloudModal()">
+  <div class="modal-card" style="max-width:480px;">
+    <div class="sm-title" id="clmTitle">Connect to shared cloud</div>
+    <div class="sm-sub" id="clmSub">Your team will all see the same data. Changes auto-sync when anyone edits.</div>
+
+    <!-- Connect form (shown when disconnected) -->
+    <div id="clmConnectForm">
+      <div class="cm-help">
+        <b>One-time setup (~2 min):</b>
+        <ol>
+          <li>Sign up for a free account at <a href="https://jsonbin.io" target="_blank" rel="noopener">jsonbin.io</a></li>
+          <li>Click <b>Create Bin</b>, paste <code class="mono">{}</code> as content, save</li>
+          <li>Copy the <b>Bin ID</b> from the bin's URL</li>
+          <li>Go to <b>API Keys</b> (left nav), copy your <b>Master Key</b></li>
+          <li>Paste both below, hit <b>Connect</b></li>
+        </ol>
+        <div style="margin-top:6px;color:var(--muted);">Give these two values to your teammates (or a private doc) so they can connect their Vizor to the same bin.</div>
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">Bin ID</label>
+        <input type="text" class="sm-input" id="clmBinId" placeholder="e.g. 65a1b2c3d4e5f6g7h8i9j0k1" autocomplete="off">
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">Master Key</label>
+        <input type="password" class="sm-input" id="clmKey" placeholder="$2a$10$..." autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Connected panel (shown when connected) -->
+    <div id="clmConnectedPanel" style="display:none;">
+      <div class="cm-meta">
+        <div><b>Connected.</b> Changes auto-sync to the cloud.</div>
+        <div style="margin-top:4px;">Bin: <span class="mono" id="clmBinLabel">&mdash;</span></div>
+        <div style="margin-top:2px;">Last synced: <b id="clmLastSync">just now</b></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="sm-btn" onclick="pullFromCloud(true)">Pull latest</button>
+        <button class="sm-btn" onclick="pushToCloud(true)">Push now</button>
+        <button class="sm-btn danger" onclick="disconnectCloud()">Disconnect</button>
+      </div>
+    </div>
+
+    <div class="sm-status" id="clmStatus"></div>
+    <div class="sm-row">
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeCloudModal()">Close</button>
+      <button class="sm-btn primary" id="clmConnectBtn" onclick="connectCloud()">Connect</button>
+    </div>
+  </div>
+</div>
+
 <!-- SHEET IMPORT MODAL -->
 <div class="modal-bg" id="sheetModal" onclick="if(event.target===this)closeSheetModal()">
   <div class="modal-card">
@@ -494,6 +566,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   <div style="width:1px;height:22px;background:var(--border);"></div>
   <button class="sheet-chip" id="sheetChip" onclick="openSheetModal()" title="Import from Google Sheet">
     <span class="dot"></span><span id="sheetChipLabel">Demo data</span>
+  </button>
+  <button class="cloud-chip" id="cloudChip" onclick="openCloudModal()" title="Connect to shared cloud">
+    <span class="cloud-ico">&#9729;</span><span id="cloudChipLabel">Not synced</span>
   </button>
   <button class="ibtn">&#128269;</button>
   <button class="ibtn">&#128276;</button>
@@ -2007,6 +2082,244 @@ function resetState() {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// CLOUD SYNC (JSONBin.io)
+// ══════════════════════════════════════════════════════════════════
+const CLOUD_KEY = 'vizor.cloud.v1';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+
+let _cloud = { binId:null, masterKey:null };
+let _cloudStatus = 'off'; // off | connected | syncing | error
+let _cloudLastSync = null;
+let _cloudError = null;
+let _cloudSuppressPush = false; // true while we're applying a pull (don't echo back)
+let _cloudPushTimer = null;
+
+function loadCloudConfig() {
+  try {
+    const raw = localStorage.getItem(CLOUD_KEY);
+    if (!raw) return;
+    const c = JSON.parse(raw);
+    if (c && c.binId && c.masterKey) _cloud = c;
+  } catch (e) {}
+}
+function saveCloudConfig() {
+  try { localStorage.setItem(CLOUD_KEY, JSON.stringify(_cloud)); } catch (e) {}
+}
+function clearCloudConfig() {
+  _cloud = { binId:null, masterKey:null };
+  try { localStorage.removeItem(CLOUD_KEY); } catch (e) {}
+}
+function isCloudConnected() { return !!(_cloud.binId && _cloud.masterKey); }
+
+function setCloudStatus(status, err) {
+  _cloudStatus = status;
+  _cloudError  = err || null;
+  updateCloudChip();
+}
+
+function updateCloudChip() {
+  const chip = document.getElementById('cloudChip');
+  const label = document.getElementById('cloudChipLabel');
+  if (!chip || !label) return;
+  chip.classList.remove('is-connected','is-syncing','is-error');
+  if (_cloudStatus === 'syncing') {
+    chip.classList.add('is-syncing');
+    label.textContent = 'Syncing…';
+    chip.title = 'Talking to the cloud…';
+  } else if (_cloudStatus === 'error') {
+    chip.classList.add('is-error');
+    label.textContent = 'Sync error';
+    chip.title = _cloudError || 'Error syncing with cloud — click for details';
+  } else if (_cloudStatus === 'connected' || isCloudConnected()) {
+    chip.classList.add('is-connected');
+    const when = _cloudLastSync ? `Synced ${timeAgo(_cloudLastSync)}` : 'Connected';
+    label.textContent = when;
+    chip.title = 'Connected to shared cloud — click to manage';
+  } else {
+    label.textContent = 'Not synced';
+    chip.title = 'Connect to shared cloud';
+  }
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 5)    return 'just now';
+  if (s < 60)   return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60)   return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24)   return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// ── Modal open/close ─────────────────────────────────────────────
+function openCloudModal() {
+  const connected = isCloudConnected();
+  document.getElementById('clmConnectForm').style.display    = connected ? 'none' : '';
+  document.getElementById('clmConnectedPanel').style.display = connected ? '' : 'none';
+  document.getElementById('clmConnectBtn').style.display     = connected ? 'none' : '';
+  document.getElementById('clmTitle').textContent = connected ? 'Shared cloud sync' : 'Connect to shared cloud';
+  document.getElementById('clmStatus').textContent = '';
+  if (connected) {
+    document.getElementById('clmBinLabel').textContent = _cloud.binId;
+    document.getElementById('clmLastSync').textContent = _cloudLastSync ? timeAgo(_cloudLastSync) : 'not yet';
+  } else {
+    document.getElementById('clmBinId').value = '';
+    document.getElementById('clmKey').value = '';
+  }
+  document.getElementById('cloudModal').classList.add('show');
+}
+function closeCloudModal() {
+  document.getElementById('cloudModal').classList.remove('show');
+}
+function setCloudModalStatus(msg, kind) {
+  const el = document.getElementById('clmStatus');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (kind ? ' ' + kind : '');
+}
+
+// ── Connect flow ─────────────────────────────────────────────────
+async function connectCloud() {
+  const binId = document.getElementById('clmBinId').value.trim();
+  const key   = document.getElementById('clmKey').value.trim();
+  if (!binId || !key) {
+    setCloudModalStatus('Both fields required.', 'err');
+    return;
+  }
+  setCloudModalStatus('Connecting…', null);
+  setCloudStatus('syncing');
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+      method: 'GET',
+      headers: { 'X-Master-Key': key, 'X-Bin-Meta': 'false' }
+    });
+    if (!res.ok) {
+      const msg = res.status === 401 ? 'Invalid master key.'
+                : res.status === 404 ? 'Bin not found — double-check the Bin ID.'
+                : `JSONBin returned ${res.status}.`;
+      setCloudModalStatus(msg, 'err');
+      setCloudStatus('error', msg);
+      return;
+    }
+    const data = await res.json();
+    _cloud = { binId, masterKey: key };
+    saveCloudConfig();
+
+    // Does the bin already have Vizor-shaped state?
+    if (data && Array.isArray(data.PEOPLE) && Array.isArray(data.PROJECTS) && Array.isArray(data.TASKS)) {
+      const ok = confirm('This bin already has Vizor team data.\n\nLoad it? (Your current local data will be replaced with the cloud version.)\n\nClick Cancel to instead push your local data up and overwrite the cloud.');
+      if (ok) {
+        applyCloudState(data);
+      } else {
+        await pushToCloud(false);
+      }
+    } else {
+      // Bin is empty or has unrelated content — push current state as the seed
+      await pushToCloud(false);
+    }
+    _cloudLastSync = Date.now();
+    setCloudStatus('connected');
+    closeCloudModal();
+    renderAll();
+  } catch (e) {
+    setCloudModalStatus('Connection failed: ' + (e.message || e), 'err');
+    setCloudStatus('error', e.message);
+  }
+}
+
+function disconnectCloud() {
+  if (!confirm('Disconnect from shared cloud?\n\nYour data stays in your browser, but changes will no longer sync with your team.')) return;
+  clearCloudConfig();
+  _cloudLastSync = null;
+  setCloudStatus('off');
+  closeCloudModal();
+}
+
+// ── Apply state pulled from cloud ────────────────────────────────
+function applyCloudState(s) {
+  _cloudSuppressPush = true;
+  try {
+    if (Array.isArray(s.PEOPLE))   PEOPLE.splice(0, PEOPLE.length, ...s.PEOPLE);
+    if (Array.isArray(s.PROJECTS)) PROJECTS = s.PROJECTS;
+    if (Array.isArray(s.TASKS))    TASKS    = s.TASKS;
+    if (Array.isArray(s.WEEKS))    WEEKS    = s.WEEKS;
+    if (typeof s.CUR_WEEK    === 'number') CUR_WEEK    = s.CUR_WEEK;
+    if (typeof s._nextTaskId === 'number') _nextTaskId = s._nextTaskId;
+  } finally {
+    // next tick, so the renderAll → saveState that follows doesn't trigger a push
+    setTimeout(() => { _cloudSuppressPush = false; }, 0);
+  }
+}
+
+// ── Push / pull ──────────────────────────────────────────────────
+async function pushToCloud(manual) {
+  if (!isCloudConnected()) return;
+  setCloudStatus('syncing');
+  try {
+    const body = { PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, _meta:{ updatedAt: Date.now() } };
+    const res = await fetch(`${JSONBIN_BASE}/${_cloud.binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': _cloud.masterKey
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`JSONBin returned ${res.status}`);
+    _cloudLastSync = Date.now();
+    setCloudStatus('connected');
+    if (manual) {
+      setCloudModalStatus('Pushed to cloud ✓', 'ok');
+      document.getElementById('clmLastSync').textContent = 'just now';
+    }
+  } catch (e) {
+    setCloudStatus('error', e.message);
+    if (manual) setCloudModalStatus('Push failed: ' + e.message, 'err');
+  }
+}
+
+async function pullFromCloud(manual) {
+  if (!isCloudConnected()) return;
+  setCloudStatus('syncing');
+  try {
+    const res = await fetch(`${JSONBIN_BASE}/${_cloud.binId}/latest`, {
+      method: 'GET',
+      headers: { 'X-Master-Key': _cloud.masterKey, 'X-Bin-Meta': 'false' }
+    });
+    if (!res.ok) throw new Error(`JSONBin returned ${res.status}`);
+    const data = await res.json();
+    if (data && Array.isArray(data.PEOPLE) && Array.isArray(data.PROJECTS) && Array.isArray(data.TASKS)) {
+      applyCloudState(data);
+      _cloudLastSync = Date.now();
+      setCloudStatus('connected');
+      renderAll();
+      if (manual) {
+        setCloudModalStatus('Pulled latest ✓', 'ok');
+        document.getElementById('clmLastSync').textContent = 'just now';
+      }
+    } else {
+      setCloudStatus('connected');
+      if (manual) setCloudModalStatus('Cloud is empty — nothing to pull.', null);
+    }
+  } catch (e) {
+    setCloudStatus('error', e.message);
+    if (manual) setCloudModalStatus('Pull failed: ' + e.message, 'err');
+  }
+}
+
+// ── Debounced auto-push (called from saveState) ──────────────────
+function scheduleCloudPush() {
+  if (!isCloudConnected() || _cloudSuppressPush) return;
+  clearTimeout(_cloudPushTimer);
+  _cloudPushTimer = setTimeout(() => { pushToCloud(false); }, 1500);
+}
+
+// Refresh the chip's "synced X ago" label every 30s
+setInterval(() => {
+  if (isCloudConnected() && _cloudStatus !== 'syncing') updateCloudChip();
+}, 30000);
+
+// ══════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════
 function renderAll() {
@@ -2019,9 +2332,20 @@ function renderAll() {
   if (document.getElementById('projectsView').style.display !== 'none') renderProjectsView();
   if (document.getElementById('overviewView').style.display !== 'none') renderOverview();
   saveState();
+  scheduleCloudPush();
 }
+
+// Boot: load local state → if connected, pull fresh cloud state → render
 loadState();
-renderAll();
+loadCloudConfig();
+if (isCloudConnected()) {
+  setCloudStatus('syncing');
+  updateCloudChip();
+  pullFromCloud(false).finally(() => { renderAll(); });
+} else {
+  updateCloudChip();
+  renderAll();
+}
 </script>
 </body>
 </html>
