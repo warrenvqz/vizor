@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vizor — Team Capacity</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --cyan:#00C4F0; --dark:#0D1117; --green:#10B981; --amber:#F59E0B;
+  --red:#EF4444; --purple:#8B5CF6; --blue:#3B82F6; --pink:#EC4899;
+  --bg:#F1F5F9; --white:#FFFFFF; --border:#E2E8F0;
+  --text:#1E293B; --muted:#94A3B8;
+  --design:#8B5CF6; --copy:#F59E0B;
+  --sidebar-w:215px; --rail-w:320px;
+}
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; font-size:13px; line-height:1.4; }
+
+/* ── TOP NAV ─────────────────────────────────────────── */
+.topnav { height:46px; background:var(--white); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; gap:10px; position:fixed; top:0; left:0; right:0; z-index:100; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.logo { display:flex; align-items:center; gap:7px; font-weight:800; font-size:15px; color:var(--dark); letter-spacing:-0.5px; }
+.logo span { color:var(--cyan); }
+.breadcrumb { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px; }
+.breadcrumb strong { color:var(--text); font-weight:600; }
+.spacer { flex:1; }
+.nav-views { display:flex; gap:2px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; }
+.vbtn { padding:4px 12px; border:none; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer; background:transparent; color:var(--muted); transition:all .15s; }
+.vbtn.active { background:var(--white); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.ibtn { width:30px; height:30px; border:none; background:none; border-radius:7px; cursor:pointer; color:var(--muted); font-size:14px; display:flex; align-items:center; justify-content:center; }
+.ibtn:hover { background:var(--bg); color:var(--text); }
+.av { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white; flex-shrink:0; }
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.body { display:flex; height:calc(100vh - 46px); margin-top:46px; }
+
+/* ── SIDEBAR ────────────────────────────────────────── */
+.sidebar { width:var(--sidebar-w); background:var(--dark); flex-shrink:0; display:flex; flex-direction:column; overflow-y:auto; }
+.sb-sec { padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.sb-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:rgba(255,255,255,.25); padding:0 14px 6px; }
+.sb-tip { padding:6px 14px; font-size:11px; line-height:1.55; color:rgba(255,255,255,.45); }
+.proj-item { display:flex; align-items:center; gap:9px; padding:7px 14px; transition:all .12s; }
+.proj-item.upcoming { opacity:.75; }
+.proj-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.proj-name { font-size:11px; color:rgba(255,255,255,.65); flex:1; line-height:1.3; }
+.sb-team { padding:12px 14px; margin-top:auto; border-top:1px solid rgba(255,255,255,.05); }
+.sb-team-lbl { font-size:9px; color:rgba(255,255,255,.25); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+.team-avs { display:flex; }
+.team-avs .av { border:2px solid var(--dark); margin-left:-5px; }
+.team-avs .av:first-child { margin-left:0; }
+
+/* ── MAIN ────────────────────────────────────────────── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:var(--white); }
+.view-bar { display:flex; align-items:center; padding:10px 16px; border-bottom:1px solid var(--border); gap:8px; background:var(--white); flex-shrink:0; }
+.view-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+.chip { padding:4px 10px; border:1px solid var(--border); border-radius:20px; background:white; font-size:11px; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; transition:all .12s; font-family:inherit; }
+.chip:hover { border-color:var(--cyan); color:var(--cyan); }
+.chip.add { background:var(--cyan); color:white; border-color:var(--cyan); }
+.chip.add:hover { background:#00A8D0; border-color:#00A8D0; color:white; }
+
+/* ── ALLOCATION GRID ────────────────────────────────── */
+.alloc-wrap { flex:1; overflow:auto; }
+.alloc-grid { width:100%; border-collapse:collapse; min-width:820px; background:var(--white); }
+.alloc-grid thead th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:10px 8px; text-align:left; background:#F8FAFC; border-bottom:1px solid var(--border); border-right:1px solid #F1F5F9; white-space:nowrap; position:sticky; top:0; z-index:2; }
+.alloc-grid thead th.cur-week { color:var(--cyan); background:rgba(0,196,240,.08); }
+.alloc-grid thead th.person-col { width:150px; position:sticky; left:0; z-index:3; background:#F8FAFC; }
+.alloc-grid thead th.total-col { width:100px; text-align:center; }
+.alloc-grid tbody td { border-bottom:1px solid #F1F5F9; border-right:1px solid #F1F5F9; vertical-align:top; padding:0; }
+.alloc-grid tbody td.person-cell { padding:10px 10px; background:var(--white); position:sticky; left:0; z-index:1; border-right:1px solid var(--border); vertical-align:middle; cursor:pointer; transition:background .1s; }
+.alloc-grid tbody td.person-cell:hover { background:#F8FAFC; }
+.alloc-grid tbody td.person-cell:hover .person-edit { opacity:1; }
+.alloc-grid tbody tr.over td.person-cell { background:#FEF2F2; }
+.alloc-grid tbody tr.over td.person-cell:hover { background:#FEE6E6; }
+.alloc-grid tbody tr:hover td:not(.person-cell) { background:#FBFCFD; }
+.person-edit { font-size:11px; color:var(--muted); opacity:0; transition:opacity .1s; margin-left:4px; flex-shrink:0; }
+.add-person-row td { padding:10px; background:#FAFBFC; border-bottom:1px solid var(--border); position:sticky; left:0; }
+.add-person-btn { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); cursor:pointer; padding:7px 10px; border-radius:6px; background:transparent; border:1px dashed var(--border); font-family:inherit; transition:all .12s; white-space:nowrap; }
+.add-person-btn:hover { color:var(--cyan); border-color:var(--cyan); background:rgba(0,196,240,.04); }
+.pm-color-picker { display:flex; gap:5px; flex-wrap:wrap; padding:6px 0 0; }
+.pm-color { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform .1s; }
+.pm-color:hover { transform:scale(1.12); }
+.pm-color.selected { border-color:var(--dark); box-shadow:0 0 0 2px white inset; }
+.person-row { display:flex; align-items:center; gap:8px; }
+.person-info { flex:1; min-width:0; }
+.person-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.person-role { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.week-cell { padding:4px; min-height:62px; min-width:120px; transition:background .1s; cursor:pointer; }
+.week-cell.cur-week { background:rgba(0,196,240,.03); }
+.week-cell.drag-over { background:rgba(0,196,240,.15); outline:2px dashed var(--cyan); outline-offset:-2px; }
+.week-cell-inner { display:flex; flex-direction:column; gap:3px; min-height:54px; }
+.task-chip { display:flex; align-items:center; gap:4px; padding:4px 5px 4px 8px; border-radius:5px; font-size:10px; cursor:grab; background:white; border:1px solid var(--border); border-left-width:3px; transition:all .1s; line-height:1.2; }
+.task-chip:hover { border-color:var(--cyan); box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.task-chip:active { cursor:grabbing; }
+.task-chip.dragging { opacity:.45; }
+.tc-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; color:var(--text); }
+.tc-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:#F1F5F9; white-space:nowrap; }
+.tc-x { font-size:12px; color:var(--muted); cursor:pointer; padding:0 3px; opacity:0; transition:opacity .1s; line-height:1; }
+.task-chip:hover .tc-x { opacity:1; }
+.tc-x:hover { color:var(--red); }
+.total-cell { text-align:center; padding:10px 8px; vertical-align:middle; background:#FAFBFC; }
+.total-pct { font-size:15px; font-weight:800; line-height:1.1; }
+.total-days { font-size:9px; color:var(--muted); margin-top:2px; }
+.total-over { color:var(--red); }
+.total-cap { color:var(--amber); }
+.total-ok { color:var(--green); }
+.total-low { color:var(--muted); }
+.alloc-hint { padding:10px 16px; font-size:11px; color:var(--muted); background:#F8FAFC; border-top:1px solid var(--border); flex-shrink:0; }
+.alloc-hint code { background:white; padding:1px 5px; border-radius:3px; border:1px solid var(--border); font-size:10px; }
+.alloc-hint b { color:var(--text); }
+
+/* ── RIGHT RAIL ─────────────────────────────────────── */
+.rp { width:var(--rail-w); flex-shrink:0; border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; background:var(--white); }
+.rp-sec { border-bottom:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+.rp-sec.flex { flex:1; min-height:0; }
+.rp-hdr { padding:12px 14px 8px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.rp-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+.rp-sub { font-size:9px; color:var(--muted); }
+.rp-scroll { overflow-y:auto; padding-bottom:8px; flex:1; }
+
+/* ── UPCOMING TASKS PANEL ───────────────────────────── */
+.up-group { margin:0 0 10px; }
+.up-group-hdr { display:flex; align-items:center; gap:6px; padding:4px 14px; }
+.up-group-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.up-group-name { font-size:11px; font-weight:600; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.up-group-progress { font-size:9px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.up-group-bar { height:3px; background:#F1F5F9; border-radius:2px; margin:4px 14px 6px; overflow:hidden; }
+.up-group-fill { height:100%; border-radius:2px; transition:width .2s; }
+.up-task { display:flex; align-items:center; gap:7px; margin:4px 14px; padding:6px 8px; background:white; border:1px solid var(--border); border-left:3px solid var(--design); border-radius:5px; cursor:grab; font-size:11px; transition:all .1s; }
+.up-task:hover { border-color:var(--cyan); box-shadow:0 1px 4px rgba(0,0,0,.05); }
+.up-task:active { cursor:grabbing; }
+.up-task.dragging { opacity:.45; }
+.up-task.role-copy { border-left-color:var(--copy); }
+.up-task-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
+.up-task-meta { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.up-task-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:#F1F5F9; }
+.up-task-role { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:1px 4px; border-radius:2px; }
+.up-task-role.design { background:rgba(139,92,246,.15); color:var(--design); }
+.up-task-role.copy { background:rgba(245,158,11,.18); color:#B45309; }
+.up-empty { text-align:center; font-size:11px; color:var(--muted); padding:20px 14px; font-style:italic; }
+
+/* ── CAPACITY HEATMAP ───────────────────────────────── */
+.hm { padding:4px 14px 14px; }
+.hm-wk-lbls { display:flex; gap:2px; margin-left:64px; margin-bottom:3px; }
+.hm-wk-lbl { flex:1; font-size:8px; color:var(--muted); text-align:center; line-height:1.2; }
+.hm-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+.hm-name { font-size:10px; font-weight:600; width:58px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hm-cells { display:flex; gap:2px; flex:1; }
+.hm-cell { flex:1; height:22px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; transition:opacity .1s; }
+.hm-cell:hover { opacity:.85; }
+
+/* ── BOARD ──────────────────────────────────────────── */
+.board { flex:1; overflow:hidden; padding:14px 16px; background:var(--white); display:flex; flex-direction:column; }
+.board-cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; flex:1; min-height:0; }
+.board-col { background:#F8FAFC; border-radius:8px; padding:10px; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+.board-col-hdr { display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px; border-bottom:1px solid var(--border); margin-bottom:8px; }
+.board-col-left { display:flex; align-items:center; gap:6px; }
+.board-col-dot { width:8px; height:8px; border-radius:50%; }
+.board-col-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text); }
+.board-col-count { font-size:10px; color:var(--muted); background:white; border-radius:10px; padding:1px 8px; font-weight:600; }
+.board-col-scroll { overflow-y:auto; flex:1; padding-right:2px; }
+.board-card { background:white; border:1px solid var(--border); border-radius:7px; padding:9px 10px; margin-bottom:7px; transition:all .12s; }
+.board-card:hover { border-color:var(--cyan); box-shadow:0 2px 8px rgba(0,0,0,0.05); transform:translateY(-1px); }
+.board-card.done { opacity:.65; }
+.board-card.done .bc-title { text-decoration:line-through; color:var(--muted); }
+.bc-project { display:inline-block; font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 6px; border-radius:3px; margin-bottom:6px; }
+.bc-title { font-size:12px; color:var(--text); font-weight:500; margin-bottom:8px; line-height:1.35; }
+.bc-meta { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+.bc-meta-left { display:flex; align-items:center; gap:6px; min-width:0; }
+.bc-date { font-size:10px; color:var(--muted); white-space:nowrap; }
+.bc-date.overdue { color:var(--red); font-weight:700; }
+.board-empty { text-align:center; font-size:11px; color:var(--muted); padding:18px 8px; font-style:italic; }
+
+/* ── UPCOMING VIEW ──────────────────────────────────── */
+.up-view { flex:1; overflow-y:auto; background:#F8FAFC; padding:16px; }
+.up-card { background:white; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+.up-card-hdr { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.up-card-dot { width:12px; height:12px; border-radius:50%; }
+.up-card-name { font-size:15px; font-weight:700; flex:1; }
+.up-card-dates { font-size:11px; color:var(--muted); }
+.up-card-staffed { font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; background:#F1F5F9; color:var(--muted); }
+.up-card-staffed.partial { background:rgba(245,158,11,.15); color:#B45309; }
+.up-card-staffed.full { background:rgba(16,185,129,.15); color:#065F46; }
+.up-card-progress { height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden; margin-bottom:14px; }
+.up-card-progress-fill { height:100%; transition:width .2s; }
+.up-roles { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.up-role-chip { display:flex; align-items:center; gap:6px; padding:5px 10px; background:#F8FAFC; border:1px solid var(--border); border-radius:16px; font-size:11px; }
+.up-role-chip .rdot { width:8px; height:8px; border-radius:50%; }
+.up-role-chip .rname { font-weight:600; }
+.up-role-chip .rdays { color:var(--muted); }
+.up-task-list { display:flex; flex-direction:column; gap:5px; }
+.up-task-row { display:flex; align-items:center; gap:10px; padding:8px 10px; background:#F8FAFC; border-radius:6px; font-size:11px; }
+.up-task-row.staffed { background:rgba(16,185,129,.06); }
+.up-task-row .task-left { flex:1; min-width:0; display:flex; align-items:center; gap:8px; }
+.up-task-row .task-name { font-weight:500; color:var(--text); }
+.up-task-row .task-status { font-size:10px; color:var(--muted); }
+
+/* ── MODALS ─────────────────────────────────────────── */
+.sheet-chip { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); padding:5px 10px; border:1px dashed var(--border); border-radius:14px; cursor:pointer; background:white; font-family:inherit; font-weight:500; transition:all .12s; }
+.sheet-chip:hover { border-color:var(--cyan); color:var(--cyan); }
+.sheet-chip.live { color:#065F46; border-color:#10B981; border-style:solid; background:rgba(16,185,129,.08); }
+.sheet-chip .dot { width:6px; height:6px; border-radius:50%; background:var(--muted); }
+.sheet-chip.live .dot { background:#10B981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+
+.modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.55); display:none; align-items:center; justify-content:center; z-index:200; }
+.modal-bg.show { display:flex; }
+.modal-card { background:white; border-radius:12px; width:460px; max-width:92vw; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+.sm-title { font-size:16px; font-weight:700; margin-bottom:4px; }
+.sm-sub { font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5; }
+.sm-field { margin-bottom:12px; }
+.sm-label { font-size:11px; font-weight:600; color:var(--text); display:block; margin-bottom:4px; }
+.sm-input, .sm-select { width:100%; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; font-family:inherit; color:var(--text); background:white; }
+.sm-input:focus, .sm-select:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,196,240,.15); }
+.sm-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.sm-row { display:flex; gap:8px; align-items:center; margin-top:14px; }
+.sm-btn { padding:8px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--text); font-family:inherit; }
+.sm-btn:hover { border-color:var(--cyan); }
+.sm-btn.primary { background:var(--cyan); border-color:var(--cyan); color:white; }
+.sm-btn.primary:hover { background:#00A8D0; border-color:#00A8D0; color:white; }
+.sm-btn.ghost { background:transparent; border-color:transparent; color:var(--muted); }
+.sm-btn.danger { color:var(--red); border-color:rgba(239,68,68,.3); }
+.sm-btn.danger:hover { background:rgba(239,68,68,.05); border-color:var(--red); }
+.sm-btn:disabled { opacity:.5; cursor:not-allowed; }
+.sm-status { font-size:11px; padding:8px 10px; border-radius:6px; margin-top:10px; display:none; line-height:1.4; }
+.sm-status.show { display:block; }
+.sm-status.ok { background:rgba(16,185,129,.1); color:#065F46; }
+.sm-status.err { background:rgba(239,68,68,.1); color:#991B1B; }
+.sm-hint { background:#F8FAFC; border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:11px; color:var(--muted); line-height:1.6; margin-top:12px; }
+.sm-hint code { background:white; padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid var(--border); }
+.sm-hint b { color:var(--text); }
+
+.tip { position:fixed; background:var(--dark); color:white; font-size:10px; padding:6px 10px; border-radius:6px; pointer-events:none; z-index:999; opacity:0; transition:opacity .1s; max-width:240px; line-height:1.6; }
+.tip.show { opacity:1; }
+
+/* Sidebar project rows — clickable */
+.proj-item { cursor:pointer; transition:background .12s; }
+.proj-item:hover { background:rgba(255,255,255,.06); }
+.proj-item:hover .proj-name { color:rgba(255,255,255,.95); }
+.sb-add-proj { padding:4px 14px 10px; }
+.sb-add-btn { display:flex; align-items:center; justify-content:center; gap:5px; font-size:10px; color:rgba(255,255,255,.4); cursor:pointer; padding:5px 8px; border-radius:5px; background:transparent; border:1px dashed rgba(255,255,255,.15); width:100%; font-family:inherit; transition:all .12s; }
+.sb-add-btn:hover { color:var(--cyan); border-color:var(--cyan); background:rgba(0,196,240,.08); }
+
+/* Projects view */
+.pv-section { margin-bottom:22px; }
+.pv-section:last-child { margin-bottom:0; }
+.pv-section-hdr { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); padding:0 2px 10px; display:flex; align-items:center; gap:8px; }
+.pv-section-count { background:#F1F5F9; color:var(--muted); font-size:10px; padding:1px 8px; border-radius:10px; font-weight:700; }
+.up-card-name.clickable { cursor:pointer; }
+.up-card-name.clickable:hover { color:var(--cyan); }
+.up-card-dot.clickable { cursor:pointer; }
+.up-card-add { margin-top:10px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); cursor:pointer; padding:6px 10px; border-radius:5px; background:transparent; border:1px dashed var(--border); font-family:inherit; transition:all .12s; }
+.up-card-add:hover { color:var(--cyan); border-color:var(--cyan); background:rgba(0,196,240,.04); }
+.up-task-row { cursor:pointer; transition:background .1s; }
+.up-task-row:hover { background:rgba(0,196,240,.05); }
+.up-task-row .task-del { opacity:0; cursor:pointer; color:var(--muted); font-size:14px; padding:0 4px; transition:all .1s; line-height:1; }
+.up-task-row:hover .task-del { opacity:1; }
+.up-task-row .task-del:hover { color:var(--red); }
+.pv-empty-proj { text-align:center; font-size:11px; color:var(--muted); padding:16px 14px; font-style:italic; background:#F8FAFC; border-radius:6px; margin-bottom:12px; }
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="tip" id="tip"></div>
+
+<!-- TASK MODAL (add / edit) -->
+<div class="modal-bg" id="cellModal" onclick="if(event.target===this)closeCellModal()">
+  <div class="modal-card">
+    <div class="sm-title" id="cmTitle">Add task</div>
+    <div class="sm-sub" id="cmSub">Assign a task to this person-week.</div>
+    <div class="sm-field" id="cmTaskField">
+      <label class="sm-label">Task</label>
+      <select class="sm-select" id="cmTask"></select>
+    </div>
+    <div class="sm-field" id="cmNewNameField" style="display:none;">
+      <label class="sm-label">Task name</label>
+      <input type="text" class="sm-input" id="cmNewName" placeholder="e.g. Hero illustration">
+    </div>
+    <div class="sm-field" id="cmNewProjField" style="display:none;">
+      <label class="sm-label">Project</label>
+      <select class="sm-select" id="cmNewProj"></select>
+    </div>
+    <div class="sm-grid">
+      <div class="sm-field">
+        <label class="sm-label">Days</label>
+        <input type="number" min="0.5" max="5" step="0.5" class="sm-input" id="cmDays" value="1">
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">Role</label>
+        <select class="sm-select" id="cmRole">
+          <option value="design">Design</option>
+          <option value="copy">Content / Copy</option>
+        </select>
+      </div>
+    </div>
+    <div class="sm-status" id="cmStatus"></div>
+    <div class="sm-row">
+      <button class="sm-btn danger" id="cmDelete" style="display:none;" onclick="deleteTaskFromModal()">Remove from week</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeCellModal()">Cancel</button>
+      <button class="sm-btn primary" id="cmSave" onclick="saveCellModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERSON MODAL (add / edit / remove) -->
+<div class="modal-bg" id="personModal" onclick="if(event.target===this)closePersonModal()">
+  <div class="modal-card">
+    <div class="sm-title" id="pmTitle">Add person</div>
+    <div class="sm-sub" id="pmSub">Add a new teammate to the allocation grid.</div>
+    <div class="sm-field">
+      <label class="sm-label">Name</label>
+      <input type="text" class="sm-input" id="pmName" placeholder="e.g. Alex Rivera" autocomplete="off">
+    </div>
+    <div class="sm-grid">
+      <div class="sm-field">
+        <label class="sm-label">Role</label>
+        <select class="sm-select" id="pmRole">
+          <option value="design">Design</option>
+          <option value="copy">Content / Copy</option>
+        </select>
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">Color</label>
+        <div class="pm-color-picker" id="pmColorPicker"></div>
+      </div>
+    </div>
+    <div class="sm-status" id="pmStatus"></div>
+    <div class="sm-row">
+      <button class="sm-btn danger" id="pmDelete" style="display:none;" onclick="deletePersonFromModal()">Remove</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closePersonModal()">Cancel</button>
+      <button class="sm-btn primary" id="pmSave" onclick="savePersonModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL (add / edit / remove) -->
+<div class="modal-bg" id="projectModal" onclick="if(event.target===this)closeProjectModal()">
+  <div class="modal-card">
+    <div class="sm-title" id="prmTitle">Add project</div>
+    <div class="sm-sub" id="prmSub">Create a new project.</div>
+    <div class="sm-field">
+      <label class="sm-label">Project name</label>
+      <input type="text" class="sm-input" id="prmName" placeholder="e.g. Summer campaign" autocomplete="off">
+    </div>
+    <div class="sm-grid">
+      <div class="sm-field">
+        <label class="sm-label">Status</label>
+        <select class="sm-select" id="prmStatus">
+          <option value="active">Active</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">Color</label>
+        <div class="pm-color-picker" id="prmColorPicker"></div>
+      </div>
+    </div>
+    <div class="sm-grid">
+      <div class="sm-field">
+        <label class="sm-label">Start <span style="color:var(--muted);font-weight:400;">(M/D)</span></label>
+        <input type="text" class="sm-input" id="prmStart" placeholder="4/24" autocomplete="off">
+      </div>
+      <div class="sm-field">
+        <label class="sm-label">End <span style="color:var(--muted);font-weight:400;">(M/D)</span></label>
+        <input type="text" class="sm-input" id="prmEnd" placeholder="5/22" autocomplete="off">
+      </div>
+    </div>
+    <div class="sm-status" id="prmStatusMsg"></div>
+    <div class="sm-row">
+      <button class="sm-btn danger" id="prmDelete" style="display:none;" onclick="deleteProjectFromModal()">Remove</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeProjectModal()">Cancel</button>
+      <button class="sm-btn primary" id="prmSave" onclick="saveProjectModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEET IMPORT MODAL -->
+<div class="modal-bg" id="sheetModal" onclick="if(event.target===this)closeSheetModal()">
+  <div class="modal-card">
+    <div class="sm-title">Import from Google Sheet</div>
+    <div class="sm-sub">Seed the tool from an existing resourcing sheet. You can keep editing here afterward.</div>
+    <div class="sm-field">
+      <label class="sm-label" for="smSheetId">Sheet ID</label>
+      <input type="text" class="sm-input" id="smSheetId" placeholder="1AbCd...xyz (from the sheet URL)" autocomplete="off">
+    </div>
+    <div class="sm-field">
+      <label class="sm-label" for="smRange">Range</label>
+      <input type="text" class="sm-input" id="smRange" value="Sheet1!A1:Z200" autocomplete="off">
+    </div>
+    <div class="sm-field">
+      <label class="sm-label" for="smApiKey">Google API Key</label>
+      <input type="password" class="sm-input" id="smApiKey" placeholder="AIza..." autocomplete="off">
+    </div>
+    <div class="sm-status" id="smStatus"></div>
+    <div class="sm-hint">
+      <b>Setup:</b> Share &rarr; Anyone with the link &rarr; Viewer. Sheet ID is in the URL. API key from <code>console.cloud.google.com</code> (enable Sheets API). Headers: <code>Project | Task | Person | Role | w/o 4/24 | ...</code>
+    </div>
+    <div class="sm-row">
+      <button class="sm-btn ghost" onclick="disconnectSheet()" id="smDisconnect" style="display:none;">Disconnect</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeSheetModal()">Cancel</button>
+      <button class="sm-btn primary" onclick="connectSheet()" id="smConnect">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="breadcrumb"><strong id="navContext">Team capacity</strong></div>
+  <div class="spacer"></div>
+  <div class="nav-views">
+    <button class="vbtn active" onclick="setView('planner',this)">&#128202; Planner</button>
+    <button class="vbtn" onclick="setView('board',this)">&#128451; Board</button>
+    <button class="vbtn" onclick="setView('projects',this)">&#128193; Projects</button>
+  </div>
+  <div style="width:1px;height:22px;background:var(--border);"></div>
+  <button class="sheet-chip" id="sheetChip" onclick="openSheetModal()" title="Import from Google Sheet">
+    <span class="dot"></span><span id="sheetChipLabel">Demo data</span>
+  </button>
+  <button class="ibtn">&#128269;</button>
+  <button class="ibtn">&#128276;</button>
+  <div class="av" style="background:#7C3AED;font-size:11px;">WV</div>
+</nav>
+
+<!-- BODY -->
+<div class="body">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-sec">
+    <div class="sb-lbl">Active Projects</div>
+    <div id="sbActiveList"></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Upcoming Projects</div>
+    <div id="sbUpcomingList"></div>
+    <div class="sb-add-proj">
+      <button class="sb-add-btn" onclick="openProjectModalForNew()">+ Add project</button>
+    </div>
+  </div>
+  <div class="sb-sec" style="flex:1;">
+    <div class="sb-lbl">How to use</div>
+    <div class="sb-tip">Drag an unstaffed task from the right rail onto a week.</div>
+    <div class="sb-tip">Click any chip in the grid to change days or unassign.</div>
+    <div class="sb-tip">Totals turn amber at 80% and red over 100%.</div>
+  </div>
+  <div class="sb-team">
+    <div class="sb-team-lbl">Team</div>
+    <div class="team-avs" id="sidebarTeam"></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PLANNER: allocation grid -->
+  <div id="plannerView" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="view-bar">
+      <span class="view-title">Weekly Allocation</span>
+      <button class="chip add" onclick="openCellModalForNew()">+ Add task</button>
+      <button class="chip" onclick="openPersonModalForNew()">+ Add person</button>
+      <div class="spacer"></div>
+      <span style="font-size:11px;color:var(--muted);">Current week: <b id="curWeekLabel">&mdash;</b> &middot; drag tasks from the right rail to staff them</span>
+    </div>
+    <div class="alloc-wrap">
+      <table class="alloc-grid" id="allocGrid"></table>
+    </div>
+    <div class="alloc-hint">
+      <b>Tip:</b> Each cell holds the tasks that person is on that week. <code>1d</code> = 20% of a 5-day week. The "This week" column shows their current-week load; the heatmap on the right shows all weeks.
+    </div>
+  </div>
+
+  <!-- BOARD -->
+  <div class="board" id="boardView" style="display:none;">
+    <div class="view-bar" style="margin:-14px -16px 14px;">
+      <span class="view-title">Task Board</span>
+      <div class="spacer"></div>
+      <span style="font-size:11px;color:var(--muted);">Time buckets &middot; today = <span id="boardToday">5/15</span></span>
+    </div>
+    <div class="board-cols" id="boardCols"></div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="projectsView" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div class="view-bar">
+      <span class="view-title">Projects</span>
+      <button class="chip add" onclick="openProjectModalForNew()">+ Add project</button>
+      <div class="spacer"></div>
+      <span style="font-size:11px;color:var(--muted);">Click any project name to edit &middot; click a task to edit</span>
+    </div>
+    <div class="up-view" style="flex:1;overflow-y:auto;">
+      <div id="projectsList"></div>
+    </div>
+  </div>
+</main>
+
+<!-- RIGHT RAIL -->
+<aside class="rp">
+  <div class="rp-sec">
+    <div class="rp-hdr"><span class="rp-title">Capacity</span><span class="rp-sub">all weeks &middot; all projects</span></div>
+    <div class="hm" id="heatmap"></div>
+  </div>
+  <div class="rp-sec flex">
+    <div class="rp-hdr">
+      <span class="rp-title">Upcoming Needs</span>
+      <span class="rp-sub">drag onto grid &rarr;</span>
+    </div>
+    <div class="rp-scroll" id="upcomingPanel"></div>
+  </div>
+</aside>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONSTANTS & HELPERS
+// ══════════════════════════════════════════════════════════════════
+const ALLOC = {
+  '.':    { pct:0.10, label:'Half day', days:0.5 },
+  '/':    { pct:0.20, label:'1 day',    days:1   },
+  '//':   { pct:0.40, label:'2 days',   days:2   },
+  '///':  { pct:0.60, label:'3 days',   days:3   },
+  '////': { pct:0.80, label:'4 days',   days:4   },
+  '>':    { pct:1.00, label:'Full',     days:5   },
+};
+const daysToPct = d => Math.min(d / 5, 10);
+const daysLabel = d => d === 5 ? 'Full' : d === 0.5 ? '½d' : d + 'd';
+const escHTML = s => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+
+// ══════════════════════════════════════════════════════════════════
+// PEOPLE — your team. Two roles only: design | copy.
+// ══════════════════════════════════════════════════════════════════
+const PEOPLE = [
+  { id:'warren', name:'Warren', role:'design', color:'#7C3AED', initials:'WV' },
+  { id:'jakob',  name:'Jakob',  role:'design', color:'#0EA5E9', initials:'JA' },
+  { id:'andre',  name:'Andre',  role:'design', color:'#10B981', initials:'AN' },
+  { id:'hay',    name:'Hay',    role:'copy',   color:'#F59E0B', initials:'HA' },
+  { id:'james',  name:'James',  role:'copy',   color:'#EF4444', initials:'JM' },
+];
+const ROLE_META = {
+  design: { label:'Design',         cls:'design', color:'#8B5CF6' },
+  copy:   { label:'Content / Copy', cls:'copy',   color:'#F59E0B' },
+};
+const personById = id => PEOPLE.find(p => p.id === id);
+
+// ══════════════════════════════════════════════════════════════════
+// PROJECTS — status: active | upcoming | done
+// ══════════════════════════════════════════════════════════════════
+let PROJECTS = [
+  { id:'p1', name:'Brand refresh',            color:'#0EA5E9', status:'active',   start:'4/24', end:'5/22' },
+  { id:'p2', name:'Landing page v2',          color:'#8B5CF6', status:'active',   start:'4/24', end:'6/05' },
+  { id:'p3', name:'Newsletter redesign',      color:'#10B981', status:'active',   start:'5/08', end:'6/12' },
+  { id:'p4', name:'Product launch micro-site',color:'#EC4899', status:'upcoming', start:'5/29', end:'7/03' },
+  { id:'p5', name:'Holiday campaign',         color:'#F97316', status:'upcoming', start:'6/19', end:'8/07' },
+];
+const PALETTE = ['#0EA5E9','#8B5CF6','#10B981','#F59E0B','#EF4444','#EC4899','#3B82F6','#14B8A6','#F97316'];
+const projectById = id => PROJECTS.find(p => p.id === id);
+
+// ══════════════════════════════════════════════════════════════════
+// WEEKS
+// ══════════════════════════════════════════════════════════════════
+let WEEKS = ['w/o 4/24','w/o 5/01','w/o 5/08','w/o 5/15','w/o 5/22','w/o 5/29','w/o 6/05'];
+let CUR_WEEK = 3; // w/o 5/15
+const BOARD_TODAY    = new Date('2026-05-15');
+const BOARD_WEEK_END = new Date('2026-05-17');
+
+// ══════════════════════════════════════════════════════════════════
+// TASKS — the single source of truth.
+//   id, projectId, name, role, effortDays
+//   assigneeId? weekLabel?  (both = staffed, else = pending need)
+//   due? done?              (for Board)
+// ══════════════════════════════════════════════════════════════════
+let TASKS = [
+  // Brand refresh (active)
+  { id:'t1',  projectId:'p1', name:'Logo lockups',           role:'design', effortDays:2, assigneeId:'jakob',  weekLabel:'w/o 4/24', due:'4/28', done:true },
+  { id:'t2',  projectId:'p1', name:'Color system',           role:'design', effortDays:1, assigneeId:'jakob',  weekLabel:'w/o 5/01', due:'5/05', done:true },
+  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3, assigneeId:'andre',  weekLabel:'w/o 5/08', due:'5/12' },
+  { id:'t4',  projectId:'p1', name:'Manifesto copy',         role:'copy',   effortDays:2, assigneeId:'hay',    weekLabel:'w/o 5/01', due:'5/06', done:true },
+  { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2, assigneeId:'hay',    weekLabel:'w/o 5/08', due:'5/15' },
+  { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1, assigneeId:'jakob',  weekLabel:'w/o 5/15', due:'5/15' },
+
+  // Landing page v2 (active) — partly staffed
+  { id:'t7',  projectId:'p2', name:'Wireframes',             role:'design', effortDays:2, assigneeId:'warren', weekLabel:'w/o 4/24', due:'4/28', done:true },
+  { id:'t8',  projectId:'p2', name:'Hero visuals',           role:'design', effortDays:3, assigneeId:'andre',  weekLabel:'w/o 5/01', due:'5/06', done:true },
+  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3, assigneeId:'warren', weekLabel:'w/o 5/08', due:'5/14' },
+  { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1, assigneeId:'hay',    weekLabel:'w/o 5/15', due:'5/18' },
+  { id:'t11', projectId:'p2', name:'Body copy pass',         role:'copy',   effortDays:2, assigneeId:'james',  weekLabel:'w/o 5/15', due:'5/20' },
+  { id:'t12', projectId:'p2', name:'Mobile adaptations',     role:'design', effortDays:2, due:'5/25' },
+  { id:'t13', projectId:'p2', name:'CTA microcopy',          role:'copy',   effortDays:0.5, due:'5/25' },
+
+  // Newsletter redesign (active)
+  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2, assigneeId:'warren', weekLabel:'w/o 5/08', due:'5/14' },
+  { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2, assigneeId:'andre',  weekLabel:'w/o 5/15', due:'5/22' },
+  { id:'t16', projectId:'p3', name:'Welcome sequence copy',  role:'copy',   effortDays:1, assigneeId:'james',  weekLabel:'w/o 5/08', due:'5/13' },
+
+  // Product launch micro-site (upcoming)
+  { id:'t17', projectId:'p4', name:'Landing hero design',    role:'design', effortDays:3 },
+  { id:'t18', projectId:'p4', name:'Feature grid design',    role:'design', effortDays:2 },
+  { id:'t19', projectId:'p4', name:'Image selection',        role:'design', effortDays:2 },
+  { id:'t20', projectId:'p4', name:'Launch headline',        role:'copy',   effortDays:1 },
+  { id:'t21', projectId:'p4', name:'Feature descriptions',   role:'copy',   effortDays:2 },
+  { id:'t22', projectId:'p4', name:'FAQ section',            role:'copy',   effortDays:1 },
+
+  // Holiday campaign (upcoming)
+  { id:'t23', projectId:'p5', name:'Key visual concept',     role:'design', effortDays:3 },
+  { id:'t24', projectId:'p5', name:'Social templates',       role:'design', effortDays:2 },
+  { id:'t25', projectId:'p5', name:'Email design',           role:'design', effortDays:2 },
+  { id:'t26', projectId:'p5', name:'Campaign manifesto',     role:'copy',   effortDays:2 },
+  { id:'t27', projectId:'p5', name:'Ad variations',          role:'copy',   effortDays:1 },
+];
+let _nextTaskId = 28;
+
+// ══════════════════════════════════════════════════════════════════
+// DERIVED HELPERS
+// ══════════════════════════════════════════════════════════════════
+const isStaffed = t => !!(t.assigneeId && t.weekLabel);
+
+function tasksFor(personId, weekLabel) {
+  return TASKS.filter(t => t.assigneeId === personId && t.weekLabel === weekLabel);
+}
+function weeklyDays(personId, weekLabel) {
+  return tasksFor(personId, weekLabel).reduce((s,t) => s + (t.effortDays||0), 0);
+}
+function computeRollup() {
+  const rollup = {};
+  PEOPLE.forEach(p => {
+    rollup[p.id] = {};
+    WEEKS.forEach(w => {
+      const days = weeklyDays(p.id, w);
+      rollup[p.id][w] = { days, pct: daysToPct(days) };
+    });
+  });
+  return rollup;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: ALLOCATION GRID
+// ══════════════════════════════════════════════════════════════════
+function renderAllocationGrid() {
+  const el = document.getElementById('allocGrid');
+  const rollup = computeRollup();
+  const curWk = WEEKS[CUR_WEEK];
+
+  let html = '<thead><tr>';
+  html += '<th class="person-col">Person</th>';
+  WEEKS.forEach((w, wi) => {
+    const cls = wi === CUR_WEEK ? 'cur-week' : '';
+    html += `<th class="${cls}">${escHTML(w)}</th>`;
+  });
+  html += '<th class="total-col">This week</th>';
+  html += '</tr></thead><tbody>';
+
+  PEOPLE.forEach(p => {
+    const cur = rollup[p.id][curWk];
+    const over = cur.pct > 1.0;
+    const pctCls = cur.pct > 1.0 ? 'total-over' : cur.pct >= 0.8 ? 'total-cap' : cur.pct >= 0.4 ? 'total-ok' : 'total-low';
+    html += `<tr class="${over?'over':''}">`;
+    html += `<td class="person-cell" onclick="openPersonModalForEdit('${p.id}')" title="Edit ${escHTML(p.name)}">
+      <div class="person-row">
+        <div class="av" style="background:${p.color};">${escHTML(p.initials)}</div>
+        <div class="person-info">
+          <div class="person-name">${escHTML(p.name)}</div>
+          <div class="person-role">${escHTML(ROLE_META[p.role].label)}</div>
+        </div>
+        <span class="person-edit">&#9998;</span>
+      </div>
+    </td>`;
+    WEEKS.forEach(w => {
+      const list = tasksFor(p.id, w);
+      const isCur = w === curWk;
+      html += `<td class="week-cell ${isCur?'cur-week':''}"
+        data-person="${p.id}" data-week="${escHTML(w)}"
+        ondragover="onCellDragOver(event,this)"
+        ondragleave="onCellDragLeave(event,this)"
+        ondrop="onCellDrop(event,this)"
+        onclick="onCellClick(event,this,'${p.id}','${escHTML(w)}')">
+        <div class="week-cell-inner">`;
+      list.forEach(t => {
+        const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
+        html += `<div class="task-chip" draggable="true"
+          data-tid="${t.id}"
+          style="border-left-color:${proj.color};"
+          ondragstart="onChipDragStart(event,'${t.id}')"
+          ondragend="onChipDragEnd(event)"
+          onclick="event.stopPropagation(); openCellModalForEdit('${t.id}')"
+          title="${escHTML(proj.name)} · ${escHTML(t.name)}">
+          <span class="tc-name">${escHTML(t.name)}</span>
+          <span class="tc-days">${daysLabel(t.effortDays)}</span>
+          <span class="tc-x" onclick="event.stopPropagation(); unassignTask('${t.id}')" title="Unassign">×</span>
+        </div>`;
+      });
+      html += `</div></td>`;
+    });
+    const totalPct = Math.round(cur.pct * 100);
+    html += `<td class="total-cell">
+      <div class="total-pct ${pctCls}">${totalPct}%</div>
+      <div class="total-days">${cur.days}d of 5d</div>
+    </td>`;
+    html += '</tr>';
+  });
+  // Add-person footer row
+  html += `<tr class="add-person-row"><td colspan="${WEEKS.length + 2}">
+    <button class="add-person-btn" onclick="openPersonModalForNew()">+ Add person</button>
+  </td></tr>`;
+  html += '</tbody>';
+  el.innerHTML = html;
+  document.getElementById('curWeekLabel').textContent = curWk.replace('w/o ','');
+}
+
+// Only trigger "add" if the click was on the cell itself (not a chip)
+function onCellClick(ev, cellEl, personId, weekLabel) {
+  if (ev.target !== cellEl && !ev.target.classList.contains('week-cell-inner')) return;
+  openCellModalForNew(personId, weekLabel);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: UPCOMING NEEDS PANEL (right rail)
+// ══════════════════════════════════════════════════════════════════
+function renderUpcomingPanel() {
+  const el = document.getElementById('upcomingPanel');
+  const unstaffed = TASKS.filter(t => !isStaffed(t));
+  // Upcoming projects first, then active projects with unstaffed tasks
+  const order = [
+    ...PROJECTS.filter(p => p.status === 'upcoming'),
+    ...PROJECTS.filter(p => p.status === 'active'),
+  ];
+  let html = '';
+  let shown = false;
+  order.forEach(proj => {
+    const rows = unstaffed.filter(t => t.projectId === proj.id);
+    if (rows.length === 0) return;
+    shown = true;
+    const projTasks = TASKS.filter(t => t.projectId === proj.id);
+    const done = projTasks.filter(isStaffed).length;
+    const pct = projTasks.length ? Math.round(done / projTasks.length * 100) : 0;
+    html += `<div class="up-group">
+      <div class="up-group-hdr">
+        <div class="up-group-dot" style="background:${proj.color};"></div>
+        <div class="up-group-name" title="${escHTML(proj.name)}">${escHTML(proj.name)}</div>
+        <div class="up-group-progress">${done}/${projTasks.length}</div>
+      </div>
+      <div class="up-group-bar"><div class="up-group-fill" style="width:${pct}%;background:${proj.color};"></div></div>`;
+    rows.forEach(t => {
+      const rm = ROLE_META[t.role];
+      html += `<div class="up-task role-${rm.cls}"
+        draggable="true" data-tid="${t.id}"
+        ondragstart="onChipDragStart(event,'${t.id}')"
+        ondragend="onChipDragEnd(event)"
+        onclick="openCellModalForEdit('${t.id}')"
+        title="${escHTML(proj.name)} · ${escHTML(t.name)}">
+        <span class="up-task-name">${escHTML(t.name)}</span>
+        <span class="up-task-meta">
+          <span class="up-task-role ${rm.cls}">${rm.label}</span>
+          <span class="up-task-days">${daysLabel(t.effortDays)}</span>
+        </span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if (!shown) html = `<div class="up-empty">All tasks are staffed 🎉</div>`;
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: CAPACITY HEATMAP
+// ══════════════════════════════════════════════════════════════════
+function capColor(pct) {
+  if (pct === 0)   return { bg:'#F1F5F9', fg:'transparent' };
+  if (pct <= 0.20) return { bg:'#DBEAFE', fg:'#1E40AF' };
+  if (pct <= 0.40) return { bg:'#93C5FD', fg:'#1E3A5F' };
+  if (pct <= 0.80) return { bg:'#3B82F6', fg:'white' };
+  if (pct <= 1.00) return { bg:'#F59E0B', fg:'white' };
+  return                  { bg:'#EF4444', fg:'white' };
+}
+function renderHeatmap() {
+  const el = document.getElementById('heatmap');
+  const rollup = computeRollup();
+  let html = '<div class="hm-wk-lbls">';
+  WEEKS.forEach(w => { html += `<div class="hm-wk-lbl">${w.replace('w/o ','').replace('/','<br>/')}</div>`; });
+  html += '</div>';
+  PEOPLE.forEach(p => {
+    html += `<div class="hm-row">
+      <div class="hm-name" title="${escHTML(p.name)} — ${escHTML(ROLE_META[p.role].label)}">
+        <span style="display:inline-block;width:7px;height:7px;background:${p.color};border-radius:50%;margin-right:4px;vertical-align:middle;"></span>${escHTML(p.name)}
+      </div>
+      <div class="hm-cells">`;
+    WEEKS.forEach((w, wi) => {
+      const r = rollup[p.id][w];
+      const c = capColor(r.pct);
+      const lbl = r.pct > 0 ? Math.round(r.pct*100)+'%' : '';
+      const cur = wi === CUR_WEEK ? 'outline:2px solid var(--dark);outline-offset:-1px;' : '';
+      const tt = `${p.name} — ${w}: ${r.days}d (${Math.round(r.pct*100)}%)`;
+      html += `<div class="hm-cell" style="background:${c.bg};color:${c.fg};${cur}"
+        onmouseenter="showTip(event,'${escHTML(tt)}')"
+        onmouseleave="hideTip()">${lbl}</div>`;
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: BOARD (time buckets)
+// ══════════════════════════════════════════════════════════════════
+const BOARD_COLS = [
+  { key:'later',    label:'Later',     color:'#94A3B8' },
+  { key:'thisweek', label:'This Week', color:'#3B82F6' },
+  { key:'today',    label:'Today',     color:'#F59E0B' },
+  { key:'done',     label:'Done',      color:'#10B981' },
+];
+function parseMD(md) {
+  if (!md || md === 'TBD' || md === '?') return null;
+  const [m,d] = md.split('/').map(n=>parseInt(n,10));
+  if (!m || !d) return null;
+  return new Date(2026, m-1, d);
+}
+function bucketForTask(t) {
+  if (t.done) return 'done';
+  const end = parseMD(t.due);
+  if (!end) return 'later';
+  if (end <= BOARD_TODAY)    return 'today';
+  if (end <= BOARD_WEEK_END) return 'thisweek';
+  return 'later';
+}
+function renderBoard() {
+  const el = document.getElementById('boardCols');
+  const buckets = { later:[], thisweek:[], today:[], done:[] };
+  TASKS.forEach(t => { if (isStaffed(t) || t.done) buckets[bucketForTask(t)].push(t); });
+  const byEnd = (a,b) => {
+    const ea = parseMD(a.due), eb = parseMD(b.due);
+    if (!ea && !eb) return 0; if (!ea) return 1; if (!eb) return -1;
+    return ea - eb;
+  };
+  Object.keys(buckets).forEach(k => buckets[k].sort(byEnd));
+  el.innerHTML = BOARD_COLS.map(col => {
+    const list = buckets[col.key];
+    const cards = list.length === 0
+      ? `<div class="board-empty">No tasks</div>`
+      : list.map(c => renderBoardCard(c, col)).join('');
+    return `<div class="board-col">
+      <div class="board-col-hdr">
+        <div class="board-col-left">
+          <div class="board-col-dot" style="background:${col.color};"></div>
+          <span class="board-col-title">${col.label}</span>
+        </div>
+        <span class="board-col-count">${list.length}</span>
+      </div>
+      <div class="board-col-scroll">${cards}</div>
+    </div>`;
+  }).join('');
+}
+function renderBoardCard(c, col) {
+  const proj = projectById(c.projectId) || { color:'#94A3B8', name:'?' };
+  const p    = personById(c.assigneeId) || { color:'#94A3B8', initials:'?', name:'Unassigned' };
+  const end  = parseMD(c.due);
+  const overdue = col.key === 'today' && end && end < BOARD_TODAY && !c.done;
+  const dateLbl = !c.due ? 'TBD' : overdue ? `⚠ Overdue · ${escHTML(c.due)}` : `Due ${escHTML(c.due)}`;
+  return `<div class="board-card ${c.done?'done':''}">
+    <span class="bc-project" style="background:${proj.color}20;color:${proj.color};">${escHTML(proj.name)}</span>
+    <div class="bc-title">${escHTML(c.name)}</div>
+    <div class="bc-meta">
+      <div class="bc-meta-left">
+        <div class="av" style="background:${p.color};width:22px;height:22px;font-size:9px;" title="${escHTML(p.name)}">${escHTML(p.initials)}</div>
+        <span class="bc-date ${overdue?'overdue':''}">${dateLbl}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: PROJECTS VIEW (all projects, grouped by status)
+// ══════════════════════════════════════════════════════════════════
+const PV_SECTIONS = [
+  { key:'active',   label:'Active (current)' },
+  { key:'upcoming', label:'Upcoming'         },
+  { key:'done',     label:'Done'             },
+];
+function renderProjectCard(proj) {
+  const projTasks = TASKS.filter(t => t.projectId === proj.id);
+  const staffed   = projTasks.filter(isStaffed).length;
+  const pct       = projTasks.length ? Math.round(staffed / projTasks.length * 100) : 0;
+  const pill      = pct === 100 && projTasks.length ? 'full' : pct > 0 ? 'partial' : '';
+  const byRole    = {};
+  projTasks.forEach(t => {
+    byRole[t.role] = byRole[t.role] || { days:0, count:0, staffed:0 };
+    byRole[t.role].days  += t.effortDays || 0;
+    byRole[t.role].count += 1;
+    if (isStaffed(t)) byRole[t.role].staffed += 1;
+  });
+  let html = `<div class="up-card">
+    <div class="up-card-hdr">
+      <div class="up-card-dot clickable" style="background:${proj.color};" onclick="openProjectModalForEdit('${proj.id}')"></div>
+      <div class="up-card-name clickable" onclick="openProjectModalForEdit('${proj.id}')" title="Edit project">${escHTML(proj.name)}</div>
+      <div class="up-card-dates">${escHTML(proj.start || '—')} &rarr; ${escHTML(proj.end || '—')}</div>
+      <div class="up-card-staffed ${pill}">${projTasks.length ? pct+'% staffed' : 'no tasks'}</div>
+    </div>
+    <div class="up-card-progress"><div class="up-card-progress-fill" style="width:${pct}%;background:${proj.color};"></div></div>
+    <div class="up-roles">`;
+  Object.keys(byRole).forEach(r => {
+    const rm = ROLE_META[r]; const info = byRole[r];
+    html += `<div class="up-role-chip">
+      <span class="rdot" style="background:${rm.color};"></span>
+      <span class="rname">${rm.label}</span>
+      <span class="rdays">${info.days}d &middot; ${info.staffed}/${info.count} staffed</span>
+    </div>`;
+  });
+  html += `</div>`;
+  if (projTasks.length === 0) {
+    html += `<div class="pv-empty-proj">No tasks yet.</div>`;
+  } else {
+    html += `<div class="up-task-list">`;
+    projTasks.forEach(t => {
+      const rm  = ROLE_META[t.role];
+      const who = isStaffed(t) ? personById(t.assigneeId) : null;
+      const right = who
+        ? `<span style="display:flex;align-items:center;gap:6px;">
+             <div class="av" style="background:${who.color};width:20px;height:20px;font-size:9px;" title="${escHTML(who.name)}">${escHTML(who.initials)}</div>
+             <span class="task-status">${escHTML(t.weekLabel)}</span>
+             <span class="task-del" onclick="event.stopPropagation(); deleteTaskFromProjectsView('${t.id}')" title="Delete task">&times;</span>
+           </span>`
+        : `<span style="display:flex;align-items:center;gap:6px;">
+             <span class="task-status" style="color:var(--amber);font-weight:600;">Unstaffed</span>
+             <span class="task-del" onclick="event.stopPropagation(); deleteTaskFromProjectsView('${t.id}')" title="Delete task">&times;</span>
+           </span>`;
+      html += `<div class="up-task-row ${isStaffed(t)?'staffed':''}" onclick="openCellModalForEdit('${t.id}')" title="Edit task">
+        <div class="task-left">
+          <div class="up-group-dot" style="background:${rm.color};"></div>
+          <span class="task-name">${escHTML(t.name)}</span>
+          <span class="task-status">${rm.label} &middot; ${daysLabel(t.effortDays)}</span>
+        </div>
+        ${right}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `<button class="up-card-add" onclick="openCellModalForNewInProject('${proj.id}')">+ Add task to ${escHTML(proj.name)}</button>`;
+  html += `</div>`;
+  return html;
+}
+function renderProjectsView() {
+  const el = document.getElementById('projectsList');
+  if (PROJECTS.length === 0) {
+    el.innerHTML = `<div class="up-empty">No projects yet. Click "+ Add project" to create one.</div>`;
+    return;
+  }
+  let html = '';
+  PV_SECTIONS.forEach(sec => {
+    const projs = PROJECTS.filter(p => p.status === sec.key);
+    if (projs.length === 0) return;
+    html += `<div class="pv-section">
+      <div class="pv-section-hdr">${sec.label} <span class="pv-section-count">${projs.length}</span></div>`;
+    projs.forEach(p => { html += renderProjectCard(p); });
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function deleteTaskFromProjectsView(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  const ok = confirm(`Delete task "${t.name}"? This cannot be undone.`);
+  if (!ok) return;
+  const idx = TASKS.findIndex(x => x.id === taskId);
+  if (idx >= 0) TASKS.splice(idx, 1);
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: SIDEBAR
+// ══════════════════════════════════════════════════════════════════
+function renderSidebar() {
+  const mkRow = (p, extraCls='') => `<div class="proj-item ${extraCls}"
+    onclick="openProjectModalForEdit('${p.id}')" title="Edit ${escHTML(p.name)}">
+    <div class="proj-dot" style="background:${p.color};"></div>
+    <div class="proj-name">${escHTML(p.name)}</div>
+  </div>`;
+  document.getElementById('sbActiveList').innerHTML   = PROJECTS.filter(p=>p.status==='active').map(p => mkRow(p)).join('');
+  document.getElementById('sbUpcomingList').innerHTML = PROJECTS.filter(p=>p.status==='upcoming').map(p => mkRow(p,'upcoming')).join('');
+  document.getElementById('sidebarTeam').innerHTML = PEOPLE.map(p =>
+    `<div class="av" style="background:${p.color};font-size:9px;" title="${escHTML(p.name)}">${escHTML(p.initials)}</div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TASK MODAL (add / edit)
+// ══════════════════════════════════════════════════════════════════
+let _modalState = { mode:'new', taskId:null, personId:null, weekLabel:null };
+
+function openCellModalForNew(personId=null, weekLabel=null) {
+  _modalState = { mode:'new', taskId:null, personId, weekLabel };
+  const pName = personId ? personById(personId).name : 'any person';
+  const wLbl  = weekLabel ? weekLabel.replace('w/o ','') : 'any week';
+  document.getElementById('cmTitle').textContent = 'Add task';
+  document.getElementById('cmSub').textContent = `To ${pName} · ${wLbl}`;
+  document.getElementById('cmTaskField').style.display = '';
+  document.getElementById('cmNewNameField').style.display = 'none';
+  document.getElementById('cmNewProjField').style.display = 'none';
+  const sel = document.getElementById('cmTask');
+  sel.disabled = false;
+  let opts = '<option value="__new__">+ Create new task…</option>';
+  PROJECTS.forEach(proj => {
+    const rows = TASKS.filter(t => t.projectId === proj.id && !isStaffed(t));
+    if (rows.length === 0) return;
+    opts += `<optgroup label="${escHTML(proj.name)}${proj.status==='upcoming'?' (upcoming)':''}">`;
+    rows.forEach(t => { opts += `<option value="${t.id}">${escHTML(t.name)} · ${daysLabel(t.effortDays)}</option>`; });
+    opts += '</optgroup>';
+  });
+  sel.innerHTML = opts;
+  sel.onchange = onModalTaskChange;
+  document.getElementById('cmDays').value = 1;
+  document.getElementById('cmRole').value = 'design';
+  // Populate project dropdown for new-task path
+  document.getElementById('cmNewProj').innerHTML = PROJECTS.map(p =>
+    `<option value="${p.id}">${escHTML(p.name)}${p.status==='upcoming'?' (upcoming)':''}</option>`
+  ).join('');
+  document.getElementById('cmDelete').style.display = 'none';
+  document.getElementById('cmSave').textContent = 'Add';
+  setCmStatus('', null);
+  document.getElementById('cellModal').classList.add('show');
+}
+
+function onModalTaskChange() {
+  const v = document.getElementById('cmTask').value;
+  const newFields = v === '__new__';
+  document.getElementById('cmNewNameField').style.display = newFields ? '' : 'none';
+  document.getElementById('cmNewProjField').style.display = newFields ? '' : 'none';
+  if (!newFields) {
+    const t = TASKS.find(x => x.id === v);
+    if (t) {
+      document.getElementById('cmDays').value = t.effortDays;
+      document.getElementById('cmRole').value = t.role;
+    }
+  }
+}
+
+function openCellModalForEdit(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  _modalState = { mode:'edit', taskId, personId:t.assigneeId, weekLabel:t.weekLabel };
+  document.getElementById('cmTitle').textContent = 'Edit task';
+  const where = isStaffed(t)
+    ? `${personById(t.assigneeId).name} · ${t.weekLabel.replace('w/o ','')}`
+    : 'Not yet staffed';
+  document.getElementById('cmSub').textContent = where;
+  document.getElementById('cmTaskField').style.display = '';
+  document.getElementById('cmNewNameField').style.display = 'none';
+  document.getElementById('cmNewProjField').style.display = 'none';
+  const sel = document.getElementById('cmTask');
+  sel.innerHTML = `<option value="${t.id}" selected>${escHTML(t.name)}</option>`;
+  sel.disabled = true;
+  sel.onchange = null;
+  document.getElementById('cmDays').value = t.effortDays;
+  document.getElementById('cmRole').value = t.role;
+  document.getElementById('cmDelete').style.display = isStaffed(t) ? '' : 'none';
+  document.getElementById('cmSave').textContent = 'Save';
+  setCmStatus('', null);
+  document.getElementById('cellModal').classList.add('show');
+}
+
+function closeCellModal() {
+  document.getElementById('cellModal').classList.remove('show');
+}
+function setCmStatus(msg, kind) {
+  const el = document.getElementById('cmStatus');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + kind : '');
+}
+
+function saveCellModal() {
+  const days = parseFloat(document.getElementById('cmDays').value);
+  const role = document.getElementById('cmRole').value;
+  if (!days || days <= 0 || days > 5) {
+    setCmStatus('Days must be between 0.5 and 5.', 'err'); return;
+  }
+
+  if (_modalState.mode === 'edit') {
+    const t = TASKS.find(x => x.id === _modalState.taskId);
+    if (!t) { setCmStatus('Task not found.', 'err'); return; }
+    t.effortDays = days; t.role = role;
+    closeCellModal(); renderAll(); return;
+  }
+
+  // NEW mode
+  const sel = document.getElementById('cmTask').value;
+  let t;
+  if (sel === '__new__') {
+    const name    = document.getElementById('cmNewName').value.trim();
+    const projId  = document.getElementById('cmNewProj').value;
+    if (!name) { setCmStatus('Enter a task name.', 'err'); return; }
+    t = { id: 't' + (_nextTaskId++), projectId: projId, name, role, effortDays: days };
+    TASKS.push(t);
+  } else {
+    t = TASKS.find(x => x.id === sel);
+    if (!t) { setCmStatus('Task not found.', 'err'); return; }
+    t.effortDays = days; t.role = role;
+  }
+  if (_modalState.personId && _modalState.weekLabel) {
+    t.assigneeId = _modalState.personId;
+    t.weekLabel  = _modalState.weekLabel;
+  }
+  closeCellModal(); renderAll();
+}
+
+function deleteTaskFromModal() {
+  if (_modalState.mode !== 'edit' || !_modalState.taskId) return;
+  unassignTask(_modalState.taskId);
+  closeCellModal();
+}
+function unassignTask(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  delete t.assigneeId; delete t.weekLabel;
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PERSON MODAL (add / edit / remove)
+// ══════════════════════════════════════════════════════════════════
+let _personModalState = { mode:'new', personId:null };
+let _pmSelectedColor  = null;
+
+function initialsFromName(name) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (parts[0] || '?').slice(0, 2).toUpperCase();
+}
+function pickUnusedColor() {
+  const used = new Set(PEOPLE.map(p => p.color));
+  return PALETTE.find(c => !used.has(c)) || PALETTE[PEOPLE.length % PALETTE.length];
+}
+function renderPmColorPicker(selected) {
+  _pmSelectedColor = selected;
+  document.getElementById('pmColorPicker').innerHTML = PALETTE.map(c =>
+    `<div class="pm-color ${c===selected?'selected':''}" style="background:${c};"
+       onclick="pickPmColor('${c}')" title="${c}"></div>`
+  ).join('');
+}
+function pickPmColor(c) { renderPmColorPicker(c); }
+function setPmStatus(msg, kind) {
+  const el = document.getElementById('pmStatus');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + kind : '');
+}
+function closePersonModal() { document.getElementById('personModal').classList.remove('show'); }
+
+function openPersonModalForNew() {
+  _personModalState = { mode:'new', personId:null };
+  document.getElementById('pmTitle').textContent = 'Add person';
+  document.getElementById('pmSub').textContent = 'New teammate for the allocation grid.';
+  document.getElementById('pmName').value = '';
+  document.getElementById('pmRole').value = 'design';
+  renderPmColorPicker(pickUnusedColor());
+  document.getElementById('pmDelete').style.display = 'none';
+  document.getElementById('pmSave').textContent = 'Add';
+  setPmStatus('', null);
+  document.getElementById('personModal').classList.add('show');
+  setTimeout(() => document.getElementById('pmName').focus(), 50);
+}
+
+function openPersonModalForEdit(personId) {
+  const p = personById(personId);
+  if (!p) return;
+  _personModalState = { mode:'edit', personId };
+  document.getElementById('pmTitle').textContent = 'Edit person';
+  const n = TASKS.filter(t => t.assigneeId === personId).length;
+  document.getElementById('pmSub').textContent = n
+    ? `${n} task${n===1?'':'s'} currently staffed to ${p.name}.`
+    : `No tasks currently staffed to ${p.name}.`;
+  document.getElementById('pmName').value = p.name;
+  document.getElementById('pmRole').value = p.role;
+  renderPmColorPicker(p.color);
+  document.getElementById('pmDelete').style.display = '';
+  document.getElementById('pmSave').textContent = 'Save';
+  setPmStatus('', null);
+  document.getElementById('personModal').classList.add('show');
+}
+
+function savePersonModal() {
+  const name  = document.getElementById('pmName').value.trim();
+  const role  = document.getElementById('pmRole').value;
+  const color = _pmSelectedColor || PALETTE[0];
+  if (!name) { setPmStatus('Name is required.', 'err'); return; }
+  if (_personModalState.mode === 'new') {
+    const idBase = name.toLowerCase().replace(/[^a-z0-9]+/g,'') || 'person';
+    const id = idBase + '_' + Date.now().toString(36);
+    PEOPLE.push({ id, name, role, color, initials: initialsFromName(name) });
+  } else {
+    const p = personById(_personModalState.personId);
+    if (!p) { setPmStatus('Person not found.', 'err'); return; }
+    p.name = name; p.role = role; p.color = color;
+    p.initials = initialsFromName(name);
+  }
+  closePersonModal(); renderAll();
+}
+
+function deletePersonFromModal() {
+  if (_personModalState.mode !== 'edit' || !_personModalState.personId) return;
+  const id = _personModalState.personId;
+  const p  = personById(id);
+  if (!p) return;
+  const staffed = TASKS.filter(t => t.assigneeId === id);
+  if (staffed.length) {
+    const ok = confirm(
+      `${p.name} is staffed on ${staffed.length} task${staffed.length===1?'':'s'}.\n\n` +
+      `Remove ${p.name} and unassign those tasks (they'll go back to "Upcoming Needs")?`
+    );
+    if (!ok) return;
+    staffed.forEach(t => { delete t.assigneeId; delete t.weekLabel; });
+  }
+  const idx = PEOPLE.findIndex(pp => pp.id === id);
+  if (idx >= 0) PEOPLE.splice(idx, 1);
+  closePersonModal(); renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROJECT MODAL (add / edit / remove)
+// ══════════════════════════════════════════════════════════════════
+let _projectModalState = { mode:'new', projectId:null };
+let _prmSelectedColor  = null;
+
+function pickUnusedProjectColor() {
+  const used = new Set(PROJECTS.map(p => p.color));
+  return PALETTE.find(c => !used.has(c)) || PALETTE[PROJECTS.length % PALETTE.length];
+}
+function renderPrmColorPicker(selected) {
+  _prmSelectedColor = selected;
+  document.getElementById('prmColorPicker').innerHTML = PALETTE.map(c =>
+    `<div class="pm-color ${c===selected?'selected':''}" style="background:${c};"
+       onclick="pickPrmColor('${c}')" title="${c}"></div>`
+  ).join('');
+}
+function pickPrmColor(c) { renderPrmColorPicker(c); }
+function setPrmStatus(msg, kind) {
+  const el = document.getElementById('prmStatusMsg');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + kind : '');
+}
+function closeProjectModal() { document.getElementById('projectModal').classList.remove('show'); }
+
+function openProjectModalForNew() {
+  _projectModalState = { mode:'new', projectId:null };
+  document.getElementById('prmTitle').textContent = 'Add project';
+  document.getElementById('prmSub').textContent = 'Create a new project.';
+  document.getElementById('prmName').value = '';
+  document.getElementById('prmStatus').value = 'active';
+  document.getElementById('prmStart').value = '';
+  document.getElementById('prmEnd').value = '';
+  renderPrmColorPicker(pickUnusedProjectColor());
+  document.getElementById('prmDelete').style.display = 'none';
+  document.getElementById('prmSave').textContent = 'Add';
+  setPrmStatus('', null);
+  document.getElementById('projectModal').classList.add('show');
+  setTimeout(() => document.getElementById('prmName').focus(), 50);
+}
+
+function openProjectModalForEdit(projectId) {
+  const proj = projectById(projectId);
+  if (!proj) return;
+  _projectModalState = { mode:'edit', projectId };
+  const n = TASKS.filter(t => t.projectId === projectId).length;
+  document.getElementById('prmTitle').textContent = 'Edit project';
+  document.getElementById('prmSub').textContent = n
+    ? `${n} task${n===1?'':'s'} in this project.`
+    : 'No tasks yet.';
+  document.getElementById('prmName').value = proj.name;
+  document.getElementById('prmStatus').value = proj.status || 'active';
+  document.getElementById('prmStart').value = proj.start || '';
+  document.getElementById('prmEnd').value = proj.end || '';
+  renderPrmColorPicker(proj.color);
+  document.getElementById('prmDelete').style.display = '';
+  document.getElementById('prmSave').textContent = 'Save';
+  setPrmStatus('', null);
+  document.getElementById('projectModal').classList.add('show');
+}
+
+function saveProjectModal() {
+  const name   = document.getElementById('prmName').value.trim();
+  const status = document.getElementById('prmStatus').value;
+  const start  = document.getElementById('prmStart').value.trim();
+  const end    = document.getElementById('prmEnd').value.trim();
+  const color  = _prmSelectedColor || PALETTE[0];
+  if (!name) { setPrmStatus('Project name is required.', 'err'); return; }
+  if (_projectModalState.mode === 'new') {
+    const idBase = name.toLowerCase().replace(/[^a-z0-9]+/g,'') || 'proj';
+    const id = idBase + '_' + Date.now().toString(36);
+    PROJECTS.push({ id, name, color, status, start, end });
+  } else {
+    const p = projectById(_projectModalState.projectId);
+    if (!p) { setPrmStatus('Project not found.', 'err'); return; }
+    p.name = name; p.status = status; p.start = start; p.end = end; p.color = color;
+  }
+  closeProjectModal(); renderAll();
+}
+
+function deleteProjectFromModal() {
+  if (_projectModalState.mode !== 'edit' || !_projectModalState.projectId) return;
+  const id   = _projectModalState.projectId;
+  const proj = projectById(id);
+  if (!proj) return;
+  const projTasks = TASKS.filter(t => t.projectId === id);
+  if (projTasks.length) {
+    const ok = confirm(
+      `"${proj.name}" has ${projTasks.length} task${projTasks.length===1?'':'s'}.\n\n` +
+      `Remove the project and all its tasks? This cannot be undone.`
+    );
+    if (!ok) return;
+    // Remove all tasks for this project
+    for (let i = TASKS.length - 1; i >= 0; i--) {
+      if (TASKS[i].projectId === id) TASKS.splice(i, 1);
+    }
+  }
+  const idx = PROJECTS.findIndex(pp => pp.id === id);
+  if (idx >= 0) PROJECTS.splice(idx, 1);
+  closeProjectModal(); renderAll();
+}
+
+// Open the task modal pre-pointed at a specific project (new-task flow only).
+function openCellModalForNewInProject(projectId) {
+  const proj = projectById(projectId);
+  if (!proj) return;
+  _modalState = { mode:'new', taskId:null, personId:null, weekLabel:null };
+  document.getElementById('cmTitle').textContent = 'Add task';
+  document.getElementById('cmSub').textContent = `New task in ${proj.name} (unstaffed — drag it onto the grid later to assign).`;
+  document.getElementById('cmTaskField').style.display = 'none';
+  document.getElementById('cmNewNameField').style.display = '';
+  document.getElementById('cmNewProjField').style.display = '';
+  // Populate project dropdown, preselect this project
+  document.getElementById('cmNewProj').innerHTML = PROJECTS.map(p =>
+    `<option value="${p.id}" ${p.id===projectId?'selected':''}>${escHTML(p.name)}${p.status==='upcoming'?' (upcoming)':''}</option>`
+  ).join('');
+  document.getElementById('cmNewName').value = '';
+  document.getElementById('cmDays').value = 1;
+  document.getElementById('cmRole').value = 'design';
+  document.getElementById('cmDelete').style.display = 'none';
+  document.getElementById('cmSave').textContent = 'Add';
+  setCmStatus('', null);
+  // Force task dropdown into "__new__" state for save logic
+  const sel = document.getElementById('cmTask');
+  sel.innerHTML = `<option value="__new__" selected>+ Create new task…</option>`;
+  sel.disabled = true;
+  sel.onchange = null;
+  document.getElementById('cellModal').classList.add('show');
+  setTimeout(() => document.getElementById('cmNewName').focus(), 50);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ══════════════════════════════════════════════════════════════════
+let _dragTaskId = null;
+function onChipDragStart(e, taskId) {
+  _dragTaskId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', taskId);
+  e.currentTarget.classList.add('dragging');
+}
+function onChipDragEnd(e) {
+  _dragTaskId = null;
+  e.currentTarget.classList.remove('dragging');
+}
+function onCellDragOver(e, cell) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  cell.classList.add('drag-over');
+}
+function onCellDragLeave(e, cell) {
+  cell.classList.remove('drag-over');
+}
+function onCellDrop(e, cell) {
+  e.preventDefault();
+  cell.classList.remove('drag-over');
+  const taskId = _dragTaskId || e.dataTransfer.getData('text/plain');
+  _dragTaskId = null;
+  if (!taskId) return;
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  t.assigneeId = cell.dataset.person;
+  t.weekLabel  = cell.dataset.week;
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════════════════════════
+const tipEl = document.getElementById('tip');
+function showTip(e, text) {
+  tipEl.textContent = text;
+  tipEl.style.left = (e.clientX + 12) + 'px';
+  tipEl.style.top  = (e.clientY + 10) + 'px';
+  tipEl.classList.add('show');
+}
+function hideTip() { tipEl.classList.remove('show'); }
+
+// ══════════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ══════════════════════════════════════════════════════════════════
+function setView(v, btn) {
+  document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('plannerView').style.display  = v === 'planner'  ? 'flex' : 'none';
+  document.getElementById('boardView').style.display    = v === 'board'    ? 'flex' : 'none';
+  document.getElementById('projectsView').style.display = v === 'projects' ? 'flex' : 'none';
+  if (v === 'board')    renderBoard();
+  if (v === 'projects') renderProjectsView();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS IMPORT (secondary path — seeds TASKS from a sheet)
+// ══════════════════════════════════════════════════════════════════
+const SHEET_CONN = { sheetId:null, apiKey:null, range:null, live:false };
+
+function openSheetModal() {
+  const m = document.getElementById('sheetModal');
+  if (SHEET_CONN.sheetId) document.getElementById('smSheetId').value = SHEET_CONN.sheetId;
+  if (SHEET_CONN.apiKey)  document.getElementById('smApiKey').value  = SHEET_CONN.apiKey;
+  if (SHEET_CONN.range)   document.getElementById('smRange').value   = SHEET_CONN.range;
+  document.getElementById('smDisconnect').style.display = SHEET_CONN.live ? '' : 'none';
+  setSmStatus('', null);
+  m.classList.add('show');
+}
+function closeSheetModal() { document.getElementById('sheetModal').classList.remove('show'); }
+function setSmStatus(msg, kind) {
+  const el = document.getElementById('smStatus');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + kind : '');
+}
+function setChip(live, label) {
+  const chip = document.getElementById('sheetChip');
+  chip.classList.toggle('live', !!live);
+  document.getElementById('sheetChipLabel').textContent = label;
+}
+async function connectSheet() {
+  const sheetId = document.getElementById('smSheetId').value.trim();
+  const range   = document.getElementById('smRange').value.trim() || 'Sheet1!A1:Z200';
+  const apiKey  = document.getElementById('smApiKey').value.trim();
+  if (!sheetId || !apiKey) { setSmStatus('Sheet ID and API key are both required.', 'err'); return; }
+  const btn = document.getElementById('smConnect');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  setSmStatus('Fetching sheet…', 'ok');
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(sheetId)}/values/${encodeURIComponent(range)}?key=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const body = await res.json().catch(()=>({}));
+      throw new Error(body && body.error && body.error.message || ('HTTP ' + res.status));
+    }
+    const json   = await res.json();
+    const values = json.values || [];
+    if (values.length < 2) throw new Error('Sheet needs header + at least one data row.');
+    const parsed = parseSheetValues(values);
+    applyImport(parsed);
+    SHEET_CONN.sheetId = sheetId; SHEET_CONN.apiKey = apiKey; SHEET_CONN.range = range; SHEET_CONN.live = true;
+    setChip(true, `Imported ${parsed.tasks.length} rows`);
+    setSmStatus(`Imported. ${parsed.tasks.length} tasks across ${parsed.projects.length} projects.`, 'ok');
+    document.getElementById('smDisconnect').style.display = '';
+    setTimeout(closeSheetModal, 900);
+  } catch (err) {
+    setSmStatus('Error: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Import';
+  }
+}
+function disconnectSheet() {
+  SHEET_CONN.sheetId = SHEET_CONN.apiKey = SHEET_CONN.range = null;
+  SHEET_CONN.live = false;
+  setChip(false, 'Demo data');
+  setSmStatus('Disconnected. Reload to restore demo data.', 'ok');
+  document.getElementById('smDisconnect').style.display = 'none';
+}
+function parseSheetValues(values) {
+  const header = values[0].map(h => (h||'').toString().trim());
+  const iProj   = header.findIndex(h => /project/i.test(h));
+  const iTask   = header.findIndex(h => /^task|^ask|deliverable/i.test(h));
+  const iPerson = header.findIndex(h => /person|resource|name|assignee/i.test(h));
+  const iRole   = header.findIndex(h => /^role|type/i.test(h));
+  if (iProj < 0 || iTask < 0 || iPerson < 0) throw new Error('Headers must include Project, Task, and Person.');
+  const weekCols = [];
+  header.forEach((h,i) => {
+    if (/^w\/o\s*\d+\/\d+/i.test(h) || /^\d+\/\d+$/.test(h)) {
+      const norm = /^w\/o/i.test(h) ? h.replace(/\s+/g,' ').replace(/^W\/O/,'w/o') : `w/o ${h}`;
+      weekCols.push({ idx:i, label:norm });
+    }
+  });
+  if (weekCols.length === 0) throw new Error('No "w/o M/D" columns found.');
+
+  const projMap   = new Map();
+  const peopleMap = new Map(PEOPLE.map(p => [p.name.toLowerCase(), p]));
+  const newTasks  = [];
+  let tid = 1;
+  for (let r = 1; r < values.length; r++) {
+    const row = values[r] || [];
+    const projName = (row[iProj]||'').toString().trim();
+    const taskName = (row[iTask]||'').toString().trim();
+    const personNm = (row[iPerson]||'').toString().trim();
+    if (!projName || !taskName) continue;
+    if (!projMap.has(projName)) {
+      projMap.set(projName, {
+        id: 'imp'+projMap.size, name: projName,
+        color: PALETTE[projMap.size % PALETTE.length],
+        status: 'active', start:'', end:''
+      });
+    }
+    const proj = projMap.get(projName);
+    let person = peopleMap.get(personNm.toLowerCase());
+    if (personNm && !person) {
+      person = {
+        id: 'imp_'+personNm.toLowerCase().replace(/\W+/g,''),
+        name: personNm, role:'design',
+        color: PALETTE[peopleMap.size % PALETTE.length],
+        initials: personNm.slice(0,2).toUpperCase()
+      };
+      peopleMap.set(personNm.toLowerCase(), person);
+    }
+    const roleRaw = iRole >= 0 ? (row[iRole]||'').toString().trim().toLowerCase() : '';
+    const role = /cop|writ|content/.test(roleRaw) ? 'copy' : 'design';
+    weekCols.forEach(wc => {
+      const code = (row[wc.idx]||'').toString().trim();
+      if (code && ALLOC[code]) {
+        newTasks.push({
+          id: 't' + (tid++),
+          projectId: proj.id,
+          name: taskName,
+          role,
+          effortDays: ALLOC[code].days,
+          assigneeId: person ? person.id : null,
+          weekLabel: wc.label,
+        });
+      }
+    });
+  }
+
+  // Auto-pick current week
+  const weekDates = weekCols.map(w => {
+    const m = w.label.match(/w\/o\s*(\d+)\/(\d+)/i);
+    return m ? new Date(BOARD_TODAY.getFullYear(), parseInt(m[1],10)-1, parseInt(m[2],10)) : null;
+  });
+  let curWeek = 0, bestDiff = Infinity;
+  weekDates.forEach((d,i) => {
+    if (!d) return;
+    const diff = Math.abs(d - BOARD_TODAY);
+    if (diff < bestDiff) { bestDiff = diff; curWeek = i; }
+  });
+
+  return {
+    weeks:    weekCols.map(w => w.label),
+    curWeek,
+    projects: Array.from(projMap.values()),
+    people:   Array.from(peopleMap.values()),
+    tasks:    newTasks,
+  };
+}
+function applyImport(parsed) {
+  WEEKS = parsed.weeks;
+  CUR_WEEK = parsed.curWeek;
+  PROJECTS = parsed.projects;
+  PEOPLE.splice(0, PEOPLE.length, ...parsed.people);   // const array → mutate in place
+  TASKS = parsed.tasks;
+  _nextTaskId = parsed.tasks.length + 1;
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+function renderAll() {
+  renderSidebar();
+  renderAllocationGrid();
+  renderHeatmap();
+  renderUpcomingPanel();
+  // Board/Projects views re-render on tab switch, but keep them fresh too:
+  if (document.getElementById('boardView').style.display !== 'none')    renderBoard();
+  if (document.getElementById('projectsView').style.display !== 'none') renderProjectsView();
+}
+renderAll();
+</script>
+</body>
+</html>
