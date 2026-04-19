@@ -869,11 +869,12 @@ const escHTML = s => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':
 // PEOPLE — your team. Two roles only: design | copy.
 // ══════════════════════════════════════════════════════════════════
 const PEOPLE = [
-  { id:'warren', name:'Warren', role:'design', color:'#B298D4', initials:'WV' },
-  { id:'jakob',  name:'Jakob',  role:'design', color:'#9BB5DD', initials:'JA' },
-  { id:'andre',  name:'Andre',  role:'design', color:'#A8CDA0', initials:'AN' },
-  { id:'hay',    name:'Hay',    role:'copy',   color:'#EDC874', initials:'HA' },
-  { id:'james',  name:'James',  role:'copy',   color:'#E28A8A', initials:'JM' },
+  { id:'warren',           name:'Sandra', role:'design', color:'#B298D4', initials:'SA' },
+  { id:'jakob',            name:'Danilo', role:'design', color:'#9BB5DD', initials:'DA' },
+  { id:'andre',            name:'Vicki',  role:'design', color:'#A8CDA0', initials:'VI' },
+  { id:'hay',              name:'Shaun',  role:'copy',   color:'#EDC874', initials:'SH' },
+  { id:'james',            name:'Liza',   role:'copy',   color:'#E28A8A', initials:'LI' },
+  { id:'thalia_mo6621w8',  name:'Thalia', role:'design', color:'#B298D4', initials:'TH' },
 ];
 const ROLE_META = {
   design: { label:'Design',         cls:'design', color:'#B298D4' },
@@ -885,11 +886,11 @@ const personById = id => PEOPLE.find(p => p.id === id);
 // PROJECTS — status: active | upcoming | done
 // ══════════════════════════════════════════════════════════════════
 let PROJECTS = [
-  { id:'p1', name:'Brand refresh',            color:'#7FC8D4', status:'active',   start:'4/24', end:'5/22' },
-  { id:'p2', name:'Landing page v2',          color:'#B298D4', status:'active',   start:'4/24', end:'6/05' },
-  { id:'p3', name:'Newsletter redesign',      color:'#A8CDA0', status:'active',   start:'5/08', end:'6/12' },
-  { id:'p4', name:'Product launch micro-site',color:'#E8A8B8', status:'upcoming', start:'5/29', end:'7/03' },
-  { id:'p5', name:'Holiday campaign',         color:'#EDAB87', status:'upcoming', start:'6/19', end:'8/07' },
+  { id:'p1', name:'Brand refresh',             color:'#9BB5DD', status:'active',   start:'4/24', end:'5/22' },
+  { id:'p2', name:'Landing page v2',           color:'#B298D4', status:'active',   start:'4/24', end:'6/05' },
+  { id:'p3', name:'Newsletter redesign',       color:'#A8CDA0', status:'active',   start:'5/08', end:'6/12' },
+  { id:'p4', name:'Product launch micro-site', color:'#E8A8B8', status:'upcoming', start:'5/29', end:'7/03' },
+  { id:'p5', name:'Holiday campaign',          color:'#EDAB87', status:'upcoming', start:'6/19', end:'8/07' },
 ];
 const PALETTE = ['#7FC8D4','#B298D4','#A8CDA0','#EDC874','#E28A8A','#E8A8B8','#9BB5DD','#9FD3C7','#EDAB87','#D4E09B','#C8B8DB','#F2C9C9'];
 const projectById = id => PROJECTS.find(p => p.id === id);
@@ -897,16 +898,16 @@ const projectById = id => PROJECTS.find(p => p.id === id);
 // ══════════════════════════════════════════════════════════════════
 // WEEKS
 // ══════════════════════════════════════════════════════════════════
-let WEEKS = ['w/o 4/24','w/o 5/01','w/o 5/08','w/o 5/15','w/o 5/22','w/o 5/29','w/o 6/05'];
-let CUR_WEEK = 3; // w/o 5/15
+let WEEKS = ['w/o 4/20','w/o 4/27','w/o 5/4','w/o 5/11'];
+let CUR_WEEK = 0; // w/o 4/20
 
 // Per-person, per-week available-days override. Shape: { [personId]: { [weekLabel]: days } }.
 // A number here (e.g. 3 for "Sandra works Mon–Wed that week") replaces the default 5d capacity
 // when we compute utilization %. Missing entries fall back to DEFAULT_CAPACITY.
 const DEFAULT_CAPACITY = 5;
 let CAPACITY_OVERRIDES = {};
-const BOARD_TODAY    = new Date('2026-05-15');
-const BOARD_WEEK_END = new Date('2026-05-17');
+const BOARD_TODAY    = new Date('2026-04-21');
+const BOARD_WEEK_END = new Date('2026-04-26');
 
 // ══════════════════════════════════════════════════════════════════
 // TASKS — the single source of truth.
@@ -916,26 +917,26 @@ const BOARD_WEEK_END = new Date('2026-05-17');
 // ══════════════════════════════════════════════════════════════════
 let TASKS = [
   // Brand refresh (active)
-  { id:'t1',  projectId:'p1', name:'Logo lockups',           role:'design', effortDays:2, assigneeId:'jakob',  weekLabel:'w/o 4/24', due:'4/28', done:true },
-  { id:'t2',  projectId:'p1', name:'Color system',           role:'design', effortDays:1, assigneeId:'jakob',  weekLabel:'w/o 5/01', due:'5/05', done:true },
-  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3, assigneeId:'andre',  weekLabel:'w/o 5/08', due:'5/12' },
-  { id:'t4',  projectId:'p1', name:'Manifesto copy',         role:'copy',   effortDays:2, assigneeId:'hay',    weekLabel:'w/o 5/01', due:'5/06', done:true },
-  { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2, assigneeId:'hay',    weekLabel:'w/o 5/08', due:'5/15' },
-  { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1, assigneeId:'jakob',  weekLabel:'w/o 5/15', due:'5/15' },
+  { id:'t2',  projectId:'p1', name:'Color system',           role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 4/27', due:'5/05', done:true },
+  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 5/4',  due:'5/12' },
+  { id:'t4',  projectId:'p1', name:'Manifesto copy',         role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 4/27', due:'5/06', done:true },
+  { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 5/4',  due:'5/15' },
+  { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 5/11', due:'5/15' },
+  { id:'t28', projectId:'p1', name:'App Store assets',       role:'design', effortDays:2,   assigneeId:'thalia_mo6621w8',   weekLabel:'w/o 4/27' },
 
   // Landing page v2 (active) — partly staffed
-  { id:'t7',  projectId:'p2', name:'Wireframes',             role:'design', effortDays:2, assigneeId:'warren', weekLabel:'w/o 4/24', due:'4/28', done:true },
-  { id:'t8',  projectId:'p2', name:'Hero visuals',           role:'design', effortDays:3, assigneeId:'andre',  weekLabel:'w/o 5/01', due:'5/06', done:true },
-  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3, assigneeId:'warren', weekLabel:'w/o 5/08', due:'5/14' },
-  { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1, assigneeId:'hay',    weekLabel:'w/o 5/15', due:'5/18' },
-  { id:'t11', projectId:'p2', name:'Body copy pass',         role:'copy',   effortDays:2, assigneeId:'james',  weekLabel:'w/o 5/15', due:'5/20' },
-  { id:'t12', projectId:'p2', name:'Mobile adaptations',     role:'design', effortDays:2, due:'5/25' },
+  { id:'t7',  projectId:'p2', name:'Wireframes',             role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 4/20', due:'4/28', done:true },
+  { id:'t8',  projectId:'p2', name:'Hero visuals',           role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 4/27', due:'5/06', done:true },
+  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14' },
+  { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1,   assigneeId:'hay',               weekLabel:'w/o 5/11', due:'5/18' },
+  { id:'t11', projectId:'p2', name:'Body copy pass',         role:'copy',   effortDays:2,   assigneeId:'james',             weekLabel:'w/o 5/11', due:'5/20' },
+  { id:'t12', projectId:'p2', name:'Mobile adaptations',     role:'design', effortDays:2,   due:'5/25' },
   { id:'t13', projectId:'p2', name:'CTA microcopy',          role:'copy',   effortDays:0.5, due:'5/25' },
 
   // Newsletter redesign (active)
-  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2, assigneeId:'warren', weekLabel:'w/o 5/08', due:'5/14' },
-  { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2, assigneeId:'andre',  weekLabel:'w/o 5/15', due:'5/22' },
-  { id:'t16', projectId:'p3', name:'Welcome sequence copy',  role:'copy',   effortDays:1, assigneeId:'james',  weekLabel:'w/o 5/08', due:'5/13' },
+  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14' },
+  { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2,   assigneeId:'andre',             weekLabel:'w/o 5/11', due:'5/22' },
+  { id:'t16', projectId:'p3', name:'Welcome sequence copy',  role:'copy',   effortDays:1,   assigneeId:'james',             weekLabel:'w/o 5/4',  due:'5/13' },
 
   // Product launch micro-site (upcoming)
   { id:'t17', projectId:'p4', name:'Landing hero design',    role:'design', effortDays:3 },
@@ -952,7 +953,7 @@ let TASKS = [
   { id:'t26', projectId:'p5', name:'Campaign manifesto',     role:'copy',   effortDays:2 },
   { id:'t27', projectId:'p5', name:'Ad variations',          role:'copy',   effortDays:1 },
 ];
-let _nextTaskId = 28;
+let _nextTaskId = 29;
 
 // ══════════════════════════════════════════════════════════════════
 // DERIVED HELPERS
