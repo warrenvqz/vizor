@@ -367,12 +367,12 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   .spacer { display:none; }
   .topnav > div[style*="width:1px"] { display:none; }       /* vertical divider */
   .sheet-chip { display:none !important; }                  /* keep cloud chip as sync truth */
-  .cloud-chip { padding:3px 8px 3px 6px; font-size:10px; height:24px; }
+  .cloud-chip { padding:3px 8px 3px 6px; font-size:10px; height:24px; order:-1; } /* move cloud icon next to left hamburger */
   .cloud-chip span:not(.cloud-ico) { display:none; }        /* chip is icon-only on mobile */
   .topnav .ibtn { display:none; }                           /* search + bell */
   .topnav .av { width:26px; height:26px; font-size:9px; }
 
-  /* Nav view-switcher: icon-only, centered between left hamburger and right cluster. */
+  /* Nav view-switcher: icon-only, centered between the left cluster (hamburger+cloud) and right cluster (rail+avatar). */
   .nav-views { margin:0 auto; padding:2px; gap:0; }
   .vbtn { padding:5px 9px; font-size:12px; }
   .vbtn-lbl { display:none; }
