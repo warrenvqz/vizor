@@ -510,6 +510,41 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
   .cloud-chip { padding:3px 6px; }
   .topnav .av { display:none; }
 }
+
+/* ── KAMERIK DISPLAY FACE (headers, names, numbers) ────
+   Body text stays in the system stack; this face is scoped
+   to prominent display elements only. */
+@font-face {
+  font-family: 'Kamerik';
+  src: url('Kamerik105Cyrillic-Bold.woff2') format('woff2');
+  font-weight: 100 900;   /* single bold file serves all weight requests (no faux synthesis) */
+  font-style: normal;
+  font-display: swap;
+}
+/* Headers / section labels */
+.breadcrumb strong,
+.sb-lbl, .sb-team-lbl,
+.board-col-title,
+.pv-section-hdr,
+.ov-section-title, .ov-stat-lbl,
+.auth-title,
+.rp-title,
+.vbtn-lbl,
+/* Names / titles */
+.person-name,
+.hm-name,
+.ov-card-name,
+.up-card-name, .up-group-name,
+.av,
+.bc-project,
+/* Numbers / counts */
+.board-col-count,
+.ov-stat-val, .ov-donut-total,
+.up-card-staffed,
+.hm-cell,
+.cap-badge {
+  font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
 </style>
 </head>
 <body>
