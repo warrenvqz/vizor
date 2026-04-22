@@ -206,27 +206,35 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .wo-empty { font-size:11px; color:var(--muted); font-style:italic; padding:12px 2px 4px; }
 .wo-group { margin-top:10px; }
 .wo-group:first-child { margin-top:4px; }
+/* --rev-dot lives on the group so both the header dot AND each item's bar
+   pick up the same reviewer color. */
+.wo-group.external { --rev-dot:#C08AC8; }
+.wo-group.internal { --rev-dot:#9BB5DD; }
 .wo-ghdr { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; padding:0 2px; }
 .wo-ghdr-lbl { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text); }
 .wo-ghdr-lbl::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); flex-shrink:0; }
-.wo-ghdr.external { --rev-dot:#C08AC8; }
-.wo-ghdr.internal { --rev-dot:#9BB5DD; }
 .wo-ghdr-total { font-size:10px; color:var(--muted); font-weight:600; }
-.wo-item { display:flex; flex-direction:column; gap:4px; padding:7px 8px 8px; border-radius:6px; cursor:pointer; transition:background .1s; }
+.wo-item { display:flex; flex-direction:column; gap:5px; padding:8px 8px 9px; border-radius:6px; cursor:pointer; transition:background .1s; }
 .wo-item:hover { background:#F8FAFC; }
-.wo-item-top { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; }
+.wo-item-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:11px; }
 .wo-item-name { color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.wo-item-dur { font-size:10px; font-weight:700; color:var(--muted); white-space:nowrap; flex-shrink:0; }
-.wo-item-meta { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); }
+/* Wait days are the headline number on this surface — bold, dark, prominent. */
+.wo-item-wait { font-size:11px; font-weight:700; color:var(--text); white-space:nowrap; flex-shrink:0; font-variant-numeric:tabular-nums; }
+.wo-item-wait-lbl { font-size:10px; font-weight:500; color:var(--muted); margin-left:2px; }
+.wo-item-meta { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); flex-wrap:wrap; }
 .wo-item-proj { display:inline-flex; align-items:center; gap:4px; min-width:0; }
 .wo-item-proj::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--proj-c,var(--muted)); flex-shrink:0; }
 .wo-item-proj-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.wo-item-bar { display:flex; gap:2px; margin-top:2px; height:4px; }
-.wo-item-bar-work { background:#7FC8D4; border-radius:2px; }
-.wo-item-bar-wait { background:transparent; border:1px dashed #B8C4CF; border-radius:2px; box-sizing:border-box; }
+.wo-item-work { color:var(--muted); font-weight:500; }
+.wo-item-work b { color:var(--text); font-weight:600; }
+/* Wait-only bar: full-width track, fill proportional to longest wait in panel.
+   Color matches the reviewer dot so the queue identity is consistent. */
+.wo-item-bar { height:4px; background:#F1F5F9; border-radius:2px; overflow:hidden; margin-top:2px; }
+.wo-item-bar-fill { height:100%; background:var(--rev-dot, #B8C4CF); border-radius:2px; opacity:.55; transition:width .2s; }
 
 /* ── BOARD ──────────────────────────────────────────── */
 .board { flex:1; overflow:hidden; padding:14px 16px; background:var(--white); display:flex; flex-direction:column; }
+.board-mobile-tabs { display:none; }
 .board-cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; flex:1; min-height:0; }
 .board-col { background:#F8FAFC; border-radius:8px; padding:10px; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 .board-col-hdr { display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px; border-bottom:1px solid var(--border); margin-bottom:8px; }
@@ -446,29 +454,69 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ov-util-legend { display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; }
 .ov-util-legend-item { display:inline-flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
 .ov-util-legend-sw { width:10px; height:10px; border-radius:2px; }
+/* Right-header group: when both view toggle + period tabs are present they
+   sit together on the right, separated by a small gap. */
+.ov-util-hdr-grp { display:inline-flex; align-items:center; gap:8px; margin-left:auto; }
+/* By-person heatmap: rows = people, columns = weeks. Cells use the same
+   capacity bands as the team sparkline so the language is consistent. */
+.ov-util-heat-wrap { display:flex; flex-direction:column; gap:2px; }
+.ov-util-heat-head { display:grid; grid-template-columns:128px 1fr 50px; gap:10px; align-items:center; padding:0 0 4px; }
+.ov-util-heat { display:flex; flex-direction:column; gap:1px; max-height:240px; overflow-y:auto; padding-right:2px; }
+.ov-util-heat-row { display:grid; grid-template-columns:128px 1fr 50px; gap:10px; align-items:center; padding:5px 0; border-radius:4px; }
+.ov-util-heat-row:hover { background:#FAFBFC; }
+.ov-util-heat-name { display:flex; align-items:center; gap:8px; min-width:0; font-size:12px; color:var(--text); }
+.ov-util-heat-name .av { width:20px; height:20px; font-size:9px; flex-shrink:0; }
+/* Role dot replaces the avatar in by-role view; matches the role's color
+   token from ROLE_META so it ties back to other places the role appears. */
+.ov-util-heat-role-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.ov-util-heat-name-txt { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.ov-util-heat-name-sub { font-size:10px; font-weight:600; color:var(--muted); background:var(--bg); padding:1px 6px; border-radius:8px; flex-shrink:0; font-variant-numeric:tabular-nums; }
+.ov-util-heat-cells { display:flex; gap:3px; align-items:center; }
+.ov-util-heat-cell { flex:1; min-width:0; height:26px; border-radius:3px; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; color:transparent; transition:opacity .1s; cursor:default; font-variant-numeric:tabular-nums; }
+.ov-util-heat-cell:hover { opacity:.82; }
+.ov-util-heat-cell.show-num { color:rgba(20,30,45,.78); }
+.ov-util-heat-cell.slack   { background:#CDD7E0; }
+.ov-util-heat-cell.healthy { background:#9DC9A6; }
+.ov-util-heat-cell.full    { background:#E8C77A; }
+.ov-util-heat-cell.over    { background:#E28A8A; }
+.ov-util-heat-cell.empty   { background:repeating-linear-gradient(135deg, transparent 0 4px, #EEF1F4 4px 8px); color:var(--muted); }
+.ov-util-heat-wkhd { flex:1; min-width:0; text-align:center; font-size:9px; color:var(--muted); font-weight:600;
+  letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ov-util-heat-wkhd.now { color:var(--text); }
+.ov-util-heat-tot-hdr { font-size:9px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; text-align:right; }
+.ov-util-heat-tot { font-size:11px; font-weight:700; color:var(--text); text-align:right; font-variant-numeric:tabular-nums; }
+.ov-util-heat-tot.over  { color:#A14A4A; }
+.ov-util-heat-tot.slack { color:var(--muted); font-weight:600; }
 
 /* ── CYCLE-TIME CARD ────────────────────────────────── */
 .ov-cycle { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:18px 20px 16px; margin-bottom:20px; }
-.ov-cycle-hdr { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
+.ov-cycle-hdr { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
 .ov-cycle-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text); }
-.ov-cycle-headline { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
-.ov-cycle-headline small { font-size:11px; font-weight:500; color:var(--muted); margin-left:6px; letter-spacing:0; text-transform:none; }
-.ov-cycle-bars { display:flex; flex-direction:column; gap:9px; margin-top:14px; }
-.ov-cycle-row { display:grid; grid-template-columns:120px 1fr 70px; align-items:center; gap:12px; font-size:11px; }
-.ov-cycle-lbl { display:inline-flex; align-items:center; gap:6px; color:var(--text); font-weight:600; }
-.ov-cycle-lbl::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--rev-dot,var(--muted)); }
-.ov-cycle-row.external { --rev-dot:#C08AC8; }
-.ov-cycle-row.internal { --rev-dot:#9BB5DD; }
-.ov-cycle-track { height:8px; background:#F1F5F9; border-radius:4px; overflow:hidden; position:relative; }
-.ov-cycle-fill { height:100%; background:var(--rev-dot,var(--muted)); border-radius:4px; opacity:.55; transition:width .2s; }
-.ov-cycle-num { font-size:11px; color:var(--muted); font-weight:600; text-align:right; }
-.ov-cycle-num b { color:var(--text); font-weight:700; }
+.ov-cycle-count { font-size:12px; color:var(--muted); font-weight:500; }
 .ov-cycle-empty { font-size:12px; color:var(--muted); font-style:italic; }
+.ov-cycle-projects { display:flex; flex-direction:column; gap:10px; }
+.ov-cycle-proj { padding:10px 0; }
+.ov-cycle-proj + .ov-cycle-proj { border-top:1px dashed #EDF1F5; }
+.ov-cycle-proj-hdr { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.ov-cycle-proj-name { display:inline-flex; align-items:center; gap:7px; color:var(--text); font-weight:600; font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ov-cycle-proj-dot { width:9px; height:9px; border-radius:50%; flex:0 0 9px; }
+.ov-cycle-proj-stat { display:inline-flex; align-items:baseline; gap:8px; white-space:nowrap; font-size:11px; color:var(--muted); }
+.ov-cycle-proj-actual b { color:var(--text); font-weight:700; }
+.ov-cycle-proj-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.ov-cycle-rev-chip { display:inline-flex; align-items:center; gap:8px; font-size:11px; color:var(--text); padding:5px 10px 5px 11px; border-radius:8px; background:#F4F7FA; position:relative; }
+.ov-cycle-rev-chip::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); }
+.ov-cycle-rev-chip.external { --rev-dot:#C08AC8; background:#F4EBF6; }
+.ov-cycle-rev-chip.internal { --rev-dot:#9BB5DD; background:#EBF0F7; }
+.ov-cycle-rev-name { font-weight:600; }
+.ov-cycle-rev-num b { color:var(--text); font-weight:700; }
 .ov-cycle-foot { font-size:11px; color:var(--muted); margin-top:14px; padding-top:12px; border-top:1px solid #F1F5F9; line-height:1.5; }
 .ov-cycle-foot b { color:var(--text); font-weight:700; }
+.ov-cycle-trend { margin-top:6px; font-size:10.5px; color:var(--muted); font-style:italic; opacity:.85; }
 @media (max-width:760px) {
-  .ov-cycle-row { grid-template-columns:90px 1fr 56px; gap:8px; font-size:10px; }
-  .ov-cycle-headline { font-size:18px; }
+  .ov-cycle-hdr { flex-direction:column; align-items:flex-start; gap:4px; }
+  .ov-cycle-proj-hdr { flex-direction:column; align-items:flex-start; gap:4px; }
+  .ov-cycle-proj-stat { font-size:10.5px; }
 }
 .ov-section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); font-weight:600; margin:8px 0 10px; }
 .ov-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-bottom:24px; }
@@ -584,10 +632,39 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .alloc-hint { padding:8px 10px; font-size:10px; line-height:1.45; }
   .alloc-hint span[style*="float:right"] { float:none !important; display:block; margin-top:4px; }
 
-  /* Board: 1 column instead of 4 — cards stack vertically and each scrolls the page. */
+  /* Board on mobile: tab strip at the top, only the active column visible
+     full-width below. Beats the desktop "stack everything" pattern, which
+     buried real cards under empty/low-priority columns. */
   .board { padding:10px; }
-  .board-cols { grid-template-columns:1fr; gap:8px; }
-  .board-col { max-height:none; }
+  .board-mobile-tabs {
+    display:flex; gap:4px; margin:0 -10px 10px; padding:8px 10px;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    background:var(--white); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:5;
+    scrollbar-width:none;
+  }
+  .board-mobile-tabs::-webkit-scrollbar { display:none; }
+  .board-mtab {
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:6px;
+    font:inherit; font-size:12px; font-weight:600; color:var(--muted);
+    background:#F1F5F9; border:1px solid transparent; border-radius:14px;
+    padding:6px 12px; cursor:pointer;
+    transition:background .12s, color .12s, border-color .12s;
+  }
+  .board-mtab:active { background:#E2E8F0; }
+  .board-mtab.active { background:var(--white); color:var(--text); border-color:var(--border); box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .board-mtab-dot { width:7px; height:7px; border-radius:50%; flex:0 0 7px; }
+  .board-mtab-lbl { white-space:nowrap; }
+  .board-mtab-count { font-size:10px; font-weight:700; color:var(--muted); background:rgba(0,0,0,.04); border-radius:9px; padding:1px 6px; }
+  .board-mtab.active .board-mtab-count { color:var(--text); background:#F1F5F9; }
+  .board-cols { grid-template-columns:1fr; gap:0; }
+  /* Hide all columns; the active one re-appears via .mobile-active. The
+     column header is also hidden on mobile because the tab strip already
+     names it — no need to repeat it inside the column. */
+  .board-col { display:none; max-height:none; padding:0; background:transparent; }
+  .board-col.mobile-active { display:flex; }
+  .board-col.mobile-active .board-col-hdr { display:none; }
+  .board-col.mobile-active .board-col-scroll { padding-right:0; }
 
   /* Projects view */
   .up-view { padding:10px; }
@@ -604,6 +681,8 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .ov-util { grid-template-columns:1fr; gap:14px; padding:14px 16px; }
   .ov-util-val { font-size:28px; }
   .ov-util-spark-bars { height:70px; }
+  .ov-util-heat-head, .ov-util-heat-row { grid-template-columns:90px 1fr 44px; gap:6px; }
+  .ov-util-heat-name-txt { font-size:10px; }
   .ov-grid { grid-template-columns:1fr; gap:10px; }
   .ov-card { padding:12px; }
   .ov-donut-wrap { flex-direction:column; align-items:stretch; gap:10px; }
@@ -1016,6 +1095,7 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <div class="spacer"></div>
       <span style="font-size:11px;color:var(--muted);">Time buckets &middot; today = <span id="boardToday">5/15</span></span>
     </div>
+    <div class="board-mobile-tabs" id="boardMobileTabs" role="tablist" aria-label="Board column"></div>
     <div class="board-cols" id="boardCols"></div>
   </div>
 
@@ -1106,13 +1186,18 @@ const ROLE_META = {
 // only). It now distinguishes blocking, approval-grade waits ("external" =
 // purple dot, higher visual weight) from lighter feedback loops ("internal" =
 // blue dot). Same CSS, sharper meaning.
+// baselineDays = expected calendar wait when a task goes through this kind of
+// reviewer, used as the "is this dragging?" reference. External approvals run
+// long by default; internal review is quick. These are tunable defaults — a
+// shop with faster legal can drop their number, a shop with stickier execs can
+// raise theirs. We compare actual reviewBufferDays to baseline to flag drag.
 const REVIEW_OWNER_META = {
-  final_approval:        { short:'Final approval',        full:'Final approval / sign-off', tone:'external' },
-  stakeholder_approval:  { short:'Stakeholder approval',  full:'Stakeholder approval',      tone:'external' },
-  legal:                 { short:'Legal',                 full:'Legal / compliance',        tone:'external' },
-  stakeholder_feedback:  { short:'Stakeholder feedback',  full:'Stakeholder feedback',      tone:'internal' },
-  internal:              { short:'Internal review',       full:'Internal review',           tone:'internal' },
-  other:                 { short:'Other',                 full:'Other',                     tone:'internal' },
+  final_approval:        { short:'Final approval',        full:'Final approval / sign-off', tone:'external', baselineDays: 3   },
+  stakeholder_approval:  { short:'Stakeholder approval',  full:'Stakeholder approval',      tone:'external', baselineDays: 3   },
+  legal:                 { short:'Legal',                 full:'Legal / compliance',        tone:'external', baselineDays: 3   },
+  stakeholder_feedback:  { short:'Stakeholder feedback',  full:'Stakeholder feedback',      tone:'internal', baselineDays: 2   },
+  internal:              { short:'Internal review',       full:'Internal review',           tone:'internal', baselineDays: 0.5 },
+  other:                 { short:'Other',                 full:'Other',                     tone:'internal', baselineDays: 1   },
 };
 const REVIEW_OWNER_ORDER = ['final_approval','stakeholder_approval','legal','stakeholder_feedback','internal','other'];
 // Legacy → current key map. Old data ('client', 'stakeholder') predates the
@@ -1206,6 +1291,17 @@ let _ovWeekOffset = {};
 // week only), '4wk' (current + next 3), '8wk' (current + next 7), 'all'
 // (every visible week). Default: 'week' — the most actionable horizon.
 let _utilPeriod = 'week';
+// Utilization card view: 'team' (one sparkline) or 'role' (rows-per-role heatmap).
+// Per-person breakdown lives in the right-hand person cards already; rolling
+// up by role here answers "do we have enough designer / copy capacity?"
+// at a glance — a question the per-person view doesn't surface.
+let _utilView = 'team';
+
+// Active board column on mobile. The desktop board shows all 4 columns side
+// by side, but on a phone that stacks vertically with lots of dead space
+// (esp. when a column is empty). On mobile we flip to a tab strip + one
+// full-width column. Default 'today' — the most actionable view.
+let _boardMobileCol = 'today';
 
 // ══════════════════════════════════════════════════════════════════
 // DERIVED HELPERS
@@ -1317,7 +1413,7 @@ function renderAllocationGrid() {
           title="${escHTML(proj.name)} · ${escHTML(t.name)}">
           <span class="tc-name">${escHTML(t.name)}</span>
           <span class="tc-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays} day${t.reviewBufferDays===1?'':'s'} waiting on ${reviewOwnerFull(t.reviewOwner).toLowerCase()} (doesn't burn capacity)">+${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="${t.reviewBufferDays} day${t.reviewBufferDays===1?'':'s'} of review wait with ${reviewOwnerFull(t.reviewOwner).toLowerCase()} — calendar time the project is parked. Does not burn this person's capacity.">${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
           <span class="tc-x" onclick="event.stopPropagation(); unassignTask('${t.id}')" title="Unassign">×</span>
         </div>`;
       });
@@ -1416,7 +1512,7 @@ function renderUpcomingPanel() {
         <span class="up-task-meta">
           <span class="up-task-role ${rm.cls}">${rm.label}</span>
           <span class="up-task-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays}d waiting on ${reviewOwnerFull(t.reviewOwner).toLowerCase()}">+${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="${t.reviewBufferDays}d of review wait with ${reviewOwnerFull(t.reviewOwner).toLowerCase()} — calendar time, not capacity">${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
         </span>
       </div>`;
     });
@@ -1504,8 +1600,10 @@ function renderWaitingPanel() {
   const totalWait = waiting.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
 
   if (totalEl) {
+    // "in review" reads correctly: these are days project time is parked,
+    // not days the team is idle. "planned" was vague; "in review" names the state.
     totalEl.innerHTML = waiting.length
-      ? `${totalWait}d planned &middot; ${waiting.length} task${waiting.length===1?'':'s'}`
+      ? `${totalWait}d in review &middot; ${waiting.length} task${waiting.length===1?'':'s'}`
       : 'no review waits';
   }
 
@@ -1523,16 +1621,23 @@ function renderWaitingPanel() {
     groups[k].push(t);
   });
 
+  // Single longest wait drives the bar scale across the whole panel — bars
+  // become comparable across groups (otherwise each group would normalize
+  // its own bars and the visual lies).
+  const maxWait = waiting.reduce((m,t) => Math.max(m, t.reviewBufferDays || 0), 1);
+
   let html = '';
   REVIEW_OWNER_ORDER.forEach(k => {
     const items = groups[k];
     if (!items.length) return;
     const meta = REVIEW_OWNER_META[k];
     const gTotal = items.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
-    html += `<div class="wo-group">
-      <div class="wo-ghdr ${meta.tone}">
+    // Tone class moves to the group container so --rev-dot cascades into items
+    // (their wait bars use it for fill color).
+    html += `<div class="wo-group ${meta.tone}">
+      <div class="wo-ghdr">
         <span class="wo-ghdr-lbl">${escHTML(meta.full)}</span>
-        <span class="wo-ghdr-total">${gTotal}d &middot; ${items.length}</span>
+        <span class="wo-ghdr-total">${gTotal}d &middot; ${items.length} task${items.length===1?'':'s'}</span>
       </div>`;
     // Sort each bucket: longest wait first (that's usually where the bottleneck is).
     items.sort((a,b) => (b.reviewBufferDays||0) - (a.reviewBufferDays||0));
@@ -1541,14 +1646,12 @@ function renderWaitingPanel() {
       const person = personById(t.assigneeId) || { name:'?' };
       const work = t.effortDays || 0;
       const wait = t.reviewBufferDays || 0;
-      // Bar flex weights: use the raw day counts so the visual is honest.
-      const workFlex = Math.max(1, Math.round(work * 10));
-      const waitFlex = Math.max(1, Math.round(wait * 10));
-      const tooltip = `${t.name} — ${work}d work, ${wait}d wait on ${reviewOwnerFull(k).toLowerCase()} (${person.name})`;
+      const fillPct = Math.round((wait / maxWait) * 100);
+      const tooltip = `${t.name} — ${wait}d in review with ${reviewOwnerFull(k).toLowerCase()}; ${work}d of staffed work (work doesn't sit during review)`;
       html += `<div class="wo-item" title="${escHTML(tooltip)}" onclick="openCellModalForEdit('${t.id}')">
         <div class="wo-item-top">
           <span class="wo-item-name">${escHTML(t.name)}</span>
-          <span class="wo-item-dur">${work}d &middot; <b style="color:var(--text);">+${wait}d</b></span>
+          <span class="wo-item-wait">${wait}d<span class="wo-item-wait-lbl">in review</span></span>
         </div>
         <div class="wo-item-meta">
           <span class="wo-item-proj" style="--proj-c:${proj.color};">
@@ -1556,10 +1659,11 @@ function renderWaitingPanel() {
           </span>
           <span>&middot;</span>
           <span>${escHTML(person.name)}</span>
+          <span>&middot;</span>
+          <span class="wo-item-work"><b>${work}d</b> work</span>
         </div>
         <div class="wo-item-bar">
-          <div class="wo-item-bar-work" style="flex:${workFlex};"></div>
-          <div class="wo-item-bar-wait" style="flex:${waitFlex};"></div>
+          <div class="wo-item-bar-fill" style="width:${fillPct}%;"></div>
         </div>
       </div>`;
     });
@@ -1591,6 +1695,10 @@ function bucketForTask(t) {
   if (end <= BOARD_WEEK_END) return 'thisweek';
   return 'later';
 }
+function setBoardMobileCol(k) {
+  _boardMobileCol = k;
+  renderBoard();
+}
 function renderBoard() {
   const el = document.getElementById('boardCols');
   const buckets = { later:[], thisweek:[], today:[], done:[] };
@@ -1601,12 +1709,31 @@ function renderBoard() {
     return ea - eb;
   };
   Object.keys(buckets).forEach(k => buckets[k].sort(byEnd));
+
+  // Mobile tab strip — shown only on narrow viewports via CSS. One tab per
+  // column with name + count; active tab swaps which column is visible.
+  const tabsEl = document.getElementById('boardMobileTabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = BOARD_COLS.map(col => {
+      const list = buckets[col.key];
+      const active = col.key === _boardMobileCol;
+      return `<button type="button" class="board-mtab${active?' active':''}" role="tab"
+        aria-selected="${active}"
+        onclick="setBoardMobileCol('${col.key}')">
+        <span class="board-mtab-dot" style="background:${col.color};"></span>
+        <span class="board-mtab-lbl">${col.label}</span>
+        <span class="board-mtab-count">${list.length}</span>
+      </button>`;
+    }).join('');
+  }
+
   el.innerHTML = BOARD_COLS.map(col => {
     const list = buckets[col.key];
     const cards = list.length === 0
       ? `<div class="board-empty">No tasks</div>`
       : list.map(c => renderBoardCard(c, col)).join('');
-    return `<div class="board-col" data-bucket="${col.key}"
+    const mobileActive = col.key === _boardMobileCol ? ' mobile-active' : '';
+    return `<div class="board-col${mobileActive}" data-bucket="${col.key}"
       ondragover="onBoardColDragOver(event,this)"
       ondragleave="onBoardColDragLeave(event,this)"
       ondrop="onBoardColDrop(event,this)">
@@ -1637,7 +1764,7 @@ function renderBoardCard(c, col) {
       <div class="bc-meta-left">
         <div class="av" style="background:${p.color};width:22px;height:22px;font-size:9px;" title="${escHTML(p.name)}">${escHTML(p.initials)}</div>
         <span class="bc-date ${overdue?'overdue':''}">${dateLbl}</span>
-        ${c.reviewBufferDays ? `<span class="bc-rev" title="Review buffer: ${c.reviewBufferDays} day${c.reviewBufferDays===1?'':'s'} waiting on ${reviewOwnerFull(c.reviewOwner).toLowerCase()}">+${c.reviewBufferDays}d${c.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(c.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+        ${c.reviewBufferDays ? `<span class="bc-rev" title="${c.reviewBufferDays} day${c.reviewBufferDays===1?'':'s'} of review wait with ${reviewOwnerFull(c.reviewOwner).toLowerCase()} — calendar time, not capacity">${c.reviewBufferDays}d${c.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(c.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
       </div>
     </div>
   </div>`;
@@ -2667,6 +2794,11 @@ function setUtilPeriod(p) {
   _utilPeriod = p;
   renderOverview();
 }
+// Team-vs-by-person toggle. Same re-render strategy as setUtilPeriod.
+function setUtilView(v) {
+  _utilView = v;
+  renderOverview();
+}
 
 // Compute utilization across an arbitrary slice of weeks. Returns the
 // aggregate (used / capacity / pct) PLUS a per-week breakdown so the
@@ -2742,6 +2874,16 @@ function renderUtilizationCard() {
       role="tab" aria-selected="${p.key===_utilPeriod}"
       onclick="setUtilPeriod('${p.key}')">${p.label}</button>`).join('')}
   </div>`;
+  // View toggle: team (sparkline) ↔ by-role (heatmap). Same chip-style as
+  // the period tabs so the two controls read as siblings.
+  const viewToggle = `<div class="ov-util-tabs" role="tablist" aria-label="Utilization view">
+    <button type="button" class="ov-util-tab ${_utilView==='team'?'active':''}"
+      role="tab" aria-selected="${_utilView==='team'}"
+      onclick="setUtilView('team')">Team</button>
+    <button type="button" class="ov-util-tab ${_utilView==='role'?'active':''}"
+      role="tab" aria-selected="${_utilView==='role'}"
+      onclick="setUtilView('role')">By role</button>
+  </div>`;
 
   // Period-aware sub-line. "X of Y this week" reads naturally when the
   // selection is a single week; the multi-week version names the range.
@@ -2783,6 +2925,17 @@ function renderUtilizationCard() {
     <span class="ov-util-legend-item" style="margin-left:auto;">Dashed line = 100% capacity</span>
   </div>`;
 
+  // Right-side body swaps between a single team sparkline and a per-role
+  // heatmap. The view toggle picks; the period selector still drives the
+  // week slice for both.
+  const rightBody = _utilView === 'role'
+    ? renderUtilizationByRole(weeks)
+    : `<div class="ov-util-spark">
+        <div class="ov-util-spark-bars" style="--cap-line-top:${capLineTop.toFixed(1)}%;">${bars}</div>
+        <div class="ov-util-spark-lbls">${lbls}</div>
+      </div>`;
+  const rightLbl = _utilView === 'role' ? 'Per role' : 'Per week';
+
   return `<div class="ov-util">
     <div class="ov-util-left">
       <div class="ov-util-hdr">
@@ -2794,16 +2947,96 @@ function renderUtilizationCard() {
     </div>
     <div>
       <div class="ov-util-hdr" style="margin-bottom:10px;">
-        <span class="ov-util-lbl">Per week</span>
-        ${tabs}
+        <span class="ov-util-lbl">${rightLbl}</span>
+        <span class="ov-util-hdr-grp">${viewToggle}${tabs}</span>
       </div>
-      <div class="ov-util-spark">
-        <div class="ov-util-spark-bars" style="--cap-line-top:${capLineTop.toFixed(1)}%;">${bars}</div>
-        <div class="ov-util-spark-lbls">${lbls}</div>
-      </div>
+      ${rightBody}
       ${legend}
     </div>
   </div>`;
+}
+
+// Per-role heatmap. Each row is a discipline (Design, Copy, …) with capacity
+// summed across everyone in that role. Answers the resourcing question the
+// per-person view doesn't: "do we have enough designer capacity this period?"
+// Per-person breakdown lives in the right-rail person cards already.
+function renderUtilizationByRole(weeks) {
+  // Bucket people by role. Use ROLE_META order when available so Design comes
+  // before Copy; tack on any unrecognized roles at the end.
+  const byRole = {};
+  PEOPLE.forEach(p => {
+    if (!byRole[p.role]) byRole[p.role] = [];
+    byRole[p.role].push(p);
+  });
+  const roleKeys = Object.keys(ROLE_META).filter(k => byRole[k]);
+  Object.keys(byRole).forEach(k => { if (!roleKeys.includes(k)) roleKeys.push(k); });
+
+  const rows = roleKeys.map(roleKey => {
+    const people = byRole[roleKey];
+    const meta = ROLE_META[roleKey] || { label:roleKey, color:'#94A3B8' };
+    let totUsed = 0, totCap = 0;
+    const cells = weeks.map(w => {
+      // Sum capacity and used days across every person with this role for
+      // the week. A person's capacity is theirs (PTO respected); their used
+      // days are whatever tasks they're staffed on, regardless of task role.
+      let cap = 0, used = 0;
+      people.forEach(p => {
+        cap  += getCapacity(p.id, w);
+        used += weeklyDays(p.id, w);
+      });
+      const pct = cap > 0 ? (used / cap) : (used > 0 ? 10 : 0);
+      totUsed += used; totCap += cap;
+      return { w, cap, used, pct };
+    });
+    const totPct = totCap > 0 ? (totUsed / totCap) : (totUsed > 0 ? 10 : 0);
+    return { roleKey, meta, people, cells, totPct, totUsed, totCap };
+  });
+  // Sort: most-loaded first; rows where the entire role is on PTO sink.
+  rows.sort((a, b) => {
+    if (a.totCap === 0 && b.totCap > 0) return  1;
+    if (b.totCap === 0 && a.totCap > 0) return -1;
+    return b.totPct - a.totPct;
+  });
+
+  // With only a handful of role rows there's room for the % numbers in cells
+  // for any reasonable period; keep them off only at the very wide "All" view.
+  const showNum = weeks.length <= 8;
+  const wkhdrs = weeks.map(w => {
+    const isNow = WEEKS.indexOf(w) === CUR_WEEK;
+    return `<div class="ov-util-heat-wkhd ${isNow?'now':''}">${escHTML(w.replace('w/o ',''))}</div>`;
+  }).join('');
+
+  const head = `<div class="ov-util-heat-head">
+    <div></div>
+    <div class="ov-util-heat-cells">${wkhdrs}</div>
+    <div class="ov-util-heat-tot-hdr">${weeks.length === 1 ? 'load' : 'period'}</div>
+  </div>`;
+
+  const body = rows.map(r => {
+    const cells = r.cells.map(c => {
+      const band = c.cap === 0 ? 'empty' : utilizationBand(c.pct);
+      const tt   = c.cap === 0
+        ? `${r.meta.label} · ${c.w}: everyone PTO`
+        : `${r.meta.label} · ${c.w}: ${c.used}d of ${c.cap}d (${Math.round(c.pct*100)}%) across ${r.people.length}`;
+      const txt  = c.cap === 0 ? '—' : `${Math.round(c.pct*100)}%`;
+      return `<div class="ov-util-heat-cell ${band}${showNum?' show-num':''}" title="${escHTML(tt)}">${showNum?txt:''}</div>`;
+    }).join('');
+    const totBand = r.totCap === 0 ? 'slack' : utilizationBand(r.totPct);
+    const totCls  = totBand === 'over' ? 'over' : totBand === 'slack' ? 'slack' : '';
+    const totTxt  = r.totCap === 0 ? 'PTO' : `${Math.round(r.totPct*100)}%`;
+    const rowTt   = `${r.meta.label}: ${r.totUsed}d of ${r.totCap}d across ${r.people.length} ${r.people.length===1?'person':'people'}, ${weeks.length} ${weeks.length===1?'week':'weeks'}`;
+    return `<div class="ov-util-heat-row" title="${escHTML(rowTt)}">
+      <div class="ov-util-heat-name">
+        <span class="ov-util-heat-role-dot" style="background:${r.meta.color};"></span>
+        <span class="ov-util-heat-name-txt">${escHTML(r.meta.label)}</span>
+        <span class="ov-util-heat-name-sub">${r.people.length}</span>
+      </div>
+      <div class="ov-util-heat-cells">${cells}</div>
+      <div class="ov-util-heat-tot ${totCls}">${totTxt}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="ov-util-heat-wrap">${head}<div class="ov-util-heat">${body}</div></div>`;
 }
 
 // Surfaces "where time is being lost" — the single most-requested insight
@@ -2812,59 +3045,85 @@ function renderUtilizationCard() {
 // to wait so over-reliance on external review becomes visible at a glance.
 function renderCycleTimeCard(staffedTasks) {
   const withWait = staffedTasks.filter(t => (t.reviewBufferDays || 0) > 0);
-  const totalWait = withWait.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
-  const totalWork = staffedTasks.reduce((s,t) => s + (t.effortDays || 0), 0);
-  const ratioPct  = totalWork ? Math.round((totalWait / totalWork) * 100) : 0;
 
-  let body;
+  // Tiny formatter: "0.5", "1", "2" — drops trailing .0 so the chips don't
+  // shout "1.0d" at the user.
+  const fmt = n => {
+    const r = Math.round(n * 10) / 10;
+    return r % 1 === 0 ? String(r) : r.toFixed(1);
+  };
+
+  let body, headlineRight;
   if (!withWait.length) {
     body = `<div class="ov-cycle-empty">No review buffers set on staffed tasks yet. Add a buffer when you create a task to start tracking where work is parked.</div>`;
+    headlineRight = `<span class="ov-cycle-count">No projects on hold</span>`;
   } else {
-    // Bucket by reviewer (unspecified → "other")
-    const buckets = {};
-    REVIEW_OWNER_ORDER.forEach(k => { buckets[k] = { days:0, count:0 }; });
+    // Per-project rollup. Group every parked task under its project, sum up
+    // the wait, and remember which reviewer types are blocking each one.
+    // We do NOT compare actual to baseline here — that's a planning-hygiene
+    // signal, not real drag. Real drag needs an event log of when each
+    // review actually started and ended, which is task #26 territory.
+    const projAgg = {};
     withWait.forEach(t => {
+      const pid = t.projectId;
       const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
-      buckets[k].days  += (t.reviewBufferDays || 0);
-      buckets[k].count += 1;
+      const actual = t.reviewBufferDays || 0;
+      if (!projAgg[pid]) {
+        projAgg[pid] = {
+          proj: projectById(pid) || { id:pid, name:'Unknown', color:'#94A3B8' },
+          totalActual: 0,
+          byReviewer: {}
+        };
+      }
+      projAgg[pid].totalActual += actual;
+      if (!projAgg[pid].byReviewer[k]) projAgg[pid].byReviewer[k] = { actual:0, count:0 };
+      projAgg[pid].byReviewer[k].actual += actual;
+      projAgg[pid].byReviewer[k].count  += 1;
     });
-    const max = Math.max(...Object.values(buckets).map(b => b.days), 1);
 
-    let bars = '';
-    REVIEW_OWNER_ORDER.forEach(k => {
-      const b = buckets[k];
-      if (!b.count) return;
-      const meta = REVIEW_OWNER_META[k];
-      const widthPct = Math.round((b.days / max) * 100);
-      const avg = (b.days / b.count).toFixed(1).replace(/\.0$/,'');
-      bars += `<div class="ov-cycle-row ${meta.tone}">
-        <span class="ov-cycle-lbl">${escHTML(meta.full)}</span>
-        <div class="ov-cycle-track" title="${b.days}d across ${b.count} task${b.count===1?'':'s'} — avg ${avg}d/task">
-          <div class="ov-cycle-fill" style="width:${widthPct}%;"></div>
+    const projRows = Object.values(projAgg)
+      .sort((a, b) => b.totalActual - a.totalActual);
+
+    headlineRight = `<span class="ov-cycle-count">${projRows.length} project${projRows.length===1?'':'s'} on hold</span>`;
+
+    // Each row: project name + total parked days, then a chip per blocking
+    // reviewer with that reviewer's days. No "vs expected", no over/under
+    // styling — until we have actual review events, those would be made-up
+    // signals.
+    const projHTML = projRows.map(r => {
+      const chips = REVIEW_OWNER_ORDER
+        .filter(k => r.byReviewer[k])
+        .map(k => {
+          const meta = REVIEW_OWNER_META[k];
+          const x = r.byReviewer[k];
+          return `<span class="ov-cycle-rev-chip ${meta.tone}" title="${fmt(x.actual)}d on ${escHTML(meta.full.toLowerCase())} across ${x.count} task${x.count===1?'':'s'}">
+            <span class="ov-cycle-rev-name">${escHTML(meta.short)}</span>
+            <span class="ov-cycle-rev-num"><b>${fmt(x.actual)}d</b></span>
+          </span>`;
+        }).join('');
+
+      return `<div class="ov-cycle-proj">
+        <div class="ov-cycle-proj-hdr">
+          <span class="ov-cycle-proj-name"><span class="ov-cycle-proj-dot" style="background:${r.proj.color};"></span>${escHTML(r.proj.name)}</span>
+          <span class="ov-cycle-proj-stat"><span class="ov-cycle-proj-actual"><b>${fmt(r.totalActual)}d</b> parked</span></span>
         </div>
-        <span class="ov-cycle-num"><b>${b.days}d</b> &middot; ${avg}/task</span>
+        <div class="ov-cycle-proj-chips">${chips}</div>
       </div>`;
-    });
+    }).join('');
 
-    // Bottleneck: the bucket with the highest avg wait per task. This is the
-    // call-out that gives the card its punch — "your slowest reviewer is X."
-    const ranked = REVIEW_OWNER_ORDER
-      .map(k => ({ k, ...buckets[k] }))
-      .filter(b => b.count > 0)
-      .map(b => ({ ...b, avg: b.days / b.count }))
-      .sort((a,b) => b.avg - a.avg);
-    const top = ranked[0];
-    const foot = top
-      ? `<div class="ov-cycle-foot">Slowest review loop: <b>${escHTML(REVIEW_OWNER_META[top.k].full.toLowerCase())}</b> at <b>${top.avg.toFixed(1).replace(/\.0$/,'')}d</b> per task. ${ratioPct}% of every working day is currently spent waiting on feedback.</div>`
-      : '';
-
-    body = `<div class="ov-cycle-bars">${bars}</div>${foot}`;
+    // Footer: baselines stay as a planning reference (use these when you're
+    // setting reviewBufferDays on a new task). Trend teaser stays.
+    body = `<div class="ov-cycle-projects">${projHTML}</div>
+      <div class="ov-cycle-foot">
+        <div>Typical reviewer wait — use as a reference when you set buffers: internal review <b>${fmt(REVIEW_OWNER_META.internal.baselineDays)}d</b> &middot; stakeholder feedback <b>${fmt(REVIEW_OWNER_META.stakeholder_feedback.baselineDays)}d</b> &middot; approval / sign-off <b>${fmt(REVIEW_OWNER_META.final_approval.baselineDays)}d</b>.</div>
+        <div class="ov-cycle-trend">Coming soon: a history view to look back at how long projects sat with each reviewer over time.</div>
+      </div>`;
   }
 
   return `<div class="ov-cycle">
     <div class="ov-cycle-hdr">
       <span class="ov-cycle-title">Time parked in review</span>
-      <span class="ov-cycle-headline">${totalWait}d<small>across ${withWait.length} task${withWait.length===1?'':'s'}</small></span>
+      ${headlineRight}
     </div>
     ${body}
   </div>`;
