@@ -398,11 +398,54 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 
 /* ── OVERVIEW ────────────────────────────────────────── */
 .ov-scroll { flex:1; overflow-y:auto; padding:16px; background:var(--bg); }
-.ov-stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
+.ov-stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:12px; }
 .ov-stat { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
 .ov-stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; margin-bottom:6px; }
 .ov-stat-val { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
 .ov-stat-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* Featured utilization card — period-aware. The big number reflects the
+   selected range; the sparkline below shows each week so crunch points
+   surface at a glance. */
+.ov-util { background:var(--white); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:20px; display:grid;
+  grid-template-columns:minmax(180px, 240px) 1fr; gap:24px; align-items:center; }
+.ov-util-left { display:flex; flex-direction:column; gap:6px; }
+.ov-util-hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ov-util-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; }
+.ov-util-tabs { display:flex; gap:2px; padding:3px; background:var(--bg); border-radius:7px; }
+.ov-util-tab { font:inherit; font-size:10px; font-weight:600; color:var(--muted); background:transparent;
+  border:0; padding:4px 9px; border-radius:5px; cursor:pointer; letter-spacing:.02em; transition:background .12s, color .12s; }
+.ov-util-tab:hover { color:var(--text); }
+.ov-util-tab.active { background:var(--white); color:var(--text); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+.ov-util-val { font-size:36px; font-weight:700; color:var(--text); line-height:1; font-variant-numeric:tabular-nums; }
+.ov-util-sub { font-size:11px; color:var(--muted); }
+.ov-util-sub b { color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
+.ov-util-flag { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:#A14A4A;
+  background:#F8E2E2; padding:3px 8px; border-radius:5px; margin-top:4px; align-self:flex-start; }
+.ov-util-flag.ok { color:#3C7A4A; background:#E0F0E5; }
+/* Sparkline: bars + a separate label row underneath. Splitting the two means
+   the dashed 100% line lives inside the bars area and its position (--cap-line-top)
+   maps cleanly to the bar scale, no matter how tall the busiest week is. */
+.ov-util-spark { position:relative; }
+.ov-util-spark-bars { display:flex; align-items:flex-end; gap:6px; height:90px;
+  position:relative; border-bottom:1px solid var(--border); }
+.ov-util-spark-bars::before { content:''; position:absolute; left:0; right:0;
+  top:var(--cap-line-top, 0); height:0; border-top:1px dashed #C9D2DD; pointer-events:none; }
+.ov-util-spark-bar { flex:1; min-width:0; border-radius:3px 3px 0 0; min-height:2px; transition:opacity .12s; }
+.ov-util-spark-bar:hover { opacity:.85; }
+.ov-util-spark-bar.slack   { background:#CDD7E0; }
+.ov-util-spark-bar.healthy { background:#9DC9A6; }
+.ov-util-spark-bar.full    { background:#E8C77A; }
+.ov-util-spark-bar.over    { background:#E28A8A; }
+.ov-util-spark-lbls { display:flex; gap:6px; margin-top:5px; }
+.ov-util-spark-lbl { flex:1; min-width:0; font-size:9px; color:var(--muted); font-weight:600; text-align:center;
+  letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ov-util-spark-lbl.now { color:var(--text); }
+.ov-util-spark-lbl.now::before { content:'•'; margin-right:2px; color:var(--accent, #6B82B0); }
+.ov-util-legend { display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; }
+.ov-util-legend-item { display:inline-flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
+.ov-util-legend-sw { width:10px; height:10px; border-radius:2px; }
 
 /* ── CYCLE-TIME CARD ────────────────────────────────── */
 .ov-cycle { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:18px 20px 16px; margin-bottom:20px; }
@@ -558,6 +601,9 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .ov-stat { padding:10px 12px; }
   .ov-stat-val { font-size:18px; }
   .ov-stat-sub { font-size:10px; }
+  .ov-util { grid-template-columns:1fr; gap:14px; padding:14px 16px; }
+  .ov-util-val { font-size:28px; }
+  .ov-util-spark-bars { height:70px; }
   .ov-grid { grid-template-columns:1fr; gap:10px; }
   .ov-card { padding:12px; }
   .ov-donut-wrap { flex-direction:column; align-items:stretch; gap:10px; }
@@ -1155,6 +1201,11 @@ let _nextTaskId = 29;
 // Map of personId → offset from CUR_WEEK (0 = current, 1 = +1, 2 = +2, 3 = +3).
 // Defaults to 0 for any person not yet keyed. Not persisted — fresh on reload.
 let _ovWeekOffset = {};
+
+// Time-window selector for the Team Utilization card. Values: 'week' (current
+// week only), '4wk' (current + next 3), '8wk' (current + next 7), 'all'
+// (every visible week). Default: 'week' — the most actionable horizon.
+let _utilPeriod = 'week';
 
 // ══════════════════════════════════════════════════════════════════
 // DERIVED HELPERS
@@ -2561,11 +2612,9 @@ function renderOverview() {
   const upcomingProjects = PROJECTS.filter(p => p.status === 'upcoming').length;
   const staffedTasks = TASKS.filter(isStaffed);
   const totalAllocDays = staffedTasks.reduce((s, t) => s + (t.effortDays || 0), 0);
-  // Sum actual available capacity across every person × every week (PTO reduces this).
-  let capacityDays = 0;
-  PEOPLE.forEach(p => WEEKS.forEach(w => { capacityDays += getCapacity(p.id, w); }));
-  const utilPct = capacityDays ? Math.round((totalAllocDays / capacityDays) * 100) : 0;
 
+  // Stats row (3 small) — the period-aware Team Utilization card lives below
+  // and gets its own surface so it can carry a sparkline + period toggle.
   let html = `<div class="ov-stats">
     <div class="ov-stat">
       <div class="ov-stat-lbl">Team</div>
@@ -2582,12 +2631,10 @@ function renderOverview() {
       <div class="ov-stat-val">${totalAllocDays}d</div>
       <div class="ov-stat-sub">across ${staffedTasks.length} tasks &middot; ${WEEKS.length} weeks</div>
     </div>
-    <div class="ov-stat">
-      <div class="ov-stat-lbl">Team utilization</div>
-      <div class="ov-stat-val">${utilPct}%</div>
-      <div class="ov-stat-sub">${totalAllocDays}d of ${capacityDays}d capacity</div>
-    </div>
   </div>`;
+
+  // ── Featured Team Utilization card (period-aware, with sparkline) ────
+  html += renderUtilizationCard();
 
   // ── Cycle-time card (review-wait analytics) ──────────────────
   html += renderCycleTimeCard(staffedTasks);
@@ -2612,6 +2659,151 @@ function renderOverview() {
   }
 
   el.innerHTML = html;
+}
+
+// Period selector for the utilization card. Re-renders the whole Overview so
+// the card refreshes in place. Light-touch: no separate update path.
+function setUtilPeriod(p) {
+  _utilPeriod = p;
+  renderOverview();
+}
+
+// Compute utilization across an arbitrary slice of weeks. Returns the
+// aggregate (used / capacity / pct) PLUS a per-week breakdown so the
+// sparkline can render bars that map to real weeks.
+function computeUtilizationFor(weeks) {
+  const perWeek = weeks.map(w => {
+    let used = 0, cap = 0;
+    PEOPLE.forEach(p => {
+      cap  += getCapacity(p.id, w);
+      used += weeklyDays(p.id, w);
+    });
+    const pct = cap > 0 ? (used / cap) : (used > 0 ? 10 : 0);
+    return { label:w, short:w.replace('w/o ',''), used, cap, pct };
+  });
+  const used = perWeek.reduce((s,d) => s + d.used, 0);
+  const cap  = perWeek.reduce((s,d) => s + d.cap,  0);
+  const pct  = cap > 0 ? Math.round((used / cap) * 100) : 0;
+  return { used, cap, pct, perWeek };
+}
+
+// Pick the week slice that corresponds to a period key. Defensively clamps
+// to the available WEEKS so demos with short windows still work.
+function utilizationWeeksFor(period) {
+  const start = CUR_WEEK;
+  if (period === 'week') return WEEKS.slice(start, start + 1);
+  if (period === '4wk')  return WEEKS.slice(start, start + 4);
+  if (period === '8wk')  return WEEKS.slice(start, start + 8);
+  return WEEKS.slice(); // 'all' — every visible week, including the past
+}
+
+// Map a utilization fraction to one of four named bands. Drives the
+// per-week bar color and the headline flag color.
+function utilizationBand(pct) {
+  if (pct > 1.0)  return 'over';
+  if (pct >= 0.9) return 'full';
+  if (pct >= 0.6) return 'healthy';
+  return 'slack';
+}
+
+// The featured utilization card: period tabs, big number, headline flag,
+// and a per-week sparkline so crunch points surface at a glance.
+function renderUtilizationCard() {
+  const periods = [
+    { key:'week', label:'This week' },
+    { key:'4wk',  label:'4 wks' },
+    { key:'8wk',  label:'8 wks' },
+    { key:'all',  label:'All' },
+  ];
+
+  const weeks = utilizationWeeksFor(_utilPeriod);
+  const u = computeUtilizationFor(weeks);
+  const band = utilizationBand(u.pct / 100);
+
+  // Headline flag — the one-line "what should you do about it" callout.
+  const overWeeks = u.perWeek.filter(w => w.pct > 1.0);
+  const slackWeeks = u.perWeek.filter(w => w.pct < 0.6 && w.cap > 0);
+  let flag = '';
+  if (overWeeks.length) {
+    const wkLbl = overWeeks.length === 1
+      ? `wk of ${escHTML(overWeeks[0].short)}`
+      : `${overWeeks.length} weeks`;
+    flag = `<span class="ov-util-flag">Over capacity in ${wkLbl}</span>`;
+  } else if (band === 'full') {
+    flag = `<span class="ov-util-flag" style="color:#8A6A1A;background:#F6EAC7;">Running full — little room for new work</span>`;
+  } else if (band === 'healthy') {
+    flag = `<span class="ov-util-flag ok">Healthy load</span>`;
+  } else if (slackWeeks.length && _utilPeriod !== 'week') {
+    flag = `<span class="ov-util-flag" style="color:var(--muted);background:var(--bg);">${slackWeeks.length} ${slackWeeks.length===1?'week has':'weeks have'} room for more</span>`;
+  }
+
+  const tabs = `<div class="ov-util-tabs" role="tablist" aria-label="Utilization period">
+    ${periods.map(p => `<button type="button" class="ov-util-tab ${p.key===_utilPeriod?'active':''}"
+      role="tab" aria-selected="${p.key===_utilPeriod}"
+      onclick="setUtilPeriod('${p.key}')">${p.label}</button>`).join('')}
+  </div>`;
+
+  // Period-aware sub-line. "X of Y this week" reads naturally when the
+  // selection is a single week; the multi-week version names the range.
+  let sub;
+  if (_utilPeriod === 'week') {
+    sub = `<b>${u.used}d</b> of <b>${u.cap}d</b> capacity this week`;
+  } else {
+    const first = u.perWeek[0]?.short;
+    const last  = u.perWeek[u.perWeek.length-1]?.short;
+    const span  = first === last ? `wk of ${first}` : `${first} → ${last}`;
+    sub = `<b>${u.used}d</b> of <b>${u.cap}d</b> capacity &middot; ${span}`;
+  }
+
+  // Sparkline: one bar per week (bars row), labels in a parallel row below.
+  // Heights are scaled so the busiest week fills the column; the 100% line
+  // (--cap-line-top) maps to the same scale, so over-capacity bars cross it.
+  const maxRender = Math.max(1.2, ...u.perWeek.map(w => w.pct)); // headroom
+  const capLineTop = (1 - 1 / maxRender) * 100; // % from top of bar area
+  const nowIdx = CUR_WEEK;
+  const bars = u.perWeek.map(w => {
+    const wkBand = utilizationBand(w.pct);
+    const heightPct = Math.min(100, (w.pct / maxRender) * 100);
+    const tt = w.cap === 0
+      ? `${w.label}: PTO / no capacity`
+      : `${w.label}: ${w.used}d of ${w.cap}d (${Math.round(w.pct*100)}%)`;
+    return `<div class="ov-util-spark-bar ${wkBand}" title="${escHTML(tt)}"
+      style="height:${heightPct.toFixed(1)}%;"></div>`;
+  }).join('');
+  const lbls = u.perWeek.map(w => {
+    const isNow = nowIdx === WEEKS.indexOf(w.label);
+    return `<div class="ov-util-spark-lbl ${isNow?'now':''}">${escHTML(w.short)}</div>`;
+  }).join('');
+
+  const legend = `<div class="ov-util-legend" aria-hidden="true">
+    <span class="ov-util-legend-item"><span class="ov-util-legend-sw" style="background:#CDD7E0;"></span>Slack &lt;60%</span>
+    <span class="ov-util-legend-item"><span class="ov-util-legend-sw" style="background:#9DC9A6;"></span>Healthy 60–90%</span>
+    <span class="ov-util-legend-item"><span class="ov-util-legend-sw" style="background:#E8C77A;"></span>Full 90–100%</span>
+    <span class="ov-util-legend-item"><span class="ov-util-legend-sw" style="background:#E28A8A;"></span>Over &gt;100%</span>
+    <span class="ov-util-legend-item" style="margin-left:auto;">Dashed line = 100% capacity</span>
+  </div>`;
+
+  return `<div class="ov-util">
+    <div class="ov-util-left">
+      <div class="ov-util-hdr">
+        <span class="ov-util-lbl">Team utilization</span>
+      </div>
+      <div class="ov-util-val">${u.pct}%</div>
+      <div class="ov-util-sub">${sub}</div>
+      ${flag}
+    </div>
+    <div>
+      <div class="ov-util-hdr" style="margin-bottom:10px;">
+        <span class="ov-util-lbl">Per week</span>
+        ${tabs}
+      </div>
+      <div class="ov-util-spark">
+        <div class="ov-util-spark-bars" style="--cap-line-top:${capLineTop.toFixed(1)}%;">${bars}</div>
+        <div class="ov-util-spark-lbls">${lbls}</div>
+      </div>
+      ${legend}
+    </div>
+  </div>`;
 }
 
 // Surfaces "where time is being lost" — the single most-requested insight
