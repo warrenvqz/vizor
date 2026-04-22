@@ -131,8 +131,9 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .task-chip.dragging { opacity:.45; }
 .tc-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; color:var(--text); }
 .tc-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:#F1F5F9; white-space:nowrap; }
-.tc-rev { font-size:9px; font-weight:700; color:var(--muted); padding:1px 4px; border-radius:3px; background:transparent; border:1px dashed var(--border); white-space:nowrap; letter-spacing:.02em; }
-.bc-rev { display:inline-block; font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; border:1px dashed var(--border); white-space:nowrap; margin-left:6px; letter-spacing:.02em; }
+.tc-rev { font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; background:transparent; border:1px dashed var(--border); white-space:nowrap; letter-spacing:.02em; display:inline-flex; align-items:center; gap:3px; }
+.tc-rev-arrow { color:#B8C4CF; font-weight:400; }
+.bc-rev { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; border:1px dashed var(--border); white-space:nowrap; margin-left:6px; letter-spacing:.02em; }
 .tc-x { font-size:12px; color:var(--muted); cursor:pointer; padding:0 3px; opacity:0; transition:opacity .1s; line-height:1; }
 .task-chip:hover .tc-x { opacity:1; }
 .tc-x:hover { color:var(--red); }
@@ -185,18 +186,44 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .hm-scroll::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
 .hm-scroll::-webkit-scrollbar-track { background:transparent; }
 .hm-content { display:inline-block; min-width:100%; }
-.hm-hdr { display:flex; align-items:flex-end; margin-bottom:4px; }
-.hm-name-sp { width:58px; flex-shrink:0; position:sticky; left:0; background:var(--white); z-index:2; }
-.hm-now-hdr { width:44px; flex-shrink:0; font-size:9px; font-weight:700; color:var(--text); text-align:center; line-height:1.2; text-transform:uppercase; letter-spacing:.04em; position:sticky; left:58px; background:var(--white); z-index:2; margin-right:8px; }
+.hm-hdr { display:flex; align-items:stretch; margin-bottom:4px; min-height:24px; }
+.hm-name-sp { width:58px; flex-shrink:0; position:sticky; left:0; background:#fff; z-index:3; }
+.hm-now-hdr { width:52px; flex-shrink:0; font-size:9px; font-weight:700; color:var(--text); text-align:center; line-height:1.2; text-transform:uppercase; letter-spacing:.04em; position:sticky; left:58px; background:#fff; z-index:3; padding:0 4px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; }
 .hm-now-hdr small { display:block; font-size:8px; font-weight:500; color:var(--muted); letter-spacing:0; text-transform:none; margin-top:1px; }
-.hm-rest-hdr { display:flex; gap:2px; }
+.hm-rest-hdr { display:flex; gap:2px; align-items:flex-end; }
 .hm-rest-hdr .hm-wk-lbl { width:44px; flex-shrink:0; font-size:9px; color:var(--muted); text-align:center; line-height:1.2; overflow:hidden; }
-.hm-row { display:flex; align-items:center; margin-bottom:4px; }
-.hm-name { font-size:10px; font-weight:600; width:58px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; position:sticky; left:0; background:var(--white); z-index:2; }
-.hm-now-cell { width:44px; flex-shrink:0; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; position:sticky; left:58px; z-index:2; box-shadow:0 0 0 1.5px var(--dark); margin-right:8px; }
-.hm-rest { display:flex; gap:2px; }
+.hm-row { display:flex; align-items:stretch; margin-bottom:4px; min-height:28px; }
+.hm-name { font-size:10px; font-weight:600; width:58px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; position:sticky; left:0; background:#fff; z-index:3; display:flex; align-items:center; }
+.hm-now-wrap { width:52px; flex-shrink:0; position:sticky; left:58px; z-index:3; background:#fff; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+.hm-now-cell { width:44px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; box-shadow:0 0 0 1.5px var(--dark); }
+.hm-rest { display:flex; gap:2px; align-items:center; }
 .hm-cell { width:44px; flex-shrink:0; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; transition:opacity .1s; }
 .hm-cell:hover, .hm-now-cell:hover { opacity:.85; cursor:default; }
+
+/* ── WAITING ON PANEL ───────────────────────────────── */
+.rp-sec-waiting { max-height:38%; }
+.wo { padding:2px 14px 12px; overflow-y:auto; }
+.wo-empty { font-size:11px; color:var(--muted); font-style:italic; padding:12px 2px 4px; }
+.wo-group { margin-top:10px; }
+.wo-group:first-child { margin-top:4px; }
+.wo-ghdr { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; padding:0 2px; }
+.wo-ghdr-lbl { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text); }
+.wo-ghdr-lbl::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); flex-shrink:0; }
+.wo-ghdr.external { --rev-dot:#C08AC8; }
+.wo-ghdr.internal { --rev-dot:#9BB5DD; }
+.wo-ghdr-total { font-size:10px; color:var(--muted); font-weight:600; }
+.wo-item { display:flex; flex-direction:column; gap:4px; padding:7px 8px 8px; border-radius:6px; cursor:pointer; transition:background .1s; }
+.wo-item:hover { background:#F8FAFC; }
+.wo-item-top { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; }
+.wo-item-name { color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wo-item-dur { font-size:10px; font-weight:700; color:var(--muted); white-space:nowrap; flex-shrink:0; }
+.wo-item-meta { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); }
+.wo-item-proj { display:inline-flex; align-items:center; gap:4px; min-width:0; }
+.wo-item-proj::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--proj-c,var(--muted)); flex-shrink:0; }
+.wo-item-proj-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wo-item-bar { display:flex; gap:2px; margin-top:2px; height:4px; }
+.wo-item-bar-work { background:#7FC8D4; border-radius:2px; }
+.wo-item-bar-wait { background:transparent; border:1px dashed #B8C4CF; border-radius:2px; box-sizing:border-box; }
 
 /* ── BOARD ──────────────────────────────────────────── */
 .board { flex:1; overflow:hidden; padding:14px 16px; background:var(--white); display:flex; flex-direction:column; }
@@ -376,6 +403,30 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ov-stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; margin-bottom:6px; }
 .ov-stat-val { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
 .ov-stat-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+
+/* ── CYCLE-TIME CARD ────────────────────────────────── */
+.ov-cycle { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:18px 20px 16px; margin-bottom:20px; }
+.ov-cycle-hdr { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
+.ov-cycle-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text); }
+.ov-cycle-headline { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
+.ov-cycle-headline small { font-size:11px; font-weight:500; color:var(--muted); margin-left:6px; letter-spacing:0; text-transform:none; }
+.ov-cycle-bars { display:flex; flex-direction:column; gap:9px; margin-top:14px; }
+.ov-cycle-row { display:grid; grid-template-columns:120px 1fr 70px; align-items:center; gap:12px; font-size:11px; }
+.ov-cycle-lbl { display:inline-flex; align-items:center; gap:6px; color:var(--text); font-weight:600; }
+.ov-cycle-lbl::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--rev-dot,var(--muted)); }
+.ov-cycle-row.external { --rev-dot:#C08AC8; }
+.ov-cycle-row.internal { --rev-dot:#9BB5DD; }
+.ov-cycle-track { height:8px; background:#F1F5F9; border-radius:4px; overflow:hidden; position:relative; }
+.ov-cycle-fill { height:100%; background:var(--rev-dot,var(--muted)); border-radius:4px; opacity:.55; transition:width .2s; }
+.ov-cycle-num { font-size:11px; color:var(--muted); font-weight:600; text-align:right; }
+.ov-cycle-num b { color:var(--text); font-weight:700; }
+.ov-cycle-empty { font-size:12px; color:var(--muted); font-style:italic; }
+.ov-cycle-foot { font-size:11px; color:var(--muted); margin-top:14px; padding-top:12px; border-top:1px solid #F1F5F9; line-height:1.5; }
+.ov-cycle-foot b { color:var(--text); font-weight:700; }
+@media (max-width:760px) {
+  .ov-cycle-row { grid-template-columns:90px 1fr 56px; gap:8px; font-size:10px; }
+  .ov-cycle-headline { font-size:18px; }
+}
 .ov-section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); font-weight:600; margin:8px 0 10px; }
 .ov-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-bottom:24px; }
 .ov-card { background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; }
@@ -631,11 +682,22 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
         </select>
       </div>
     </div>
-    <div class="sm-field">
-      <label class="sm-label" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>Review buffer <span style="color:var(--muted);font-weight:400;">(wait days for feedback &mdash; no capacity burn)</span></span>
-      </label>
-      <input type="number" min="0" max="20" step="1" class="sm-input" id="cmReviewBuf" value="0" style="width:90px;">
+    <div class="sm-grid">
+      <div class="sm-field">
+        <label class="sm-label">Review buffer <span style="color:var(--muted);font-weight:400;">(wait days)</span></label>
+        <input type="number" min="0" max="20" step="1" class="sm-input" id="cmReviewBuf" value="0" oninput="updateReviewOwnerVisibility()">
+      </div>
+      <div class="sm-field" id="cmReviewOwnerField">
+        <label class="sm-label">Waiting on</label>
+        <select class="sm-select" id="cmReviewOwner">
+          <option value="">&mdash;</option>
+          <option value="client">Client</option>
+          <option value="internal">Internal review</option>
+          <option value="stakeholder">Stakeholder</option>
+          <option value="legal">Legal / compliance</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
     </div>
     <div class="sm-status" id="cmStatus"></div>
     <div class="sm-row">
@@ -936,6 +998,13 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
     <div class="rp-hdr"><span class="rp-title">Capacity</span><span class="rp-sub">this week &middot; scroll &rarr; for upcoming</span></div>
     <div class="hm" id="heatmap"></div>
   </div>
+  <div class="rp-sec rp-sec-waiting">
+    <div class="rp-hdr">
+      <span class="rp-title">Waiting on</span>
+      <span class="rp-sub" id="waitingTotal">&mdash;</span>
+    </div>
+    <div class="wo" id="waitingPanel"></div>
+  </div>
   <div class="rp-sec flex">
     <div class="rp-hdr">
       <span class="rp-title">Upcoming Needs</span>
@@ -977,6 +1046,19 @@ const ROLE_META = {
   design: { label:'Design',         cls:'design', color:'#B298D4' },
   copy:   { label:'Content / Copy', cls:'copy',   color:'#EDC874' },
 };
+// Review-owner taxonomy. `short` is the chip-sized label; `full` is for
+// tooltips and the Waiting On panel header. Order here drives the panel's
+// group order (external waits first — they cost the most cycle time).
+const REVIEW_OWNER_META = {
+  client:      { short:'Client',     full:'Client',            tone:'external' },
+  stakeholder: { short:'Stakeholder', full:'Stakeholder',       tone:'external' },
+  legal:       { short:'Legal',      full:'Legal / compliance', tone:'external' },
+  internal:    { short:'Internal',   full:'Internal review',   tone:'internal' },
+  other:       { short:'Other',      full:'Other',             tone:'internal' },
+};
+const REVIEW_OWNER_ORDER = ['client','stakeholder','legal','internal','other'];
+const reviewOwnerLabel = k => (REVIEW_OWNER_META[k] && REVIEW_OWNER_META[k].short) || 'Review';
+const reviewOwnerFull  = k => (REVIEW_OWNER_META[k] && REVIEW_OWNER_META[k].full)  || 'Review';
 const personById = id => PEOPLE.find(p => p.id === id);
 
 // ══════════════════════════════════════════════════════════════════
@@ -1015,24 +1097,24 @@ const BOARD_WEEK_END = new Date('2026-04-26');
 let TASKS = [
   // Brand refresh (active)
   { id:'t2',  projectId:'p1', name:'Color system',           role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 4/27', due:'5/05', done:true },
-  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 5/4',  due:'5/12' },
+  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 5/4',  due:'5/12', reviewBufferDays:2, reviewOwner:'client' },
   { id:'t4',  projectId:'p1', name:'Manifesto copy',         role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 4/27', due:'5/06', done:true },
-  { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 5/4',  due:'5/15' },
-  { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 5/11', due:'5/15' },
+  { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 5/4',  due:'5/15', reviewBufferDays:2, reviewOwner:'internal' },
+  { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 5/11', due:'5/15', reviewBufferDays:3, reviewOwner:'stakeholder' },
   { id:'t28', projectId:'p1', name:'App Store assets',       role:'design', effortDays:2,   assigneeId:'thalia_mo6621w8',   weekLabel:'w/o 4/27' },
 
   // Landing page v2 (active) — partly staffed
   { id:'t7',  projectId:'p2', name:'Wireframes',             role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 4/20', due:'4/28', done:true },
   { id:'t8',  projectId:'p2', name:'Hero visuals',           role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 4/27', due:'5/06', done:true },
-  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14' },
-  { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1,   assigneeId:'hay',               weekLabel:'w/o 5/11', due:'5/18' },
+  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:2, reviewOwner:'client' },
+  { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1,   assigneeId:'hay',               weekLabel:'w/o 5/11', due:'5/18', reviewBufferDays:1, reviewOwner:'internal' },
   { id:'t11', projectId:'p2', name:'Body copy pass',         role:'copy',   effortDays:2,   assigneeId:'james',             weekLabel:'w/o 5/11', due:'5/20' },
   { id:'t12', projectId:'p2', name:'Mobile adaptations',     role:'design', effortDays:2,   due:'5/25' },
   { id:'t13', projectId:'p2', name:'CTA microcopy',          role:'copy',   effortDays:0.5, due:'5/25' },
 
   // Newsletter redesign (active)
-  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14' },
-  { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2,   assigneeId:'andre',             weekLabel:'w/o 5/11', due:'5/22' },
+  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:1, reviewOwner:'legal' },
+  { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2,   assigneeId:'andre',             weekLabel:'w/o 5/11', due:'5/22', reviewBufferDays:2, reviewOwner:'client' },
   { id:'t16', projectId:'p3', name:'Welcome sequence copy',  role:'copy',   effortDays:1,   assigneeId:'james',             weekLabel:'w/o 5/4',  due:'5/13' },
 
   // Product launch micro-site (upcoming)
@@ -1057,11 +1139,16 @@ let _nextTaskId = 29;
 // ══════════════════════════════════════════════════════════════════
 const isStaffed = t => !!(t.assigneeId && t.weekLabel);
 
-function tasksFor(personId, weekLabel) {
-  return TASKS.filter(t => t.assigneeId === personId && t.weekLabel === weekLabel);
+// ── Capacity math is built pure so we can feed it arbitrary task sets ──
+// (e.g. the coming "ghost layer" will re-run it with [...TASKS, ...proposed]
+// to show a baseline vs. proposed utilization diff). Only the `computeRollup`
+// and `weeklyDays` functions are callers of these helpers; `tasksFor` stays
+// global-read since it's used in many UI paths today.
+function tasksFor(personId, weekLabel, tasks = TASKS) {
+  return tasks.filter(t => t.assigneeId === personId && t.weekLabel === weekLabel);
 }
-function weeklyDays(personId, weekLabel) {
-  return tasksFor(personId, weekLabel).reduce((s,t) => s + (t.effortDays||0), 0);
+function weeklyDays(personId, weekLabel, tasks = TASKS) {
+  return tasksFor(personId, weekLabel, tasks).reduce((s,t) => s + (t.effortDays||0), 0);
 }
 // How many days this person is actually available in this week
 // (accounts for PTO / partial availability overrides).
@@ -1069,12 +1156,12 @@ function getCapacity(personId, weekLabel) {
   const v = CAPACITY_OVERRIDES[personId]?.[weekLabel];
   return (typeof v === 'number' && !isNaN(v)) ? v : DEFAULT_CAPACITY;
 }
-function computeRollup() {
+function computeRollup(tasks = TASKS, weeks = WEEKS, people = PEOPLE) {
   const rollup = {};
-  PEOPLE.forEach(p => {
+  people.forEach(p => {
     rollup[p.id] = {};
-    WEEKS.forEach(w => {
-      const days = weeklyDays(p.id, w);
+    weeks.forEach(w => {
+      const days = weeklyDays(p.id, w, tasks);
       const capacity = getCapacity(p.id, w);
       // pct is allocation / available capacity. Guard 0-day capacity (100% PTO) so division-by-0
       // reads as "over" whenever anything is allocated, and "0%" when nothing is.
@@ -1083,6 +1170,19 @@ function computeRollup() {
     });
   });
   return rollup;
+}
+
+// Find the first week in which this person has a gap of at least `minDays`
+// of free capacity. Returns the week label, or null if fully booked across
+// the planning horizon.
+function nextAvailableWeek(personId, minDays = 1, tasks = TASKS, weeks = WEEKS) {
+  for (let i = 0; i < weeks.length; i++) {
+    const w = weeks[i];
+    const cap = getCapacity(personId, w);
+    const used = weeklyDays(personId, w, tasks);
+    if (cap - used >= minDays) return w;
+  }
+  return null;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1144,7 +1244,7 @@ function renderAllocationGrid() {
           title="${escHTML(proj.name)} · ${escHTML(t.name)}">
           <span class="tc-name">${escHTML(t.name)}</span>
           <span class="tc-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays} day${t.reviewBufferDays===1?'':'s'} for feedback (doesn't burn capacity)">+${t.reviewBufferDays}d rev</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays} day${t.reviewBufferDays===1?'':'s'} waiting on ${reviewOwnerFull(t.reviewOwner).toLowerCase()} (doesn't burn capacity)">+${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
           <span class="tc-x" onclick="event.stopPropagation(); unassignTask('${t.id}')" title="Unassign">×</span>
         </div>`;
       });
@@ -1243,7 +1343,7 @@ function renderUpcomingPanel() {
         <span class="up-task-meta">
           <span class="up-task-role ${rm.cls}">${rm.label}</span>
           <span class="up-task-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays}d wait for feedback">+${t.reviewBufferDays}d rev</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="Review buffer: ${t.reviewBufferDays}d waiting on ${reviewOwnerFull(t.reviewOwner).toLowerCase()}">+${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
         </span>
       </div>`;
     });
@@ -1292,11 +1392,11 @@ function renderHeatmap() {
 
     html += `<div class="hm-row">
       <div class="hm-name" title="${escHTML(p.name)} — ${escHTML(ROLE_META[p.role].label)}">
-        <span style="display:inline-block;width:7px;height:7px;background:${p.color};border-radius:50%;margin-right:4px;vertical-align:middle;"></span>${escHTML(p.name)}
+        <span style="display:inline-block;width:7px;height:7px;background:${p.color};border-radius:50%;margin-right:4px;flex-shrink:0;"></span>${escHTML(p.name)}
       </div>
-      <div class="hm-now-cell" style="background:${cc.bg};color:${cc.fg};"
-        onmouseenter="showTip(event,'${escHTML(curTT)}')"
-        onmouseleave="hideTip()">${curLbl}</div>
+      <div class="hm-now-wrap">
+        <div class="hm-now-cell" style="background:${cc.bg};color:${cc.fg};" title="${escHTML(curTT)}">${curLbl}</div>
+      </div>
       <div class="hm-rest">`;
     WEEKS.forEach((w, wi) => {
       if (wi === CUR_WEEK) return;
@@ -1305,13 +1405,93 @@ function renderHeatmap() {
       const capLbl = r.capacity === 0 ? 'PTO' : r.capacity + 'd available';
       const tt = `${p.name} — ${w}: ${r.days}d of ${capLbl} (${Math.round(r.pct*100)}%)`;
       const cellLbl = r.pct > 0 ? Math.round(r.pct*100)+'%' : '';
-      html += `<div class="hm-cell" style="background:${c.bg};color:${c.fg};"
-        onmouseenter="showTip(event,'${escHTML(tt)}')"
-        onmouseleave="hideTip()">${cellLbl}</div>`;
+      html += `<div class="hm-cell" style="background:${c.bg};color:${c.fg};" title="${escHTML(tt)}">${cellLbl}</div>`;
     });
     html += '</div></div>';
   });
   html += '</div></div>';
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER: WAITING ON PANEL
+// Shows every task with a review buffer, grouped by reviewer type.
+// This is the "cycle time" surface — where work is parked, with whom,
+// and for how long.
+// ══════════════════════════════════════════════════════════════════
+function renderWaitingPanel() {
+  const el = document.getElementById('waitingPanel');
+  const totalEl = document.getElementById('waitingTotal');
+  if (!el) return;
+
+  // Consider staffed tasks with a review buffer. (Unstaffed tasks with a
+  // buffer are still "planned wait" but they haven't entered the pipeline
+  // yet — they show up in Upcoming Needs.)
+  const waiting = TASKS.filter(t => (t.reviewBufferDays || 0) > 0 && isStaffed(t));
+  const totalWait = waiting.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
+
+  if (totalEl) {
+    totalEl.innerHTML = waiting.length
+      ? `${totalWait}d planned &middot; ${waiting.length} task${waiting.length===1?'':'s'}`
+      : 'no review waits';
+  }
+
+  if (!waiting.length) {
+    el.innerHTML = `<div class="wo-empty">Nothing parked in review. Add a review buffer when creating a task to track waits.</div>`;
+    return;
+  }
+
+  // Group by review owner, with "unassigned reviewer" (no reviewOwner set)
+  // bucketed under "other" so it still surfaces.
+  const groups = {};
+  REVIEW_OWNER_ORDER.forEach(k => { groups[k] = []; });
+  waiting.forEach(t => {
+    const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
+    groups[k].push(t);
+  });
+
+  let html = '';
+  REVIEW_OWNER_ORDER.forEach(k => {
+    const items = groups[k];
+    if (!items.length) return;
+    const meta = REVIEW_OWNER_META[k];
+    const gTotal = items.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
+    html += `<div class="wo-group">
+      <div class="wo-ghdr ${meta.tone}">
+        <span class="wo-ghdr-lbl">${escHTML(meta.full)}</span>
+        <span class="wo-ghdr-total">${gTotal}d &middot; ${items.length}</span>
+      </div>`;
+    // Sort each bucket: longest wait first (that's usually where the bottleneck is).
+    items.sort((a,b) => (b.reviewBufferDays||0) - (a.reviewBufferDays||0));
+    items.forEach(t => {
+      const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
+      const person = personById(t.assigneeId) || { name:'?' };
+      const work = t.effortDays || 0;
+      const wait = t.reviewBufferDays || 0;
+      // Bar flex weights: use the raw day counts so the visual is honest.
+      const workFlex = Math.max(1, Math.round(work * 10));
+      const waitFlex = Math.max(1, Math.round(wait * 10));
+      const tooltip = `${t.name} — ${work}d work, ${wait}d wait on ${reviewOwnerFull(k).toLowerCase()} (${person.name})`;
+      html += `<div class="wo-item" title="${escHTML(tooltip)}" onclick="openCellModalForEdit('${t.id}')">
+        <div class="wo-item-top">
+          <span class="wo-item-name">${escHTML(t.name)}</span>
+          <span class="wo-item-dur">${work}d &middot; <b style="color:var(--text);">+${wait}d</b></span>
+        </div>
+        <div class="wo-item-meta">
+          <span class="wo-item-proj" style="--proj-c:${proj.color};">
+            <span class="wo-item-proj-name">${escHTML(proj.name)}</span>
+          </span>
+          <span>&middot;</span>
+          <span>${escHTML(person.name)}</span>
+        </div>
+        <div class="wo-item-bar">
+          <div class="wo-item-bar-work" style="flex:${workFlex};"></div>
+          <div class="wo-item-bar-wait" style="flex:${waitFlex};"></div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
   el.innerHTML = html;
 }
 
@@ -1384,7 +1564,7 @@ function renderBoardCard(c, col) {
       <div class="bc-meta-left">
         <div class="av" style="background:${p.color};width:22px;height:22px;font-size:9px;" title="${escHTML(p.name)}">${escHTML(p.initials)}</div>
         <span class="bc-date ${overdue?'overdue':''}">${dateLbl}</span>
-        ${c.reviewBufferDays ? `<span class="bc-rev" title="Review buffer: ${c.reviewBufferDays} day${c.reviewBufferDays===1?'':'s'} for feedback">+${c.reviewBufferDays}d rev</span>` : ''}
+        ${c.reviewBufferDays ? `<span class="bc-rev" title="Review buffer: ${c.reviewBufferDays} day${c.reviewBufferDays===1?'':'s'} waiting on ${reviewOwnerFull(c.reviewOwner).toLowerCase()}">+${c.reviewBufferDays}d${c.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(c.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
       </div>
     </div>
   </div>`;
@@ -1533,6 +1713,8 @@ function openCellModalForNew(personId=null, weekLabel=null) {
   document.getElementById('cmDays').value = 1;
   document.getElementById('cmRole').value = 'design';
   document.getElementById('cmReviewBuf').value = 0;
+  document.getElementById('cmReviewOwner').value = '';
+  updateReviewOwnerVisibility();
   // Populate project dropdown for new-task path
   document.getElementById('cmNewProj').innerHTML = PROJECTS.map(p =>
     `<option value="${p.id}">${escHTML(p.name)}${p.status==='upcoming'?' (upcoming)':''}</option>`
@@ -1558,6 +1740,8 @@ function onModalTaskChange() {
       document.getElementById('cmDays').value = t.effortDays;
       document.getElementById('cmRole').value = t.role;
       document.getElementById('cmReviewBuf').value = t.reviewBufferDays || 0;
+      document.getElementById('cmReviewOwner').value = t.reviewOwner || '';
+      updateReviewOwnerVisibility();
       const proj = projectById(t.projectId);
       const pill = proj
         ? `<span class="sm-proj-pill" title="Project: ${escHTML(proj.name)}"><span class="sm-proj-dot" style="background:${proj.color};"></span>${escHTML(proj.name)}</span>`
@@ -1592,6 +1776,8 @@ function openCellModalForEdit(taskId) {
   document.getElementById('cmDays').value = t.effortDays;
   document.getElementById('cmRole').value = t.role;
   document.getElementById('cmReviewBuf').value = t.reviewBufferDays || 0;
+  document.getElementById('cmReviewOwner').value = t.reviewOwner || '';
+  updateReviewOwnerVisibility();
   document.getElementById('cmDelete').style.display = isStaffed(t) ? '' : 'none';
   document.getElementById('cmSave').textContent = 'Save';
   setCmStatus('', null);
@@ -1600,6 +1786,21 @@ function openCellModalForEdit(taskId) {
 
 function closeCellModal() {
   document.getElementById('cellModal').classList.remove('show');
+}
+
+// The "Waiting on" select only makes sense when a review buffer is set.
+// We dim + disable it at 0 so users learn the buffer is the primary knob.
+function updateReviewOwnerVisibility() {
+  const buf = parseInt(document.getElementById('cmReviewBuf').value, 10) || 0;
+  const sel = document.getElementById('cmReviewOwner');
+  if (!sel) return;
+  if (buf > 0) {
+    sel.disabled = false;
+    sel.style.opacity = '';
+  } else {
+    sel.disabled = true;
+    sel.style.opacity = '.45';
+  }
 }
 function setCmStatus(msg, kind) {
   const el = document.getElementById('cmStatus');
@@ -1613,6 +1814,7 @@ function saveCellModal() {
   let rev = parseInt(document.getElementById('cmReviewBuf').value, 10);
   if (isNaN(rev) || rev < 0) rev = 0;
   if (rev > 20) rev = 20;
+  const revOwner = document.getElementById('cmReviewOwner').value;
   if (!days || days <= 0 || days > 5) {
     setCmStatus('Days must be between 0.5 and 5.', 'err'); return;
   }
@@ -1622,6 +1824,7 @@ function saveCellModal() {
     if (!t) { setCmStatus('Task not found.', 'err'); return; }
     t.effortDays = days; t.role = role;
     if (rev > 0) t.reviewBufferDays = rev; else delete t.reviewBufferDays;
+    if (rev > 0 && revOwner) t.reviewOwner = revOwner; else delete t.reviewOwner;
     closeCellModal(); renderAll(); return;
   }
 
@@ -1634,12 +1837,14 @@ function saveCellModal() {
     if (!name) { setCmStatus('Enter a task name.', 'err'); return; }
     t = { id: 't' + (_nextTaskId++), projectId: projId, name, role, effortDays: days };
     if (rev > 0) t.reviewBufferDays = rev;
+    if (rev > 0 && revOwner) t.reviewOwner = revOwner;
     TASKS.push(t);
   } else {
     t = TASKS.find(x => x.id === sel);
     if (!t) { setCmStatus('Task not found.', 'err'); return; }
     t.effortDays = days; t.role = role;
     if (rev > 0) t.reviewBufferDays = rev; else delete t.reviewBufferDays;
+    if (rev > 0 && revOwner) t.reviewOwner = revOwner; else delete t.reviewOwner;
   }
   if (_modalState.personId && _modalState.weekLabel) {
     t.assigneeId = _modalState.personId;
@@ -2173,6 +2378,9 @@ function openCellModalForNewInProject(projectId) {
   document.getElementById('cmNewName').value = '';
   document.getElementById('cmDays').value = 1;
   document.getElementById('cmRole').value = 'design';
+  document.getElementById('cmReviewBuf').value = 0;
+  document.getElementById('cmReviewOwner').value = '';
+  updateReviewOwnerVisibility();
   document.getElementById('cmDelete').style.display = 'none';
   document.getElementById('cmSave').textContent = 'Add';
   setCmStatus('', null);
@@ -2359,6 +2567,9 @@ function renderOverview() {
     </div>
   </div>`;
 
+  // ── Cycle-time card (review-wait analytics) ──────────────────
+  html += renderCycleTimeCard(staffedTasks);
+
   // ── Per-person cards ─────────────────────────────────────────
   html += `<div class="ov-section-title">Who's working on what</div>`;
   html += `<div class="ov-grid">`;
@@ -2379,6 +2590,70 @@ function renderOverview() {
   }
 
   el.innerHTML = html;
+}
+
+// Surfaces "where time is being lost" — the single most-requested insight
+// from creative/marketing ops leads. Aggregates planned review wait by
+// reviewer type, calls out the bottleneck, and frames the ratio of work
+// to wait so over-reliance on external review becomes visible at a glance.
+function renderCycleTimeCard(staffedTasks) {
+  const withWait = staffedTasks.filter(t => (t.reviewBufferDays || 0) > 0);
+  const totalWait = withWait.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
+  const totalWork = staffedTasks.reduce((s,t) => s + (t.effortDays || 0), 0);
+  const ratioPct  = totalWork ? Math.round((totalWait / totalWork) * 100) : 0;
+
+  let body;
+  if (!withWait.length) {
+    body = `<div class="ov-cycle-empty">No review buffers set on staffed tasks yet. Add a buffer when you create a task to start tracking where work is parked.</div>`;
+  } else {
+    // Bucket by reviewer (unspecified → "other")
+    const buckets = {};
+    REVIEW_OWNER_ORDER.forEach(k => { buckets[k] = { days:0, count:0 }; });
+    withWait.forEach(t => {
+      const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
+      buckets[k].days  += (t.reviewBufferDays || 0);
+      buckets[k].count += 1;
+    });
+    const max = Math.max(...Object.values(buckets).map(b => b.days), 1);
+
+    let bars = '';
+    REVIEW_OWNER_ORDER.forEach(k => {
+      const b = buckets[k];
+      if (!b.count) return;
+      const meta = REVIEW_OWNER_META[k];
+      const widthPct = Math.round((b.days / max) * 100);
+      const avg = (b.days / b.count).toFixed(1).replace(/\.0$/,'');
+      bars += `<div class="ov-cycle-row ${meta.tone}">
+        <span class="ov-cycle-lbl">${escHTML(meta.full)}</span>
+        <div class="ov-cycle-track" title="${b.days}d across ${b.count} task${b.count===1?'':'s'} — avg ${avg}d/task">
+          <div class="ov-cycle-fill" style="width:${widthPct}%;"></div>
+        </div>
+        <span class="ov-cycle-num"><b>${b.days}d</b> &middot; ${avg}/task</span>
+      </div>`;
+    });
+
+    // Bottleneck: the bucket with the highest avg wait per task. This is the
+    // call-out that gives the card its punch — "your slowest reviewer is X."
+    const ranked = REVIEW_OWNER_ORDER
+      .map(k => ({ k, ...buckets[k] }))
+      .filter(b => b.count > 0)
+      .map(b => ({ ...b, avg: b.days / b.count }))
+      .sort((a,b) => b.avg - a.avg);
+    const top = ranked[0];
+    const foot = top
+      ? `<div class="ov-cycle-foot">Slowest review loop: <b>${escHTML(REVIEW_OWNER_META[top.k].full.toLowerCase())}</b> at <b>${top.avg.toFixed(1).replace(/\.0$/,'')}d</b> per task. ${ratioPct}% of every working day is currently spent waiting on feedback.</div>`
+      : '';
+
+    body = `<div class="ov-cycle-bars">${bars}</div>${foot}`;
+  }
+
+  return `<div class="ov-cycle">
+    <div class="ov-cycle-hdr">
+      <span class="ov-cycle-title">Time parked in review</span>
+      <span class="ov-cycle-headline">${totalWait}d<small>across ${withWait.length} task${withWait.length===1?'':'s'}</small></span>
+    </div>
+    ${body}
+  </div>`;
 }
 
 function renderOverviewPersonCard(person) {
@@ -2834,6 +3109,7 @@ function renderAll() {
   renderSidebar();
   renderAllocationGrid();
   renderHeatmap();
+  renderWaitingPanel();
   renderUpcomingPanel();
   // Board/Projects/Overview re-render on tab switch, but keep them fresh too:
   if (document.getElementById('boardView').style.display !== 'none')    renderBoard();
