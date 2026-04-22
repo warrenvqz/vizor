@@ -434,6 +434,12 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ov-card-head .av { width:32px; height:32px; font-size:11px; }
 .ov-card-name { font-weight:600; font-size:14px; color:var(--text); }
 .ov-card-role { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
+.ov-card-tabs { display:flex; gap:2px; padding:3px; background:var(--bg); border-radius:7px; align-self:flex-start; }
+.ov-card-tab { font:inherit; font-size:10px; font-weight:600; color:var(--muted); background:transparent; border:0; padding:4px 9px; border-radius:5px; cursor:pointer; font-variant-numeric:tabular-nums; letter-spacing:.02em; transition:background .12s, color .12s; }
+.ov-card-tab:hover { color:var(--text); }
+.ov-card-tab.active { background:var(--white); color:var(--text); box-shadow:0 1px 2px rgba(0,0,0,.06); }
+.ov-card-tab.empty { color:var(--muted); opacity:.55; }
+.ov-card-tab.empty.active { opacity:1; color:var(--muted); }
 .ov-donut-wrap { display:flex; align-items:center; gap:14px; }
 .ov-donut { flex-shrink:0; position:relative; }
 .ov-donut svg { display:block; }
@@ -1145,6 +1151,10 @@ let TASKS = [
   { id:'t27', projectId:'p5', name:'Ad variations',          role:'copy',   effortDays:1 },
 ];
 let _nextTaskId = 29;
+// Per-person week selection inside the Overview "Who's working on what" cards.
+// Map of personId → offset from CUR_WEEK (0 = current, 1 = +1, 2 = +2, 3 = +3).
+// Defaults to 0 for any person not yet keyed. Not persisted — fresh on reload.
+let _ovWeekOffset = {};
 
 // ══════════════════════════════════════════════════════════════════
 // DERIVED HELPERS
@@ -2668,11 +2678,38 @@ function renderCycleTimeCard(staffedTasks) {
   </div>`;
 }
 
+// Pull the next four week labels starting at CUR_WEEK. If the project window
+// is shorter than four weeks (only happens in tiny demos), we just return what
+// exists — the tab strip will collapse gracefully.
+function overviewWeekWindow() {
+  const out = [];
+  for (let i = 0; i < 4; i++) {
+    const idx = CUR_WEEK + i;
+    if (idx >= WEEKS.length) break;
+    out.push({ idx, label: WEEKS[idx], short: WEEKS[idx].replace('w/o ','') });
+  }
+  return out;
+}
+
+// Click handler for the per-card week tabs. Stores the selected offset for
+// that person and re-renders just the Overview view (other views untouched).
+function setOverviewCardWeek(personId, offset) {
+  _ovWeekOffset[personId] = offset;
+  renderOverview();
+}
+
 function renderOverviewPersonCard(person) {
-  // Sum this person's staffed days by project.
+  const weekWindow = overviewWeekWindow();
+  // Clamp the stored offset in case the WEEKS array shrunk under us.
+  let offset = _ovWeekOffset[person.id] || 0;
+  if (offset >= weekWindow.length) offset = 0;
+  const activeWeek = weekWindow[offset];
+
+  // Sum this person's staffed days by project — for the SELECTED week only.
   const byProj = {}; // projId → days
   TASKS.forEach(t => {
     if (!isStaffed(t) || t.assigneeId !== person.id) return;
+    if (t.weekLabel !== activeWeek.label) return;
     byProj[t.projectId] = (byProj[t.projectId] || 0) + (t.effortDays || 0);
   });
   const totalDays = Object.values(byProj).reduce((a, b) => a + b, 0);
@@ -2681,16 +2718,33 @@ function renderOverviewPersonCard(person) {
     .filter(e => e.proj)
     .sort((a, b) => b.days - a.days);
 
+  // Pre-compute which tabs have any allocation, so empty weeks dim slightly
+  // (still clickable — useful to confirm "yep, they're free that week").
+  const weekHasWork = weekWindow.map(w =>
+    TASKS.some(t => isStaffed(t) && t.assigneeId === person.id && t.weekLabel === w.label)
+  );
+
+  const tabs = `<div class="ov-card-tabs" role="tablist" aria-label="Week">
+    ${weekWindow.map((w, i) => {
+      const cls = (i === offset ? 'active ' : '') + (weekHasWork[i] ? '' : 'empty');
+      return `<button type="button" class="ov-card-tab ${cls.trim()}" role="tab"
+        aria-selected="${i === offset}"
+        title="Week of ${escHTML(w.short)}"
+        onclick="setOverviewCardWeek('${person.id}', ${i})">${escHTML(w.short)}</button>`;
+    }).join('')}
+  </div>`;
+
   const head = `<div class="ov-card-head">
     <div class="av" style="background:${person.color};">${escHTML(person.initials)}</div>
-    <div>
+    <div style="flex:1;min-width:0;">
       <div class="ov-card-name">${escHTML(person.name)}</div>
       <div class="ov-card-role">${escHTML(ROLE_META[person.role].label)}</div>
     </div>
+    ${tabs}
   </div>`;
 
   if (!totalDays) {
-    return `<div class="ov-card">${head}<div class="ov-empty">Not allocated to any project yet</div></div>`;
+    return `<div class="ov-card">${head}<div class="ov-empty">No allocation for week of ${escHTML(activeWeek.short)}</div></div>`;
   }
 
   // Build donut segments. Stroke-dasharray circles, rotated -90° to start at 12 o'clock.
@@ -2716,7 +2770,7 @@ function renderOverviewPersonCard(person) {
     </svg>
     <div class="ov-donut-center">
       <div class="ov-donut-total">${totalDays}d</div>
-      <div class="ov-donut-sub">allocated</div>
+      <div class="ov-donut-sub">${offset === 0 ? 'this week' : 'wk of ' + escHTML(activeWeek.short)}</div>
     </div>
   </div>`;
 
