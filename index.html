@@ -7,13 +7,90 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
+  /* brand + status accents — same in both themes (project palette) */
   --cyan:#7FC8D4; --dark:#0D1117; --green:#A8CDA0; --amber:#EDC874;
   --red:#E28A8A; --purple:#B298D4; --blue:#9BB5DD; --pink:#E8A8B8;
-  --bg:#F1F5F9; --white:#FFFFFF; --border:#E2E8F0;
-  --text:#1E293B; --muted:#697585;
   --design:#B298D4; --copy:#EDC874;
   --sidebar-w:215px; --rail-w:320px;
+
+  /* light theme surface tokens */
+  --bg:#F1F5F9; --white:#FFFFFF; --border:#E2E8F0;
+  --text:#1E293B; --muted:#697585;
+  --surface-2:#F8FAFC;        /* table headers, hover surface */
+  --surface-3:#FAFBFC;        /* total cells, add-person row */
+  --border-soft:#F1F5F9;      /* internal dashed dividers */
+  --tint-purple-soft:#F4EBF6; /* external review chip */
+  --tint-blue-soft:#EBF0F7;   /* internal review chip */
+  --tint-grey-soft:#F4F7FA;   /* neutral chip background */
+  --tint-red-soft:#FEF2F2;    /* over-capacity row tint */
+  --tint-red-soft-hover:#FEE6E6;
+  --surface-hover:#F5F7FA;    /* row hover for total cell */
+  --surface-row-hover:#FBFCFD;/* row hover for non-person cells */
+/* ── BELOW: semantic swaps ── */
+  --shadow-strong:0 8px 24px rgba(15,23,42,.10);
+  --shadow-soft:0 1px 3px rgba(0,0,0,0.06);
+  --shadow-cell:-6px 0 8px -6px rgba(15,23,42,.08);
+  --scheme:light;
 }
+/* dark theme — deep navy + near-black */
+:root[data-theme="dark"] {
+  --bg:#070D1A;                /* deepest backdrop */
+  --white:#0F1A2E;             /* primary panel surface (was pure white) */
+  --border:#22324C;
+  --text:#E6EDF6;
+  --muted:#8FA0B8;
+  --surface-2:#152339;         /* table headers, hover surface */
+  --surface-3:#0B1424;         /* total cells, slightly recessed */
+  --border-soft:#1A2840;       /* dashed internal dividers */
+  --tint-purple-soft:rgba(178,152,212,0.16);
+  --tint-blue-soft:rgba(155,181,221,0.14);
+  --tint-grey-soft:#152339;
+  --tint-red-soft:rgba(226,138,138,0.14);   /* over-cap row tint — translucent so dark text on top still reads */
+  --tint-red-soft-hover:rgba(226,138,138,0.22);
+  --surface-hover:#1A2A45;                  /* row hover for total cell */
+  --surface-row-hover:#101C32;              /* row hover for non-person cells — barely-there lift */
+  --shadow-strong:0 8px 24px rgba(0,0,0,0.55);
+  --shadow-soft:0 1px 0 rgba(255,255,255,0.04);
+  --shadow-cell:-6px 0 8px -6px rgba(0,0,0,0.55);
+  --scheme:dark;
+  color-scheme:dark;
+}
+:root[data-theme="dark"] body { background:var(--bg); color:var(--text); }
+/* Dark mode tweaks for project pastels: punch the saturation up slightly so
+   they read against navy without looking washed-out. */
+:root[data-theme="dark"] {
+  --cyan:#7FC8D4; --green:#9DC9A6; --amber:#E8C77A;
+  --red:#E28A8A; --purple:#C3AAE4; --blue:#A9C2E8; --pink:#E8A8B8;
+  --design:#C3AAE4; --copy:#E8C77A;
+}
+/* Avatars and chips that draw shadows look heavy on dark — soften. */
+:root[data-theme="dark"] .topnav { box-shadow:none; border-bottom:1px solid var(--border); }
+:root[data-theme="dark"] .vbtn.active { box-shadow:none; background:var(--surface-2); }
+:root[data-theme="dark"] .alloc-grid tbody td.total-cell,
+:root[data-theme="dark"] .alloc-grid thead th.total-col { box-shadow:var(--shadow-cell); }
+/* Modal backdrops — deeper in dark mode so the card floats properly. */
+:root[data-theme="dark"] .modal-bg { background:rgba(0,0,0,0.65); }
+:root[data-theme="dark"] .modal-card { box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+:root[data-theme="dark"] .sgear-pop { background:var(--white); box-shadow:var(--shadow-strong); }
+/* Inputs / native chrome need overriding in dark mode. */
+:root[data-theme="dark"] .sm-input,
+:root[data-theme="dark"] .sm-select,
+:root[data-theme="dark"] .sm-btn,
+:root[data-theme="dark"] .pm-cap-input { background:var(--white); color:var(--text); border-color:var(--border); }
+:root[data-theme="dark"] .sm-input::placeholder { color:var(--muted); }
+:root[data-theme="dark"] ::-webkit-scrollbar { background:var(--bg); }
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb { background:#22324C; border-radius:6px; }
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background:#2C3E5C; }
+/* Dashed borders need a hair more contrast against dark bg. */
+:root[data-theme="dark"] .add-person-btn,
+:root[data-theme="dark"] .tc-rev,
+:root[data-theme="dark"] .bc-rev { border-color:#2C3E5C; }
+/* Theme toggle icon — show sun in dark mode (click to go light), moon in
+   light mode (click to go dark). */
+.theme-ico { display:none; }
+:root .theme-ico-moon { display:block; }
+:root[data-theme="dark"] .theme-ico-moon { display:none; }
+:root[data-theme="dark"] .theme-ico-sun  { display:block; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; font-size:13px; line-height:1.4; }
 
 /* ── TOP NAV ─────────────────────────────────────────── */
@@ -32,7 +109,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .ibtn { width:30px; height:30px; border:none; background:none; border-radius:7px; cursor:pointer; color:var(--muted); font-size:14px; display:flex; align-items:center; justify-content:center; }
 .ibtn:hover { background:var(--bg); color:var(--text); }
 .sgear-wrap { position:relative; display:flex; align-items:center; }
-.sgear-pop { position:absolute; top:38px; right:0; min-width:200px; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(15,23,42,.10); padding:5px; z-index:200; }
+.sgear-pop { position:absolute; top:38px; right:0; min-width:200px; background:var(--white); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(15,23,42,.10); padding:5px; z-index:200; }
 .sgear-pop[hidden] { display:none; }
 .sgear-grp { display:flex; flex-direction:column; }
 .sgear-grp + .sgear-grp { border-top:1px solid var(--border); margin-top:4px; padding-top:4px; }
@@ -40,6 +117,32 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .sgear-item:hover { background:var(--bg); }
 .sgear-item.danger { color:var(--red); }
 .sgear-item.danger:hover { background:rgba(226,138,138,.08); }
+/* Asana sync — settings menu lives in the gear, but errors surface as a
+   tiny dot on the gear icon so the user notices without opening the menu. */
+.sgear-wrap { position:relative; }
+.sgear-badge { position:absolute; top:4px; right:4px; width:8px; height:8px; border-radius:50%; background:var(--red); border:2px solid var(--white); display:none; pointer-events:none; }
+.sgear-badge.show { display:block; }
+.sgear-badge.is-syncing { background:var(--blue); }
+.sgear-badge.is-ok { background:#9DC9A6; }
+/* Asana modal table for mapping people / sections. */
+.asn-tbl { width:100%; border-collapse:collapse; margin-top:6px; }
+.asn-tbl th { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; text-align:left; padding:6px 4px; border-bottom:1px solid var(--border); }
+.asn-tbl td { padding:6px 4px; border-bottom:1px solid var(--border-soft); font-size:12px; }
+.asn-tbl tr:last-child td { border-bottom:none; }
+.asn-tbl select { width:100%; }
+.asn-row-name { display:flex; align-items:center; gap:8px; }
+.asn-row-dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+.asn-row-meta { font-size:10.5px; color:var(--muted); margin-left:auto; }
+.asn-empty { font-size:11px; color:var(--muted); padding:14px 4px; text-align:center; font-style:italic; }
+.asn-status-row { display:flex; gap:6px; align-items:center; font-size:11px; color:var(--muted); margin-top:8px; }
+.asn-status-dot { width:8px; height:8px; border-radius:50%; background:#94A3B8; }
+.asn-status-dot.ok { background:#9DC9A6; }
+.asn-status-dot.err { background:var(--red); }
+.asn-status-dot.syncing { background:var(--blue); }
+.asn-warn { font-size:11px; color:var(--muted); padding:8px 10px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border); margin-top:8px; line-height:1.5; }
+.asn-warn b { color:var(--text); }
+.sm-help { font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.5; }
+.sm-help a { color:var(--text); text-decoration:underline; }
 .av { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--dark); flex-shrink:0; }
 
 /* ── LAYOUT ─────────────────────────────────────────── */
@@ -64,8 +167,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; backg
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; background:var(--white); }
 .view-bar { display:flex; align-items:center; padding:10px 16px; border-bottom:1px solid var(--border); gap:8px; background:var(--white); flex-shrink:0; }
 .view-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
-.chip { padding:4px 10px; border:1px solid var(--border); border-radius:20px; background:white; font-size:11px; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; transition:all .12s; font-family:inherit; }
-.chip:hover { border-color:var(--cyan); color:var(--text); background:#F7FBFC; }
+.chip { padding:4px 10px; border:1px solid var(--border); border-radius:20px; background:var(--white); font-size:11px; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap; transition:all .12s; font-family:inherit; }
+.chip:hover { border-color:var(--cyan); color:var(--text); background:var(--tint-blue-soft); }
 .chip-ico { display:inline-block; vertical-align:-2px; margin-right:2px; opacity:.85; }
 .chip.add { background:var(--cyan); color:var(--dark); border-color:var(--cyan); font-weight:600; }
 .chip.add:hover { background:#5EB3C1; border-color:#5EB3C1; color:var(--dark); }
@@ -75,23 +178,42 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 /* ── ALLOCATION GRID ────────────────────────────────── */
 .alloc-wrap { flex:1; overflow:auto; scroll-behavior:smooth; }
 .alloc-grid { border-collapse:separate; border-spacing:0; background:var(--white); }
-.alloc-grid thead th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:10px 8px; text-align:left; background:#F8FAFC; border-bottom:1px solid var(--border); border-right:1px solid #F1F5F9; white-space:nowrap; position:sticky; top:0; z-index:2; }
+.alloc-grid thead th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:10px 8px; text-align:left; background:var(--surface-2); border-bottom:1px solid var(--border); border-right:1px solid var(--border-soft); white-space:nowrap; position:sticky; top:0; z-index:2; }
 .alloc-grid thead th.cur-week { color:var(--cyan); background:rgba(127,200,212,.08); }
-.alloc-grid thead th.person-col { width:150px; min-width:150px; position:sticky; left:0; z-index:4; background:#F8FAFC; border-right:1px solid var(--border); }
+.alloc-grid thead th.person-col { width:150px; min-width:150px; position:sticky; left:0; z-index:4; background:var(--surface-2); border-right:1px solid var(--border); }
 .alloc-grid thead th.wk-head { width:140px; min-width:140px; }
-.alloc-grid thead th.total-col { width:120px; min-width:120px; text-align:center; position:sticky; right:0; z-index:4; background:#F8FAFC; border-left:1px solid var(--border); box-shadow:-6px 0 8px -6px rgba(15,23,42,.08); }
-.alloc-grid tbody td { border-bottom:1px solid #F1F5F9; border-right:1px solid #F1F5F9; vertical-align:top; padding:0; }
+.alloc-grid thead th.total-col { width:120px; min-width:120px; text-align:center; position:sticky; right:0; z-index:4; background:var(--surface-2); border-left:1px solid var(--border); box-shadow:-6px 0 8px -6px rgba(15,23,42,.08); }
+.alloc-grid tbody td { border-bottom:1px solid var(--border-soft); border-right:1px solid var(--border-soft); vertical-align:top; padding:0; }
 .alloc-grid tbody td.person-cell { padding:10px 10px; background:var(--white); position:sticky; left:0; z-index:2; border-right:1px solid var(--border); vertical-align:middle; cursor:pointer; transition:background .1s; }
-.alloc-grid tbody td.total-cell { position:sticky; right:0; z-index:2; background:#FAFBFC; border-left:1px solid var(--border); box-shadow:-6px 0 8px -6px rgba(15,23,42,.08); }
-.alloc-grid tbody tr.over td.total-cell { background:#FEF2F2; }
-.alloc-grid tbody tr:hover td.total-cell { background:#F5F7FA; }
-.alloc-grid tbody td.person-cell:hover { background:#F8FAFC; }
+/* total-cell: high-specificity rule needs to re-assert padding + centering,
+   because `.alloc-grid tbody td { padding:0 }` outranks the lower-specificity
+   `.total-cell` rule. Use flex to bulletproof horizontal + vertical centering. */
+.alloc-grid tbody td.total-cell { position:sticky; right:0; z-index:2; background:var(--surface-3); border-left:1px solid var(--border); box-shadow:-6px 0 8px -6px rgba(15,23,42,.08); width:120px; min-width:120px; padding:12px 16px; text-align:center; vertical-align:middle; }
+.alloc-grid tbody td.total-cell > .total-pct,
+.alloc-grid tbody td.total-cell > .total-days { display:block; width:100%; text-align:center; }
+/* over-cap rows: layer the translucent tint on a SOLID surface so sticky cells
+   don't let scrolled-behind chip text bleed through. */
+.alloc-grid tbody tr.over td.total-cell {
+  background:
+    linear-gradient(var(--tint-red-soft), var(--tint-red-soft)),
+    var(--surface-3);
+}
+.alloc-grid tbody tr:hover td.total-cell { background:var(--surface-hover); }
+.alloc-grid tbody td.person-cell:hover { background:var(--surface-2); }
 .alloc-grid tbody td.person-cell:hover .person-edit { opacity:1; }
-.alloc-grid tbody tr.over td.person-cell { background:#FEF2F2; }
-.alloc-grid tbody tr.over td.person-cell:hover { background:#FEE6E6; }
-.alloc-grid tbody tr:hover td:not(.person-cell) { background:#FBFCFD; }
+.alloc-grid tbody tr.over td.person-cell {
+  background:
+    linear-gradient(var(--tint-red-soft), var(--tint-red-soft)),
+    var(--white);
+}
+.alloc-grid tbody tr.over td.person-cell:hover {
+  background:
+    linear-gradient(var(--tint-red-soft-hover), var(--tint-red-soft-hover)),
+    var(--white);
+}
+.alloc-grid tbody tr:hover td:not(.person-cell) { background:var(--surface-row-hover); }
 .person-edit { font-size:11px; color:var(--muted); opacity:0; transition:opacity .1s; margin-left:4px; flex-shrink:0; display:inline-flex; align-items:center; }
-.add-person-row td { padding:10px; background:#FAFBFC; border-bottom:1px solid var(--border); position:sticky; left:0; }
+.add-person-row td { padding:10px; background:var(--surface-3); border-bottom:1px solid var(--border); position:sticky; left:0; }
 .add-person-btn { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); cursor:pointer; padding:7px 10px; border-radius:6px; background:transparent; border:1px dashed var(--border); font-family:inherit; transition:all .12s; white-space:nowrap; }
 .add-person-btn:hover { color:var(--cyan); border-color:var(--cyan); background:rgba(127,200,212,.04); }
 .pm-color-picker { display:flex; gap:5px; flex-wrap:wrap; padding:6px 0 0; }
@@ -125,28 +247,37 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .week-cell.is-reduced.cur-week { background-image:repeating-linear-gradient(45deg, rgba(127,200,212,.03), rgba(127,200,212,.03) 6px, rgba(148,163,184,0.1) 6px, rgba(148,163,184,0.1) 12px); }
 .cap-badge { position:absolute; top:3px; right:4px; font-size:9px; font-weight:700; color:var(--muted); background:var(--white); border:1px solid var(--border); border-radius:3px; padding:1px 4px; letter-spacing:.02em; pointer-events:none; z-index:1; }
 .week-cell-inner { display:flex; flex-direction:column; gap:3px; min-height:54px; }
-.task-chip { display:flex; align-items:center; gap:4px; padding:4px 5px 4px 8px; border-radius:5px; font-size:10px; cursor:grab; background:white; border:1px solid var(--border); border-left-width:3px; transition:all .1s; line-height:1.2; }
+.task-chip { display:flex; align-items:center; gap:4px; padding:4px 5px 4px 8px; border-radius:5px; font-size:10px; cursor:grab; background:var(--white); border:1px solid var(--border); border-left-width:3px; transition:all .1s; line-height:1.2; }
 .task-chip:hover { border-color:var(--cyan); box-shadow:0 1px 3px rgba(0,0,0,.06); }
 .task-chip:active { cursor:grabbing; }
 .task-chip.dragging { opacity:.45; }
 .tc-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; color:var(--text); }
-.tc-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:#F1F5F9; white-space:nowrap; }
-.tc-rev { font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; background:transparent; border:1px dashed var(--border); white-space:nowrap; letter-spacing:.02em; display:inline-flex; align-items:center; gap:3px; }
-.tc-rev-arrow { color:#B8C4CF; font-weight:400; }
-.bc-rev { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; border:1px dashed var(--border); white-space:nowrap; margin-left:6px; letter-spacing:.02em; }
+.tc-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:var(--border-soft); white-space:nowrap; }
+.tc-rev { font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; background:transparent; border:1px dashed var(--border); white-space:nowrap; letter-spacing:.02em; cursor:help; }
+.bc-rev { font-size:9px; font-weight:700; color:var(--muted); padding:1px 5px; border-radius:3px; border:1px dashed var(--border); white-space:nowrap; margin-left:6px; letter-spacing:.02em; cursor:help; }
 .tc-x { font-size:12px; color:var(--muted); cursor:pointer; padding:0 3px; opacity:0; transition:opacity .1s; line-height:1; }
 .task-chip:hover .tc-x { opacity:1; }
 .tc-x:hover { color:var(--red); }
-.total-cell { text-align:center; padding:12px 16px; vertical-align:middle; background:#FAFBFC; }
-.total-pct { font-size:15px; font-weight:800; line-height:1.1; }
-.total-days { font-size:10px; color:var(--muted); margin-top:3px; }
+/* Parked chips: subtle dim + dashed border + warm tint so the eye reads
+   "held, do not staff over it." The slot is still consumed in capacity
+   math — the visual just makes the held state unmissable. */
+.task-chip.is-parked { background:repeating-linear-gradient(135deg, var(--white), var(--white) 6px, rgba(192,138,200,0.06) 6px, rgba(192,138,200,0.06) 12px); border-style:dashed; }
+.task-chip.is-parked .tc-name { color:var(--muted); font-style:italic; }
+.task-chip.is-parked .tc-days { background:rgba(192,138,200,0.18); color:#6B4E8C; }
+.tc-park { display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6B4E8C; padding:1px 5px 1px 4px; border-radius:3px; background:rgba(192,138,200,0.18); white-space:nowrap; }
+.tc-park svg { flex-shrink:0; }
+.task-chip.is-done { opacity:.6; }
+.task-chip.is-done .tc-name { text-decoration:line-through; color:var(--muted); }
+.total-cell { width:120px; min-width:120px; text-align:center; padding:12px 16px; vertical-align:middle; background:var(--surface-3); }
+.total-pct { font-size:15px; font-weight:800; line-height:1.1; text-align:center; }
+.total-days { font-size:10px; color:var(--muted); margin-top:3px; text-align:center; }
 .total-days-reduced { font-weight:700; color:var(--amber); }
 .total-over { color:var(--red); }
 .total-cap { color:var(--amber); }
 .total-ok { color:var(--green); }
 .total-low { color:var(--muted); }
-.alloc-hint { padding:10px 16px; font-size:11px; color:var(--muted); background:#F8FAFC; border-top:1px solid var(--border); flex-shrink:0; }
-.alloc-hint code { background:white; padding:1px 5px; border-radius:3px; border:1px solid var(--border); font-size:10px; }
+.alloc-hint { padding:10px 16px; font-size:11px; color:var(--muted); background:var(--surface-2); border-top:1px solid var(--border); flex-shrink:0; }
+.alloc-hint code { background:var(--white); padding:1px 5px; border-radius:3px; border:1px solid var(--border); font-size:10px; }
 .alloc-hint b { color:var(--text); }
 
 /* ── RIGHT RAIL ─────────────────────────────────────── */
@@ -164,38 +295,44 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .up-group-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .up-group-name { font-size:11px; font-weight:600; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .up-group-progress { font-size:10px; color:var(--muted); font-variant-numeric:tabular-nums; font-weight:600; }
-.up-group-bar { height:3px; background:#F1F5F9; border-radius:2px; margin:4px 14px 6px; overflow:hidden; }
+.up-group-bar { height:3px; background:var(--border-soft); border-radius:2px; margin:4px 14px 6px; overflow:hidden; }
 .up-group-fill { height:100%; border-radius:2px; transition:width .2s; }
-.up-task { display:flex; align-items:center; gap:7px; margin:4px 14px; padding:6px 8px; background:white; border:1px solid var(--border); border-left:3px solid var(--design); border-radius:5px; cursor:grab; font-size:11px; transition:all .1s; }
+.up-task { display:flex; align-items:center; gap:7px; margin:4px 14px; padding:6px 8px; background:var(--white); border:1px solid var(--border); border-left:3px solid var(--design); border-radius:5px; cursor:grab; font-size:11px; transition:all .1s; }
 .up-task:hover { border-color:var(--cyan); box-shadow:0 1px 4px rgba(0,0,0,.05); }
 .up-task:active { cursor:grabbing; }
 .up-task.dragging { opacity:.45; }
 .up-task.role-copy { border-left-color:var(--copy); }
 .up-task-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
 .up-task-meta { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.up-task-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:#F1F5F9; }
+.up-task-days { font-size:9px; font-weight:700; color:var(--text); padding:1px 4px; border-radius:3px; background:var(--border-soft); }
 .up-task-role { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:1px 5px; border-radius:3px; }
 .up-task-role.design { background:rgba(178,152,212,.22); color:#6B4E8C; }
 .up-task-role.copy { background:rgba(237,200,116,.28); color:#7A5410; }
 .up-empty { text-align:center; font-size:11px; color:var(--muted); padding:20px 14px; font-style:italic; }
 
 /* ── CAPACITY HEATMAP ───────────────────────────────── */
+/* Two-column layout: fixed left (names + current-week) is a real DOM sibling
+   of the scrollable cells. No sticky positioning, no bleed-through possible —
+   the cells literally cannot exist in the same container as the names. */
 .hm { padding:4px 0 14px; }
-.hm-scroll { overflow-x:auto; padding:0 14px 4px; scrollbar-width:thin; }
+.hm-frame { display:flex; align-items:flex-start; }
+.hm-fixed { flex-shrink:0; background:var(--white); position:relative; z-index:2; box-shadow:6px 0 8px -6px rgba(0,0,0,.20); }
+.hm-fix-hdr { display:flex; align-items:stretch; min-height:24px; margin-bottom:4px; }
+.hm-fix-row { display:flex; align-items:center; min-height:28px; margin-bottom:4px; }
+.hm-name-sp { width:72px; flex-shrink:0; }
+.hm-now-hdr { width:52px; flex-shrink:0; font-size:9px; font-weight:700; color:var(--text); text-align:center; line-height:1.2; text-transform:uppercase; letter-spacing:.04em; padding:0 4px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; }
+.hm-now-hdr small { display:block; font-size:8px; font-weight:500; color:var(--muted); letter-spacing:0; text-transform:none; margin-top:1px; }
+.hm-name { font-size:10px; font-weight:600; color:var(--text); width:72px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; padding-left:14px; }
+.hm-now-wrap { width:52px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+.hm-now-cell { width:44px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; box-shadow:0 0 0 1.5px var(--text); }
+.hm-scroll { flex:1; min-width:0; overflow-x:auto; padding:0 0 4px; scrollbar-width:thin; }
 .hm-scroll::-webkit-scrollbar { height:6px; }
 .hm-scroll::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
 .hm-scroll::-webkit-scrollbar-track { background:transparent; }
-.hm-content { display:inline-block; min-width:100%; }
-.hm-hdr { display:flex; align-items:stretch; margin-bottom:4px; min-height:24px; }
-.hm-name-sp { width:58px; flex-shrink:0; position:sticky; left:0; background:#fff; z-index:3; }
-.hm-now-hdr { width:52px; flex-shrink:0; font-size:9px; font-weight:700; color:var(--text); text-align:center; line-height:1.2; text-transform:uppercase; letter-spacing:.04em; position:sticky; left:58px; background:#fff; z-index:3; padding:0 4px; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; }
-.hm-now-hdr small { display:block; font-size:8px; font-weight:500; color:var(--muted); letter-spacing:0; text-transform:none; margin-top:1px; }
-.hm-rest-hdr { display:flex; gap:2px; align-items:flex-end; }
+.hm-scroll-inner { display:inline-block; min-width:100%; padding-right:14px; }
+.hm-rest-hdr { display:flex; gap:2px; align-items:flex-end; min-height:24px; margin-bottom:4px; }
 .hm-rest-hdr .hm-wk-lbl { width:44px; flex-shrink:0; font-size:9px; color:var(--muted); text-align:center; line-height:1.2; overflow:hidden; }
-.hm-row { display:flex; align-items:stretch; margin-bottom:4px; min-height:28px; }
-.hm-name { font-size:10px; font-weight:600; width:58px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; position:sticky; left:0; background:#fff; z-index:3; display:flex; align-items:center; }
-.hm-now-wrap { width:52px; flex-shrink:0; position:sticky; left:58px; z-index:3; background:#fff; display:flex; align-items:center; justify-content:center; padding:0 4px; }
-.hm-now-cell { width:44px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; box-shadow:0 0 0 1.5px var(--dark); }
+.hm-data-row { display:flex; align-items:center; min-height:28px; margin-bottom:4px; }
 .hm-rest { display:flex; gap:2px; align-items:center; }
 .hm-cell { width:44px; flex-shrink:0; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; transition:opacity .1s; }
 .hm-cell:hover, .hm-now-cell:hover { opacity:.85; cursor:default; }
@@ -215,7 +352,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .wo-ghdr-lbl::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); flex-shrink:0; }
 .wo-ghdr-total { font-size:10px; color:var(--muted); font-weight:600; }
 .wo-item { display:flex; flex-direction:column; gap:5px; padding:8px 8px 9px; border-radius:6px; cursor:pointer; transition:background .1s; }
-.wo-item:hover { background:#F8FAFC; }
+.wo-item:hover { background:var(--surface-2); }
 .wo-item-top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; font-size:11px; }
 .wo-item-name { color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Wait days are the headline number on this surface — bold, dark, prominent. */
@@ -229,21 +366,44 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .wo-item-work b { color:var(--text); font-weight:600; }
 /* Wait-only bar: full-width track, fill proportional to longest wait in panel.
    Color matches the reviewer dot so the queue identity is consistent. */
-.wo-item-bar { height:4px; background:#F1F5F9; border-radius:2px; overflow:hidden; margin-top:2px; }
+.wo-item-bar { height:4px; background:var(--border-soft); border-radius:2px; overflow:hidden; margin-top:2px; }
 .wo-item-bar-fill { height:100%; background:var(--rev-dot, #B8C4CF); border-radius:2px; opacity:.55; transition:width .2s; }
+/* Section headers split active vs planned. Subtle but unmissable so the
+   reader doesn't conflate "actually parked right now" with "we've budgeted
+   for this wait but it hasn't happened." */
+.wo-section-hdr { display:flex; flex-direction:column; gap:1px; padding:10px 2px 4px; margin-top:8px; border-top:1px solid var(--border); }
+.wo-section-hdr:first-child { border-top:none; padding-top:4px; margin-top:0; }
+.wo-section-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text); }
+.wo-section-sub { font-size:10px; color:var(--muted); line-height:1.4; }
+/* Active group: tiny accent on the left so a glance separates it from the
+   planned group when both are visible. */
+.wo-group.active { padding-left:2px; }
+.wo-group.active .wo-ghdr-lbl::before { box-shadow:0 0 0 2px rgba(192,138,200,0.18); }
+.wo-item.active { border-left:2px solid #C08AC8; padding-left:6px; }
+.wo-item-actions { display:flex; justify-content:flex-end; margin-top:4px; }
+.wo-recv { font-size:10px; font-weight:700; color:var(--green); background:rgba(168,205,160,0.14); border:1px solid rgba(168,205,160,0.5); padding:3px 8px; border-radius:5px; cursor:pointer; font-family:inherit; transition:background .1s, border-color .1s; }
+.wo-recv:hover { background:rgba(168,205,160,0.28); border-color:var(--green); }
+/* Wait-vs-baseline coloring. on-pace = green, over-pace = amber, way-over = red. */
+.wo-item-wait.on-pace  { color:var(--green); }
+.wo-item-wait.over-pace { color:var(--amber); }
+.wo-item-wait.way-over  { color:var(--red); }
+.wo-item-bar-fill.on-pace  { background:var(--green); opacity:.7; }
+.wo-item-bar-fill.over-pace { background:var(--amber); opacity:.7; }
+.wo-item-bar-fill.way-over  { background:var(--red);   opacity:.75; }
+.wo-buf-warn { color:var(--amber); font-size:10px; margin-left:3px; cursor:help; }
 
 /* ── BOARD ──────────────────────────────────────────── */
 .board { flex:1; overflow:hidden; padding:14px 16px; background:var(--white); display:flex; flex-direction:column; }
 .board-mobile-tabs { display:none; }
 .board-cols { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; flex:1; min-height:0; }
-.board-col { background:#F8FAFC; border-radius:8px; padding:10px; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+.board-col { background:var(--surface-2); border-radius:8px; padding:10px; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 .board-col-hdr { display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px; border-bottom:1px solid var(--border); margin-bottom:8px; }
 .board-col-left { display:flex; align-items:center; gap:6px; }
 .board-col-dot { width:8px; height:8px; border-radius:50%; }
 .board-col-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text); }
-.board-col-count { font-size:10px; color:var(--muted); background:white; border-radius:10px; padding:1px 8px; font-weight:600; }
+.board-col-count { font-size:10px; color:var(--muted); background:var(--white); border-radius:10px; padding:1px 8px; font-weight:600; }
 .board-col-scroll { overflow-y:auto; flex:1; padding-right:2px; }
-.board-card { background:white; border:1px solid var(--border); border-radius:7px; padding:9px 10px; margin-bottom:7px; transition:all .12s; cursor:grab; }
+.board-card { background:var(--white); border:1px solid var(--border); border-radius:7px; padding:9px 10px; margin-bottom:7px; transition:all .12s; cursor:grab; }
 .board-card:hover { border-color:var(--cyan); box-shadow:0 2px 8px rgba(0,0,0,0.05); transform:translateY(-1px); }
 .board-card:active { cursor:grabbing; }
 .board-card.dragging { opacity:.45; cursor:grabbing; }
@@ -260,24 +420,24 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .board-empty { text-align:center; font-size:11px; color:var(--muted); padding:18px 8px; font-style:italic; }
 
 /* ── UPCOMING VIEW ──────────────────────────────────── */
-.up-view { flex:1; overflow-y:auto; background:#F8FAFC; padding:16px; }
-.up-card { background:white; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+.up-view { flex:1; overflow-y:auto; background:var(--surface-2); padding:16px; }
+.up-card { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
 .up-card-hdr { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
 .up-card-dot { width:12px; height:12px; border-radius:50%; }
 .up-card-name { font-size:15px; font-weight:700; flex:1; }
 .up-card-dates { font-size:11px; color:var(--muted); }
-.up-card-staffed { font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; background:#F1F5F9; color:var(--muted); }
+.up-card-staffed { font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; background:var(--border-soft); color:var(--muted); }
 .up-card-staffed.partial { background:rgba(237,200,116,.25); color:#7A5410; }
 .up-card-staffed.full { background:rgba(168,205,160,.25); color:#4A6E4F; }
-.up-card-progress { height:6px; background:#F1F5F9; border-radius:3px; overflow:hidden; margin-bottom:14px; }
+.up-card-progress { height:6px; background:var(--border-soft); border-radius:3px; overflow:hidden; margin-bottom:14px; }
 .up-card-progress-fill { height:100%; transition:width .2s; }
 .up-roles { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-.up-role-chip { display:flex; align-items:center; gap:6px; padding:5px 10px; background:#F8FAFC; border:1px solid var(--border); border-radius:16px; font-size:11px; }
+.up-role-chip { display:flex; align-items:center; gap:6px; padding:5px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:16px; font-size:11px; }
 .up-role-chip .rdot { width:8px; height:8px; border-radius:50%; }
 .up-role-chip .rname { font-weight:600; }
 .up-role-chip .rdays { color:var(--muted); }
 .up-task-list { display:flex; flex-direction:column; gap:5px; }
-.up-task-row { display:flex; align-items:center; gap:10px; padding:8px 10px; background:#F8FAFC; border-radius:6px; font-size:11px; }
+.up-task-row { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--surface-2); border-radius:6px; font-size:11px; }
 .up-task-row.staffed { background:rgba(168,205,160,.06); }
 .up-task-row .task-left { flex:1; min-width:0; display:flex; align-items:center; gap:8px; }
 .up-task-row .task-name { font-weight:500; color:var(--text); }
@@ -287,25 +447,25 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 
 .modal-bg { position:fixed; inset:0; background:rgba(15,23,42,0.55); display:none; align-items:center; justify-content:center; z-index:200; }
 .modal-bg.show { display:flex; }
-.modal-card { background:white; border-radius:12px; width:460px; max-width:92vw; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+.modal-card { background:var(--white); border-radius:12px; width:460px; max-width:92vw; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
 .sm-title { font-size:16px; font-weight:700; margin-bottom:4px; }
 .sm-sub { font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.sm-proj-pill { display:inline-flex; align-items:center; gap:5px; padding:2px 8px 2px 6px; border-radius:11px; background:#F1F5F9; font-size:11px; font-weight:600; color:var(--text); }
+.sm-proj-pill { display:inline-flex; align-items:center; gap:5px; padding:2px 8px 2px 6px; border-radius:11px; background:var(--border-soft); font-size:11px; font-weight:600; color:var(--text); }
 .sm-proj-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .sm-meta { color:var(--muted); }
 .sm-field { margin-bottom:12px; }
 .sm-label { font-size:11px; font-weight:600; color:var(--text); display:block; margin-bottom:4px; }
-.sm-input, .sm-select { width:100%; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; font-family:inherit; color:var(--text); background:white; box-sizing:border-box; }
+.sm-input, .sm-select { width:100%; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; font-family:inherit; color:var(--text); background:var(--white); box-sizing:border-box; }
 .sm-input:focus, .sm-select:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(127,200,212,.15); }
 .sm-select { appearance:none; -webkit-appearance:none; -moz-appearance:none; padding-right:30px; cursor:pointer; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M3 5l3 3 3-3' fill='none' stroke='%2364748B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat:no-repeat; background-position:right 10px center; background-size:12px 12px; }
 .sm-select:hover:not(:disabled) { border-color:#CBD5E1; }
-.sm-select:disabled { cursor:default; opacity:.75; background-color:#F8FAFC; }
+.sm-select:disabled { cursor:default; opacity:.75; background-color:var(--surface-2); }
 .sm-input[type="number"] { -moz-appearance:textfield; }
 .sm-input[type="number"]::-webkit-outer-spin-button,
 .sm-input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
 .sm-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .sm-row { display:flex; gap:8px; align-items:center; margin-top:14px; }
-.sm-btn { padding:8px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--text); font-family:inherit; }
+.sm-btn { padding:8px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--white); color:var(--text); font-family:inherit; }
 .sm-btn:hover { border-color:var(--cyan); }
 .sm-btn.primary { background:var(--cyan); border-color:var(--cyan); color:var(--dark); }
 .sm-btn.primary:hover { background:#5EB3C1; border-color:#5EB3C1; color:var(--dark); }
@@ -317,9 +477,131 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .sm-status.show { display:block; }
 .sm-status.ok { background:rgba(168,205,160,.18); color:#4A6E4F; }
 .sm-status.err { background:rgba(226,138,138,.15); color:#8B4545; }
-.sm-hint { background:#F8FAFC; border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:11px; color:var(--muted); line-height:1.6; margin-top:12px; }
-.sm-hint code { background:white; padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid var(--border); }
+.sm-hint { background:var(--surface-2); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:11px; color:var(--muted); line-height:1.6; margin-top:12px; }
+.sm-hint code { background:var(--white); padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid var(--border); }
 .sm-hint b { color:var(--text); }
+
+/* ── SEGMENTED CONTROL (modal status switcher) ──────── */
+.seg { display:inline-flex; gap:0; border:1px solid var(--border); border-radius:7px; overflow:hidden; background:var(--surface-2); }
+.seg-opt { padding:6px 12px; font-size:11px; font-weight:600; color:var(--muted); background:transparent; border:none; cursor:pointer; font-family:inherit; transition:background .1s, color .1s; border-right:1px solid var(--border); }
+.seg-opt:last-child { border-right:none; }
+.seg-opt:hover { color:var(--text); }
+.seg-opt.on { background:var(--white); color:var(--text); box-shadow:inset 0 -2px 0 var(--cyan); }
+.seg-opt[data-state="in_review"].on { box-shadow:inset 0 -2px 0 #C08AC8; }
+.seg-opt[data-state="done"].on { box-shadow:inset 0 -2px 0 var(--green); }
+.seg-hint { font-size:10px; color:var(--muted); margin-top:6px; line-height:1.5; }
+
+/* ── SIDEBAR: ABOUT CTA ─────────────────────────────── */
+.sb-about-cta { display:flex; align-items:center; gap:10px; width:calc(100% - 24px); margin:14px 12px 8px; padding:11px 12px; background:linear-gradient(135deg, rgba(127,200,212,0.14), rgba(178,152,212,0.10)); border:1px solid rgba(127,200,212,0.45); border-radius:8px; cursor:pointer; font-family:inherit; text-align:left; transition:all .12s; box-sizing:border-box; }
+.sb-about-cta:hover { border-color:var(--cyan); background:linear-gradient(135deg, rgba(127,200,212,0.22), rgba(178,152,212,0.16)); transform:translateY(-1px); box-shadow:0 2px 8px rgba(127,200,212,0.18); }
+.sb-about-ico { width:26px; height:26px; border-radius:6px; background:var(--white); display:flex; align-items:center; justify-content:center; color:var(--cyan); flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
+.sb-about-text { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.sb-about-title { font-size:11px; font-weight:700; color:var(--text); letter-spacing:.01em; }
+.sb-about-sub { font-size:10px; color:var(--muted); }
+.sb-about-arrow { color:var(--muted); flex-shrink:0; transition:transform .15s, color .15s; }
+.sb-about-cta:hover .sb-about-arrow { color:var(--cyan); transform:translateX(2px); }
+
+/* ── ABOUT MODAL (one-pager) ────────────────────────── */
+.about-bg { padding:24px 16px; align-items:flex-start; }
+.about-card { background:var(--white); border:1px solid var(--border); border-radius:14px; width:min(820px, 100%); max-height:calc(100vh - 48px); overflow-y:auto; padding:0; position:relative; box-shadow:0 12px 40px rgba(0,0,0,0.12); margin:auto; }
+.about-close { position:absolute; top:14px; right:14px; width:30px; height:30px; border-radius:50%; background:var(--surface-2); border:1px solid var(--border); color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .1s; z-index:2; }
+.about-close:hover { background:var(--white); color:var(--text); border-color:var(--cyan); }
+
+.ab-hero { padding:36px 36px 24px; background:linear-gradient(135deg, rgba(127,200,212,0.08), rgba(178,152,212,0.06)); border-bottom:1px solid var(--border); border-radius:14px 14px 0 0; }
+.ab-eyebrow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.10em; color:var(--cyan); margin-bottom:8px; }
+.ab-h1 { font-size:22px; font-weight:700; color:var(--text); line-height:1.25; margin:0 0 12px; max-width:640px; }
+.ab-lede { font-size:13px; line-height:1.65; color:var(--text); margin:0; max-width:640px; }
+.ab-lede b { font-weight:700; }
+.ab-lede i { color:var(--muted); font-style:italic; }
+
+.ab-grid { padding:8px 28px 4px; display:flex; flex-direction:column; gap:4px; }
+.ab-sec { display:flex; gap:18px; padding:22px 8px; border-bottom:1px solid var(--border); }
+.ab-sec:last-child { border-bottom:none; }
+.ab-sec-num { width:30px; height:30px; flex-shrink:0; border-radius:8px; background:var(--cyan); color:var(--dark); font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; line-height:1; }
+.ab-sec-asana .ab-sec-num { background:#B298D4; color:var(--white); }
+.ab-sec-body { flex:1; min-width:0; }
+.ab-h2 { font-size:15px; font-weight:700; color:var(--text); margin:0 0 8px; line-height:1.3; }
+.ab-p { font-size:12.5px; line-height:1.65; color:var(--text); margin:0 0 10px; }
+.ab-p i { color:var(--muted); font-style:italic; }
+.ab-p code { background:var(--surface-2); padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid var(--border); font-family:inherit; font-weight:600; }
+.ab-meta { font-size:11.5px; line-height:1.6; color:var(--muted); margin:10px 0 0; padding:10px 12px; background:var(--surface-2); border-left:3px solid var(--cyan); border-radius:0 6px 6px 0; }
+.ab-meta b { color:var(--text); font-weight:700; }
+
+/* Demo blocks — small, inline mini-mockups using real chip / cell styles. */
+.ab-demo { background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:14px; margin:10px 0 4px; }
+.ab-demo-row { display:flex; align-items:center; gap:10px; }
+.ab-demo-name { font-size:11px; font-weight:600; color:var(--text); width:60px; flex-shrink:0; }
+.ab-demo-cell { flex:1; display:flex; flex-direction:column; gap:3px; padding:6px; background:var(--white); border:1px solid var(--border); border-radius:6px; min-height:54px; }
+.ab-demo-tot { width:84px; flex-shrink:0; text-align:center; padding:8px 6px; background:var(--white); border:1px solid var(--border); border-radius:6px; }
+.ab-demo-tot.small { width:auto; min-width:74px; padding:6px 10px; }
+.ab-demo-tot.reduced { background:repeating-linear-gradient(45deg, var(--white), var(--white) 4px, rgba(148,163,184,0.10) 4px, rgba(148,163,184,0.10) 8px); }
+.ab-demo-tot-pct { font-size:14px; font-weight:800; line-height:1.05; }
+.ab-demo-tot-pct.low { color:var(--muted); }
+.ab-demo-tot-pct.ok  { color:var(--green); }
+.ab-demo-tot-pct.cap { color:var(--amber); }
+.ab-demo-tot-pct.bad { color:var(--red); }
+.ab-demo-tot-sub { font-size:10px; color:var(--muted); margin-top:1px; }
+.ab-demo-totals { display:flex; flex-direction:column; gap:8px; }
+.ab-demo-totline { display:flex; align-items:center; gap:12px; }
+.ab-demo-totline .ab-demo-name { width:54px; }
+.ab-demo-tot-tag { font-size:10.5px; color:var(--muted); }
+.ab-demo-tot-tag.warn { color:var(--amber); font-weight:600; }
+.ab-demo-chips { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.ab-demo-chip-pair { display:flex; flex-direction:column; gap:6px; flex:1; min-width:180px; }
+.ab-demo-chip-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.ab-demo-chip-arrow { font-size:11px; color:var(--muted); font-weight:600; padding:0 4px; align-self:flex-end; padding-bottom:8px; }
+.ab-tag-park { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#6B4E8C; padding:2px 6px 2px 5px; border-radius:3px; background:rgba(192,138,200,0.18); white-space:nowrap; vertical-align:middle; }
+
+/* Asana flow diagram */
+.ab-flow { display:flex; align-items:stretch; gap:6px; margin:14px 0 4px; padding:14px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; }
+.ab-flow-step { flex:1; min-width:0; padding:10px 11px; background:var(--white); border:1px solid var(--border); border-radius:7px; }
+.ab-flow-num { display:inline-flex; width:18px; height:18px; border-radius:50%; background:#B298D4; color:white; font-weight:800; font-size:10px; align-items:center; justify-content:center; margin-bottom:6px; }
+.ab-flow-title { font-size:12px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.ab-flow-sub { font-size:11px; color:var(--muted); line-height:1.45; }
+.ab-flow-arrow { display:flex; align-items:center; color:var(--muted); flex-shrink:0; padding:0 2px; }
+
+/* 60-second start */
+.ab-start { padding:22px 36px 8px; background:rgba(127,200,212,0.05); border-top:1px solid var(--border); }
+.ab-start-hdr { font-size:13px; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.ab-start-hdr::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--cyan); }
+.ab-start-list { margin:0; padding-left:22px; display:flex; flex-direction:column; gap:6px; }
+.ab-start-list li { font-size:12px; line-height:1.55; color:var(--text); }
+.ab-start-list li b { color:var(--text); font-weight:700; }
+
+.ab-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 36px 28px; flex-wrap:wrap; }
+.ab-foot-tip { font-size:11px; color:var(--muted); flex:1; min-width:200px; }
+.ab-foot-tip code { background:var(--surface-2); padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid var(--border); font-family:inherit; }
+
+@media (max-width:640px) {
+  .ab-hero { padding:24px 22px 18px; }
+  .ab-h1 { font-size:18px; }
+  .ab-grid { padding:4px 14px; }
+  .ab-sec { gap:12px; padding:18px 4px; }
+  .ab-start { padding:18px 22px 8px; }
+  .ab-foot { padding:14px 22px 22px; }
+  .ab-flow { flex-direction:column; }
+  .ab-flow-arrow { transform:rotate(90deg); align-self:center; padding:2px 0; }
+  .ab-demo-chip-arrow { align-self:flex-start; padding:0; }
+}
+
+/* ── BASELINES MODAL ────────────────────────────────── */
+.bm-list { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+.bm-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2); }
+.bm-row.external { --bm-dot:#C08AC8; }
+.bm-row.internal { --bm-dot:#9BB5DD; }
+.bm-row-meta { display:flex; align-items:center; gap:10px; min-width:0; flex:1; }
+.bm-row-dot { width:8px; height:8px; border-radius:50%; background:var(--bm-dot,var(--muted)); flex-shrink:0; }
+.bm-row-text { min-width:0; }
+.bm-row-name { font-size:12px; font-weight:600; color:var(--text); }
+.bm-row-default { font-size:10px; color:var(--muted); margin-top:2px; }
+.bm-row-default b { color:var(--text); font-weight:700; }
+.bm-row-input { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.bm-row-input input { width:62px; padding:5px 7px; font-size:12px; font-weight:600; color:var(--text); border:1px solid var(--border); border-radius:5px; background:var(--white); text-align:right; font-family:inherit; font-variant-numeric:tabular-nums; }
+.bm-row-input input:focus { outline:none; border-color:var(--cyan); }
+.bm-row-input span { font-size:11px; color:var(--muted); font-weight:600; }
+.bm-reset { font-size:10px; color:var(--muted); background:transparent; border:1px solid var(--border); padding:3px 7px; border-radius:4px; cursor:pointer; font-family:inherit; margin-left:6px; }
+.bm-reset:hover { color:var(--text); border-color:var(--cyan); }
+.bm-reset-spacer { display:inline-block; width:42px; }
 
 .tip { position:fixed; background:var(--dark); color:white; font-size:10px; padding:6px 10px; border-radius:6px; pointer-events:none; z-index:999; opacity:0; transition:opacity .1s; max-width:240px; line-height:1.6; }
 .tip.show { opacity:1; }
@@ -348,7 +630,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .pv-section { margin-bottom:22px; }
 .pv-section:last-child { margin-bottom:0; }
 .pv-section-hdr { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); padding:0 2px 10px; display:flex; align-items:center; gap:8px; }
-.pv-section-count { background:#F1F5F9; color:var(--muted); font-size:10px; padding:1px 8px; border-radius:10px; font-weight:700; }
+.pv-section-count { background:var(--border-soft); color:var(--muted); font-size:10px; padding:1px 8px; border-radius:10px; font-weight:700; }
 .up-card-name.clickable { cursor:pointer; }
 .up-card-name.clickable:hover { color:var(--cyan); }
 .up-card-dot.clickable { cursor:pointer; }
@@ -359,7 +641,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .up-task-row .task-del { opacity:0; cursor:pointer; color:var(--muted); font-size:14px; padding:0 4px; transition:all .1s; line-height:1; }
 .up-task-row:hover .task-del { opacity:1; }
 .up-task-row .task-del:hover { color:var(--red); }
-.pv-empty-proj { text-align:center; font-size:11px; color:var(--muted); padding:16px 14px; font-style:italic; background:#F8FAFC; border-radius:6px; margin-bottom:12px; }
+.pv-empty-proj { text-align:center; font-size:11px; color:var(--muted); padding:16px 14px; font-style:italic; background:var(--surface-2); border-radius:6px; margin-bottom:12px; }
 
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
@@ -407,10 +689,32 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 /* ── OVERVIEW ────────────────────────────────────────── */
 .ov-scroll { flex:1; overflow-y:auto; padding:16px; background:var(--bg); }
 .ov-stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:12px; }
-.ov-stat { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
-.ov-stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; margin-bottom:6px; }
-.ov-stat-val { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; }
-.ov-stat-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+.ov-stat { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:6px; min-height:96px; }
+.ov-stat-lbl { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:600; display:flex; align-items:center; gap:6px; }
+.ov-stat-lbl-pill { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:1px 5px; border-radius:3px; background:var(--surface-2); color:var(--muted); letter-spacing:.06em; }
+.ov-stat-val { font-size:22px; font-weight:700; color:var(--text); line-height:1.1; font-variant-numeric:tabular-nums; }
+.ov-stat-val.ok { color:var(--green); }
+.ov-stat-val.warn { color:var(--amber); }
+.ov-stat-val.bad { color:var(--red); }
+.ov-stat-val.cool { color:var(--cyan); }
+.ov-stat-sub { font-size:11px; color:var(--muted); line-height:1.35; }
+.ov-stat-sub strong { color:var(--text); font-weight:600; }
+/* Utilization band: thin segmented bar showing cold/healthy/hot/over zones with a marker */
+.ov-band { position:relative; height:6px; border-radius:3px; background:linear-gradient(to right, rgba(127,200,212,.35) 0%, rgba(168,205,160,.45) 60%, rgba(168,205,160,.45) 80%, rgba(237,200,116,.5) 80%, rgba(237,200,116,.5) 100%); overflow:visible; margin-top:auto; }
+.ov-band-mark { position:absolute; top:-3px; bottom:-3px; width:3px; border-radius:2px; background:var(--text); box-shadow:0 0 0 2px var(--white); transition:left .18s; }
+/* Mini forward-bars: 4 small vertical bars showing per-week util */
+.ov-mini { display:flex; gap:4px; align-items:flex-end; height:34px; margin-top:auto; }
+.ov-mini-bar { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.ov-mini-bar-fill { width:100%; min-height:3px; border-radius:3px 3px 0 0; }
+.ov-mini-bar-lbl { font-size:8px; color:var(--muted); font-weight:600; letter-spacing:.02em; }
+/* "All clear" pill for empty positive states */
+.ov-clear { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:600; color:var(--green); }
+.ov-clear::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--green); }
+/* Comma-separated names list for "at risk" detail */
+.ov-names { display:flex; flex-wrap:wrap; gap:3px 6px; font-size:11px; }
+.ov-name-pill { display:inline-flex; align-items:center; gap:4px; color:var(--text); }
+.ov-name-pill::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--pill-c, var(--muted)); flex-shrink:0; }
+.ov-name-pill .ov-name-pct { color:var(--red); font-weight:700; font-variant-numeric:tabular-nums; }
 
 /* Featured utilization card — period-aware. The big number reflects the
    selected range; the sparkline below shows each week so crunch points
@@ -463,7 +767,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ov-util-heat-head { display:grid; grid-template-columns:128px 1fr 50px; gap:10px; align-items:center; padding:0 0 4px; }
 .ov-util-heat { display:flex; flex-direction:column; gap:1px; max-height:240px; overflow-y:auto; padding-right:2px; }
 .ov-util-heat-row { display:grid; grid-template-columns:128px 1fr 50px; gap:10px; align-items:center; padding:5px 0; border-radius:4px; }
-.ov-util-heat-row:hover { background:#FAFBFC; }
+.ov-util-heat-row:hover { background:var(--surface-3); }
 .ov-util-heat-name { display:flex; align-items:center; gap:8px; min-width:0; font-size:12px; color:var(--text); }
 .ov-util-heat-name .av { width:20px; height:20px; font-size:9px; flex-shrink:0; }
 /* Role dot replaces the avatar in by-role view; matches the role's color
@@ -497,26 +801,39 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ov-cycle-empty { font-size:12px; color:var(--muted); font-style:italic; }
 .ov-cycle-projects { display:flex; flex-direction:column; gap:10px; }
 .ov-cycle-proj { padding:10px 0; }
-.ov-cycle-proj + .ov-cycle-proj { border-top:1px dashed #EDF1F5; }
+.ov-cycle-proj + .ov-cycle-proj { border-top:1px dashed var(--border-soft); }
 .ov-cycle-proj-hdr { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px; }
 .ov-cycle-proj-name { display:inline-flex; align-items:center; gap:7px; color:var(--text); font-weight:600; font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ov-cycle-proj-dot { width:9px; height:9px; border-radius:50%; flex:0 0 9px; }
 .ov-cycle-proj-stat { display:inline-flex; align-items:baseline; gap:8px; white-space:nowrap; font-size:11px; color:var(--muted); }
 .ov-cycle-proj-actual b { color:var(--text); font-weight:700; }
 .ov-cycle-proj-chips { display:flex; flex-wrap:wrap; gap:6px; }
-.ov-cycle-rev-chip { display:inline-flex; align-items:center; gap:8px; font-size:11px; color:var(--text); padding:5px 10px 5px 11px; border-radius:8px; background:#F4F7FA; position:relative; }
+.ov-cycle-rev-chip { display:inline-flex; align-items:center; gap:8px; font-size:11px; color:var(--text); padding:5px 10px 5px 11px; border-radius:8px; background:var(--tint-grey-soft); position:relative; }
 .ov-cycle-rev-chip::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); }
-.ov-cycle-rev-chip.external { --rev-dot:#C08AC8; background:#F4EBF6; }
-.ov-cycle-rev-chip.internal { --rev-dot:#9BB5DD; background:#EBF0F7; }
+.ov-cycle-rev-chip.external { --rev-dot:#C08AC8; background:var(--tint-purple-soft); }
+.ov-cycle-rev-chip.internal { --rev-dot:#9BB5DD; background:var(--tint-blue-soft); }
 .ov-cycle-rev-name { font-weight:600; }
 .ov-cycle-rev-num b { color:var(--text); font-weight:700; }
-.ov-cycle-foot { font-size:11px; color:var(--muted); margin-top:14px; padding-top:12px; border-top:1px solid #F1F5F9; line-height:1.5; }
+.ov-cycle-tasks { display:flex; flex-direction:column; gap:6px; }
+.ov-cycle-task { display:flex; align-items:center; gap:10px; padding:6px 0; }
+.ov-cycle-task-name { flex:1 1 auto; min-width:0; font-size:12.5px; color:var(--text); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ov-cycle-task-person { flex:0 0 auto; font-size:11px; color:var(--muted); }
+.ov-cycle-task-rev { flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; font-size:11px; color:var(--text); padding:4px 9px 4px 10px; border-radius:7px; background:var(--tint-grey-soft); position:relative; }
+.ov-cycle-task-rev::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--rev-dot,var(--muted)); }
+.ov-cycle-task-rev.external { --rev-dot:#C08AC8; background:var(--tint-purple-soft); }
+.ov-cycle-task-rev.internal { --rev-dot:#9BB5DD; background:var(--tint-blue-soft); }
+.ov-cycle-task-rev-name { font-weight:600; }
+.ov-cycle-task-rev-num b { color:var(--text); font-weight:700; }
+.ov-cycle-foot { font-size:11px; color:var(--muted); margin-top:14px; padding-top:12px; border-top:1px solid var(--border-soft); line-height:1.5; }
 .ov-cycle-foot b { color:var(--text); font-weight:700; }
 .ov-cycle-trend { margin-top:6px; font-size:10.5px; color:var(--muted); font-style:italic; opacity:.85; }
 @media (max-width:760px) {
   .ov-cycle-hdr { flex-direction:column; align-items:flex-start; gap:4px; }
   .ov-cycle-proj-hdr { flex-direction:column; align-items:flex-start; gap:4px; }
   .ov-cycle-proj-stat { font-size:10.5px; }
+  .ov-cycle-task { flex-wrap:wrap; gap:6px; }
+  .ov-cycle-task-name { flex:1 1 100%; }
+  .ov-cycle-task-person { font-size:10.5px; }
 }
 .ov-section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); font-weight:600; margin:8px 0 10px; }
 .ov-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-bottom:24px; }
@@ -602,9 +919,14 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
     box-shadow:-8px 0 24px rgba(0,0,0,0.2); border-left:1px solid var(--border); }
   body.mb-rail-open .rp { transform:translateX(0); }
 
-  /* Backdrop */
+  /* Backdrop: opaque white so the underlying view doesn't peek through the
+     12vw strip the drawer doesn't cover, and so scroll-jank behind the
+     drawer doesn't visually leak. Tap-to-close still works. */
   body.mb-drawer-open .mb-backdrop { display:block; position:fixed;
-    top:46px; left:0; right:0; bottom:0; background:rgba(15,23,42,0.5); z-index:140; }
+    top:46px; left:0; right:0; bottom:0; background:var(--white); z-index:140; }
+  /* Lock body scroll while a drawer is open so the page underneath can't
+     scroll along with the drawer's own scroll. */
+  body.mb-drawer-open { overflow:hidden; }
 
   /* View bar: wrap the button row on narrow screens instead of overflowing. */
   .view-bar { flex-wrap:wrap; padding:8px 10px; gap:6px; }
@@ -647,7 +969,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .board-mtab {
     flex:0 0 auto; display:inline-flex; align-items:center; gap:6px;
     font:inherit; font-size:12px; font-weight:600; color:var(--muted);
-    background:#F1F5F9; border:1px solid transparent; border-radius:14px;
+    background:var(--border-soft); border:1px solid transparent; border-radius:14px;
     padding:6px 12px; cursor:pointer;
     transition:background .12s, color .12s, border-color .12s;
   }
@@ -656,7 +978,7 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .board-mtab-dot { width:7px; height:7px; border-radius:50%; flex:0 0 7px; }
   .board-mtab-lbl { white-space:nowrap; }
   .board-mtab-count { font-size:10px; font-weight:700; color:var(--muted); background:rgba(0,0,0,.04); border-radius:9px; padding:1px 6px; }
-  .board-mtab.active .board-mtab-count { color:var(--text); background:#F1F5F9; }
+  .board-mtab.active .board-mtab-count { color:var(--text); background:var(--border-soft); }
   .board-cols { grid-template-columns:1fr; gap:0; }
   /* Hide all columns; the active one re-appears via .mobile-active. The
      column header is also hidden on mobile because the tab strip already
@@ -709,9 +1031,8 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .wm-label { min-width:0; }
   .wm-date { flex:1 1 120px; }
 
-  /* Heatmap inside drawer reads fine but give it breathing room */
-  .hm-name, .hm-name-sp { width:48px; font-size:9px; }
-  .hm-now-hdr, .hm-now-cell { left:48px; }
+  /* Heatmap inside drawer reads fine but give it breathing room. */
+  .hm-name, .hm-name-sp { width:62px; font-size:9px; padding-left:10px; }
 
   /* Tip popover */
   .tip { max-width:92vw; font-size:11px; }
@@ -768,6 +1089,21 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   font-weight: 700;
 }
 </style>
+<script>
+  // Apply saved theme BEFORE first paint to avoid a flash of light mode.
+  // We honor a saved pref, else fall back to the OS preference if the user
+  // has never explicitly chosen.
+  (function applyStoredTheme() {
+    try {
+      var saved = localStorage.getItem('vizor.theme');
+      if (!saved) {
+        saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ? 'dark' : 'light';
+      }
+      if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch (_) { /* localStorage blocked — stay light */ }
+  })();
+</script>
 </head>
 <body>
 <!-- AUTH GATE (light client-side password; not real security — hides the app from casual visitors) -->
@@ -831,6 +1167,15 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
         </select>
       </div>
     </div>
+    <div class="sm-field" id="cmStateField" style="display:none;">
+      <label class="sm-label">Status</label>
+      <div class="seg" id="cmStateSeg" role="tablist">
+        <button type="button" class="seg-opt" data-state="doing" onclick="setCmState('doing')">Doing</button>
+        <button type="button" class="seg-opt" data-state="in_review" onclick="setCmState('in_review')">In review</button>
+        <button type="button" class="seg-opt" data-state="done" onclick="setCmState('done')">Done</button>
+      </div>
+      <div class="seg-hint" id="cmStateHint"></div>
+    </div>
     <div class="sm-status" id="cmStatus"></div>
     <div class="sm-row">
       <button class="sm-btn danger" id="cmDelete" style="display:none;" onclick="deleteTaskFromModal()">Remove from week</button>
@@ -877,6 +1222,178 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <div class="spacer"></div>
       <button class="sm-btn" onclick="closePersonModal()">Cancel</button>
       <button class="sm-btn primary" id="pmSave" onclick="savePersonModal()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT VIZOR MODAL (one-pager / get to know) -->
+<div class="modal-bg about-bg" id="aboutModal" onclick="if(event.target===this)closeAboutModal()">
+  <div class="about-card">
+    <button class="about-close" onclick="closeAboutModal()" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+
+    <div class="ab-hero">
+      <div class="ab-eyebrow">A 1-minute tour</div>
+      <h1 class="ab-h1">Vizor is the planning layer your Asana board doesn't have.</h1>
+      <p class="ab-lede">Asana is great at <i>what's getting done</i>. Vizor answers the harder questions <i>before</i> work hits Asana: <b>who has bandwidth, when, and what's actually going to take longer than it looks.</b></p>
+    </div>
+
+    <div class="ab-grid">
+
+      <!-- 1. Capacity at a glance -->
+      <section class="ab-sec">
+        <div class="ab-sec-num">1</div>
+        <div class="ab-sec-body">
+          <h2 class="ab-h2">See capacity at a glance</h2>
+          <p class="ab-p">Every cell is one person × one week. Drop a task chip in. The total on the right shows that person's load this week — instantly.</p>
+          <div class="ab-demo ab-demo-cells">
+            <div class="ab-demo-row">
+              <div class="ab-demo-name">Andre</div>
+              <div class="ab-demo-cell">
+                <div class="task-chip" style="border-left-color:#9BB5DD; cursor:default;">
+                  <span class="tc-name">Hero illustration</span>
+                  <span class="tc-days">3d</span>
+                </div>
+                <div class="task-chip" style="border-left-color:#A8CDA0; cursor:default;">
+                  <span class="tc-name">Section layouts</span>
+                  <span class="tc-days">2d</span>
+                </div>
+              </div>
+              <div class="ab-demo-tot">
+                <div class="ab-demo-tot-pct ok">100%</div>
+                <div class="ab-demo-tot-sub">5d of 5d</div>
+              </div>
+            </div>
+          </div>
+          <p class="ab-meta"><b>Why it works:</b> no story points, no abstract estimates. <b>1d = 20% of a 5-day week.</b> Anyone on the team can read the grid in 5 seconds.</p>
+        </div>
+      </section>
+
+      <!-- 2. Spot over-allocation -->
+      <section class="ab-sec">
+        <div class="ab-sec-num">2</div>
+        <div class="ab-sec-body">
+          <h2 class="ab-h2">Catch over-allocation before it ships pain</h2>
+          <p class="ab-p">Totals turn amber at 80% and red over 100%. The right-rail heatmap shows the same signal across every upcoming week so you spot the cliff before you walk off it.</p>
+          <div class="ab-demo ab-demo-totals">
+            <div class="ab-demo-totline">
+              <span class="ab-demo-name">Hay</span>
+              <div class="ab-demo-tot small"><div class="ab-demo-tot-pct low">40%</div><div class="ab-demo-tot-sub">2d</div></div>
+              <div class="ab-demo-tot-tag">cool — room for more</div>
+            </div>
+            <div class="ab-demo-totline">
+              <span class="ab-demo-name">Andre</span>
+              <div class="ab-demo-tot small"><div class="ab-demo-tot-pct ok">100%</div><div class="ab-demo-tot-sub">5d</div></div>
+              <div class="ab-demo-tot-tag">at capacity</div>
+            </div>
+            <div class="ab-demo-totline">
+              <span class="ab-demo-name">Warren</span>
+              <div class="ab-demo-tot small"><div class="ab-demo-tot-pct cap">120%</div><div class="ab-demo-tot-sub">6d of 5d</div></div>
+              <div class="ab-demo-tot-tag warn">over — re-plan or push back</div>
+            </div>
+            <div class="ab-demo-totline">
+              <span class="ab-demo-name">Sandra</span>
+              <div class="ab-demo-tot small reduced"><div class="ab-demo-tot-pct low">0%</div><div class="ab-demo-tot-sub">PTO</div></div>
+              <div class="ab-demo-tot-tag">out — capacity respected</div>
+            </div>
+          </div>
+          <p class="ab-meta"><b>Why it works:</b> over-allocation isn't a flag you have to chase — it's the first thing your eye lands on. PTO and partial weeks are first-class, so a 3-day week reads as 3 days, not 5.</p>
+        </div>
+      </section>
+
+      <!-- 3. Review rounds -->
+      <section class="ab-sec">
+        <div class="ab-sec-num">3</div>
+        <div class="ab-sec-body">
+          <h2 class="ab-h2">Track review rounds without losing the slot</h2>
+          <p class="ab-p">When a task goes out for stakeholder feedback or legal sign-off, toggle <span class="ab-tag-park"><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg> in review</span>. The chip dims so no one books over the slot — but the capacity stays reserved for the same person, because they'll need to pick the work back up.</p>
+          <div class="ab-demo ab-demo-chips">
+            <div class="ab-demo-chip-pair">
+              <div class="ab-demo-chip-lbl">Active work</div>
+              <div class="task-chip" style="border-left-color:#9BB5DD; cursor:default;">
+                <span class="tc-name">Brand guidelines</span>
+                <span class="tc-days">3d</span>
+              </div>
+            </div>
+            <div class="ab-demo-chip-arrow">→ toggle to In review →</div>
+            <div class="ab-demo-chip-pair">
+              <div class="ab-demo-chip-lbl">Parked &middot; slot still held</div>
+              <div class="task-chip is-parked" style="border-left-color:#9BB5DD; cursor:default;">
+                <span class="tc-name">Brand guidelines</span>
+                <span class="tc-days">3d</span>
+                <span class="tc-park"><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg> in review</span>
+              </div>
+            </div>
+          </div>
+          <p class="ab-p" style="margin-top:14px;">The Waiting On rail tracks <b>actual elapsed days vs. your baseline</b> for that reviewer type — so "stakeholder feedback usually takes 2 days, this one's been parked 5" turns into a coloured bar instead of a Slack thread.</p>
+          <p class="ab-meta"><b>Why it works:</b> reviews are where projects actually slip. Vizor makes the slip visible <i>while it's happening</i>, and over time you'll see which reviewer types drag — tune the baselines under <code>Settings → Review baselines</code>.</p>
+        </div>
+      </section>
+
+      <!-- 4. Asana plug-in -->
+      <section class="ab-sec ab-sec-asana">
+        <div class="ab-sec-num">4</div>
+        <div class="ab-sec-body">
+          <h2 class="ab-h2">A clean handoff to Asana</h2>
+          <p class="ab-p">Vizor isn't trying to replace your task tracker. It's the layer that comes <i>before</i> it.</p>
+          <div class="ab-flow">
+            <div class="ab-flow-step">
+              <div class="ab-flow-num">A</div>
+              <div class="ab-flow-title">Plan in Vizor</div>
+              <div class="ab-flow-sub">Block out the week. Confirm everyone has bandwidth. Sanity-check review buffers.</div>
+            </div>
+            <div class="ab-flow-arrow">
+              <svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="1" y1="7" x2="19" y2="7"/><polyline points="14 2 19 7 14 12"/></svg>
+            </div>
+            <div class="ab-flow-step">
+              <div class="ab-flow-num">B</div>
+              <div class="ab-flow-title">Push to Asana</div>
+              <div class="ab-flow-sub">One toggle in Settings. Tasks land on your board with the right assignee, due date, and project section.</div>
+            </div>
+            <div class="ab-flow-arrow">
+              <svg width="22" height="14" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="1" y1="7" x2="19" y2="7"/><polyline points="14 2 19 7 14 12"/></svg>
+            </div>
+            <div class="ab-flow-step">
+              <div class="ab-flow-num">C</div>
+              <div class="ab-flow-title">Team executes in Asana</div>
+              <div class="ab-flow-sub">Comments, files, sub-tasks — keep that where it already lives.</div>
+            </div>
+          </div>
+          <p class="ab-meta"><b>Why it works:</b> Asana is excellent for execution and a poor fit for capacity planning — the assignment dropdown can't tell you that Andre is already at 110% next week. Vizor handles the planning conversation; Asana handles the doing.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 60-second start -->
+    <div class="ab-start">
+      <div class="ab-start-hdr">Try this in 60 seconds</div>
+      <ol class="ab-start-list">
+        <li><b>Pick a person</b> in the grid. The right rail shows their full quarter as a heatmap.</li>
+        <li><b>Drag an unstaffed task</b> from the right rail onto a week. Watch the total update.</li>
+        <li><b>Add a review buffer</b> on a task (Edit → Review buffer). It shows up in the Waiting On panel.</li>
+        <li><b>Toggle "In review"</b> on a chip — the slot stays reserved, but the chip dims so no one books over it.</li>
+        <li><b>Open Overview</b> for the team-level read: utilization heatmap by role, parked work by reviewer, pipeline.</li>
+      </ol>
+    </div>
+
+    <div class="ab-foot">
+      <div class="ab-foot-tip">Pro tip: connect Asana under <code>Settings → Asana sync</code> when you're ready to push.</div>
+      <button class="sm-btn primary" onclick="closeAboutModal()">Got it — take me back</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW BASELINES MODAL -->
+<div class="modal-bg" id="baselinesModal" onclick="if(event.target===this)closeBaselinesModal()">
+  <div class="modal-card">
+    <div class="sm-title">Review baselines</div>
+    <div class="sm-sub">Typical calendar wait by reviewer type. Used as the reference for "is this dragging?" on parked work. Tune to match your shop.</div>
+    <div class="bm-list" id="bmList"></div>
+    <div class="sm-row">
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeBaselinesModal()">Done</button>
     </div>
   </div>
 </div>
@@ -999,6 +1516,64 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   </div>
 </div>
 
+<!-- ASANA SYNC MODAL -->
+<div class="modal-bg" id="asanaModal" onclick="if(event.target===this)closeAsanaModal()">
+  <div class="modal-card" style="max-width:560px;">
+    <div class="sm-title">Asana sync</div>
+    <div class="sm-sub" id="asnSub">Push every Vizor task to one Asana board. One-way for now — Vizor is the source of truth.</div>
+
+    <!-- Setup form (always shown so the user can edit existing config) -->
+    <div class="sm-field">
+      <label class="sm-label">Personal access token</label>
+      <input type="password" class="sm-input" id="asnToken" placeholder="2/12345/0/abcdef..." autocomplete="off">
+      <div class="sm-help">Create one at <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">app.asana.com / my apps</a> &middot; Personal access tokens.</div>
+    </div>
+    <div class="sm-field">
+      <label class="sm-label">Board / project GID</label>
+      <input type="text" class="sm-input" id="asnBoardGid" placeholder="1209876543210000" autocomplete="off">
+      <div class="sm-help">Open the board in Asana — the long number in the URL is the GID.</div>
+    </div>
+    <div class="sm-row">
+      <div class="spacer"></div>
+      <button class="sm-btn" id="asnTestBtn" onclick="asanaTestConnection()">Test connection</button>
+    </div>
+
+    <div class="asn-status-row" id="asnStatus">
+      <span class="asn-status-dot" id="asnStatusDot"></span>
+      <span id="asnStatusMsg">Not configured</span>
+    </div>
+
+    <!-- Mapping panels — only meaningful once we have a verified board. -->
+    <div id="asnMappingPanels" style="display:none;margin-top:14px;">
+      <div class="sm-label" style="margin-top:6px;">Map Vizor people to Asana users</div>
+      <div class="sm-help" style="margin-bottom:6px;">Tasks staffed to a mapped person get auto-assigned in Asana. Unmapped = task created without an assignee.</div>
+      <table class="asn-tbl">
+        <thead><tr><th>Vizor</th><th>Asana user</th></tr></thead>
+        <tbody id="asnPeopleRows"></tbody>
+      </table>
+
+      <div class="sm-label" style="margin-top:14px;">Map Vizor projects to Asana sections (optional)</div>
+      <div class="sm-help" style="margin-bottom:6px;">If you set this, each project's tasks land in their own section/column. Otherwise everything goes to the board's default section.</div>
+      <table class="asn-tbl">
+        <thead><tr><th>Vizor project</th><th>Asana section</th></tr></thead>
+        <tbody id="asnProjRows"></tbody>
+      </table>
+    </div>
+
+    <div class="asn-warn">
+      <b>Heads up:</b> your token is stored in this browser's localStorage. Anyone with access to this device or its dev tools can read it. Use a token scoped to the workspace you're syncing to, and revoke it from Asana if you ever switch machines.
+    </div>
+
+    <div class="sm-status" id="asnSaveStatus"></div>
+    <div class="sm-row">
+      <button class="sm-btn danger" id="asnDisconnectBtn" onclick="asanaDisconnect()" style="display:none;">Disconnect</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeAsanaModal()">Close</button>
+      <button class="sm-btn primary" id="asnSaveBtn" onclick="asanaSaveConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOP NAV -->
 <nav class="topnav">
   <button class="mb-tog mb-tog-sidebar" onclick="toggleMobileDrawer('sidebar')" aria-label="Open menu">
@@ -1018,16 +1593,25 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   <button class="cloud-chip" id="cloudChip" onclick="openCloudModal()" title="Connect to shared cloud">
     <span class="cloud-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a6 6 0 0 1-.77-11.95 8 8 0 0 1 15.3 3.2 4.5 4.5 0 0 1-.53 8.75z"/></svg></span><span id="cloudChipLabel">Not synced</span>
   </button>
+  <button class="ibtn theme-tog" id="themeTog" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light / dark">
+    <svg class="theme-ico theme-ico-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    <svg class="theme-ico theme-ico-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
   <div class="sgear-wrap" id="settingsMenu">
     <button class="ibtn" onclick="toggleSettings(event)" aria-label="Settings" title="Settings">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     <div class="sgear-pop" id="settingsPop" hidden>
       <div class="sgear-grp">
+        <button class="sgear-item" onclick="openAsanaModal()">Asana sync&hellip;<span id="asnMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Off</span></button>
+        <button class="sgear-item" onclick="openBaselinesModal()">Review baselines&hellip;</button>
+      </div>
+      <div class="sgear-grp">
         <button class="sgear-item" onclick="confirmReset()">Reset all data&hellip;</button>
         <button class="sgear-item" onclick="vizorSignOut()">Sign out</button>
       </div>
     </div>
+    <span class="sgear-badge" id="sgearBadge" aria-hidden="true"></span>
   </div>
   <button class="mb-tog mb-tog-rail" onclick="toggleMobileDrawer('rail')" aria-label="Open capacity panel">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="17" rx="1"/></svg>
@@ -1041,6 +1625,16 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
+  <button class="sb-about-cta" onclick="openAboutModal()" title="A 1-minute tour of what Vizor does and why">
+    <span class="sb-about-ico">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>
+    </span>
+    <span class="sb-about-text">
+      <span class="sb-about-title">Get to know Vizor</span>
+      <span class="sb-about-sub">1-minute tour &middot; why this works</span>
+    </span>
+    <svg class="sb-about-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
   <div class="sb-sec">
     <div class="sb-lbl">Active Projects</div>
     <div id="sbActiveList"></div>
@@ -1053,10 +1647,11 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
     </div>
   </div>
   <div class="sb-sec" style="flex:1;">
-    <div class="sb-lbl">How to use</div>
-    <div class="sb-tip">Drag an unstaffed task from the right rail onto a week.</div>
-    <div class="sb-tip">Click any chip in the grid to change days or unassign.</div>
-    <div class="sb-tip">Totals turn amber at 80% and red over 100%.</div>
+    <div class="sb-lbl">Quick tips</div>
+    <div class="sb-tip">Drag tasks from the right rail onto a week.</div>
+    <div class="sb-tip">Click a chip to edit days, status, or unassign.</div>
+    <div class="sb-tip">Totals: green &lt; 80%, amber 80–100%, red over.</div>
+    <div class="sb-tip"><a href="#" onclick="event.preventDefault();openAboutModal();" style="color:var(--cyan);text-decoration:none;font-weight:600;">More &rarr; Get to know Vizor</a></div>
   </div>
   <div class="sb-team">
     <div class="sb-team-lbl">Team</div>
@@ -1149,6 +1744,405 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// The early-paint script in <head> already applied the saved choice;
+// this function flips it and persists for next time.
+// ══════════════════════════════════════════════════════════════════
+function toggleTheme() {
+  const root = document.documentElement;
+  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  if (next === 'dark') root.setAttribute('data-theme', 'dark');
+  else root.removeAttribute('data-theme');
+  try { localStorage.setItem('vizor.theme', next); } catch (_) {}
+  // Re-render dynamic views that paint inline colors (heatmap cells use
+  // CSS vars already, but the sidebar / rails re-read computed styles).
+  if (typeof renderAll === 'function') renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ASANA SYNC (Phase 1: one-way push, client-side, PAT-based)
+//
+// Reads user-supplied Personal Access Token + a board (project) GID from
+// localStorage. On every persisted change, debounces a sync that pushes
+// each task's current state to Asana. First push creates the task and
+// stores the returned `asanaGid` on the Vizor task; subsequent pushes
+// PUT the same GID. Tasks deleted in Vizor are DELETEd in Asana too.
+//
+// Mappings live alongside config:
+//   personMap : { vizorPersonId  → asanaUserGid }
+//   projectMap: { vizorProjectId → asanaSectionGid }
+//
+// Anything unmapped still syncs — the Asana task just gets created
+// without an assignee or sticks in the default section.
+//
+// Token sensitivity: this is a deterrent-grade integration. The token
+// sits in localStorage, which is readable by any script on this origin
+// (including DevTools paste-ins). We surface that risk clearly in the
+// settings modal. A real integration would proxy through a backend.
+// ══════════════════════════════════════════════════════════════════
+const ASANA_KEY = 'vizor.asana.config.v1';
+const ASANA_BASE = 'https://app.asana.com/api/1.0';
+
+const ASANA = {
+  cfg: { token:'', boardGid:'', workspaceGid:'', personMap:{}, projectMap:{} },
+  status: 'off',          // off | ok | syncing | error | testing
+  lastError: null,
+  inflight: 0,
+  pushTimer: null,
+  dirtyIds: new Set(),
+  lastSyncedAt: null,
+
+  load() {
+    try {
+      const raw = localStorage.getItem(ASANA_KEY);
+      if (raw) Object.assign(this.cfg, JSON.parse(raw));
+    } catch (_) {}
+    this.status = this.isConfigured() ? 'ok' : 'off';
+    this.refreshBadge();
+  },
+  save() {
+    try { localStorage.setItem(ASANA_KEY, JSON.stringify(this.cfg)); } catch (_) {}
+  },
+  isConfigured() { return !!(this.cfg.token && this.cfg.boardGid); },
+
+  // ── HTTP wrapper ────────────────────────────────────────────────
+  async call(method, path, body) {
+    if (!this.cfg.token) throw new Error('No Asana token configured');
+    const opts = {
+      method,
+      headers: {
+        'Authorization': 'Bearer ' + this.cfg.token,
+        'Accept': 'application/json',
+      },
+    };
+    if (body) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify({ data: body });
+    }
+    const res = await fetch(ASANA_BASE + path, opts);
+    if (!res.ok) {
+      let msg = res.statusText || ('HTTP ' + res.status);
+      try {
+        const j = await res.json();
+        if (j.errors && j.errors[0] && j.errors[0].message) msg = j.errors[0].message;
+      } catch (_) {}
+      throw new Error(msg);
+    }
+    if (res.status === 204) return null;
+    const j = await res.json();
+    return j.data;
+  },
+
+  // ── Test connection: validates token + board, captures workspace ──
+  async test() {
+    this.status = 'testing'; this.lastError = null;
+    try {
+      const proj = await this.call('GET', `/projects/${this.cfg.boardGid}?opt_fields=name,workspace.name,workspace.gid`);
+      this.cfg.workspaceGid = (proj && proj.workspace && proj.workspace.gid) || '';
+      const me = await this.call('GET', '/users/me?opt_fields=name,email');
+      this.status = 'ok';
+      return { project:proj, me };
+    } catch (e) {
+      this.status = 'error';
+      this.lastError = e.message;
+      throw e;
+    } finally {
+      this.refreshBadge();
+    }
+  },
+
+  async listUsers() {
+    if (!this.cfg.workspaceGid) throw new Error('Run "Test connection" first to detect the workspace.');
+    const users = await this.call('GET', `/users?workspace=${this.cfg.workspaceGid}&opt_fields=name,email`);
+    return users || [];
+  },
+  async listSections() {
+    const sections = await this.call('GET', `/projects/${this.cfg.boardGid}/sections?opt_fields=name`);
+    return sections || [];
+  },
+
+  // ── Date math ──────────────────────────────────────────────────
+  // weekLabel like "w/o 4/20" → ISO 'YYYY-MM-DD' for that Monday.
+  // Year is inferred from BOARD_TODAY so everything stays in the
+  // current planning year.
+  weekStartISO(weekLabel) {
+    if (!weekLabel) return null;
+    const m = weekLabel.match(/(\d{1,2})\/(\d{1,2})/);
+    if (!m) return null;
+    const year = (typeof BOARD_TODAY !== 'undefined' && BOARD_TODAY.getFullYear) ? BOARD_TODAY.getFullYear() : new Date().getFullYear();
+    const mm = String(m[1]).padStart(2,'0');
+    const dd = String(m[2]).padStart(2,'0');
+    return `${year}-${mm}-${dd}`;
+  },
+  // due = start + (effortDays - 1) business days, capped to a workweek.
+  addBusinessDays(iso, n) {
+    const d = new Date(iso + 'T00:00:00');
+    let added = 0;
+    while (added < n) {
+      d.setDate(d.getDate() + 1);
+      const day = d.getDay();
+      if (day !== 0 && day !== 6) added++;
+    }
+    return d.toISOString().slice(0, 10);
+  },
+
+  // ── Vizor task → Asana payload ─────────────────────────────────
+  buildPayload(task) {
+    const proj = (typeof projectById === 'function') ? projectById(task.projectId) : null;
+    const assigneeGid = task.assigneeId ? (this.cfg.personMap[task.assigneeId] || null) : null;
+    const sectionGid  = this.cfg.projectMap[task.projectId] || null;
+    const startISO = this.weekStartISO(task.weekLabel);
+    let dueISO = null;
+    if (startISO && task.effortDays) {
+      const span = Math.max(0, Math.ceil(task.effortDays) - 1);
+      dueISO = this.addBusinessDays(startISO, span);
+    }
+    const notesLines = [
+      `Vizor project: ${proj ? proj.name : task.projectId}`,
+      `Effort: ${task.effortDays || 0}d`,
+    ];
+    if (task.reviewBufferDays) notesLines.push(`Review buffer: +${task.reviewBufferDays}d (${task.reviewOwner || 'review'})`);
+    notesLines.push('', '— synced from Vizor');
+    const body = {
+      name: task.name,
+      projects: [this.cfg.boardGid],
+      notes: notesLines.join('\n'),
+      // Asana will reject empty-string assignee; only set if mapped.
+    };
+    if (assigneeGid) body.assignee = assigneeGid;
+    else             body.assignee = null; // explicit unassign on update
+    if (startISO) body.start_on = startISO;
+    else          body.start_on = null;
+    if (dueISO)   body.due_on   = dueISO;
+    else          body.due_on   = null;
+    return { body, sectionGid };
+  },
+
+  // ── Sync a single task (create or update) ──────────────────────
+  async syncTask(task) {
+    if (!this.isConfigured()) return;
+    const { body, sectionGid } = this.buildPayload(task);
+    try {
+      this.inflight++; this.status = 'syncing'; this.refreshBadge();
+      if (task.asanaGid) {
+        await this.call('PUT', `/tasks/${task.asanaGid}`, body);
+      } else {
+        const created = await this.call('POST', '/tasks', body);
+        task.asanaGid = created.gid;
+      }
+      // Move to mapped section (idempotent — re-adds are cheap).
+      if (sectionGid && task.asanaGid) {
+        try { await this.call('POST', `/sections/${sectionGid}/addTask`, { task: task.asanaGid }); }
+        catch (_) { /* already in section is fine */ }
+      }
+      task.asanaSyncedAt = new Date().toISOString();
+      delete task.asanaSyncError;
+      this.lastSyncedAt = task.asanaSyncedAt;
+      this.lastError = null;
+    } catch (e) {
+      task.asanaSyncError = e.message;
+      this.lastError = e.message;
+      this.status = 'error';
+      console.warn('[asana] sync failed for task', task.id, e);
+    } finally {
+      this.inflight--;
+      if (this.inflight === 0 && this.status === 'syncing') this.status = this.lastError ? 'error' : 'ok';
+      this.refreshBadge();
+    }
+  },
+  async deleteTask(task) {
+    if (!this.isConfigured() || !task.asanaGid) return;
+    try {
+      this.inflight++; this.status = 'syncing'; this.refreshBadge();
+      await this.call('DELETE', `/tasks/${task.asanaGid}`);
+    } catch (e) {
+      this.lastError = e.message;
+      console.warn('[asana] delete failed', e);
+    } finally {
+      this.inflight--;
+      if (this.inflight === 0 && this.status === 'syncing') this.status = this.lastError ? 'error' : 'ok';
+      this.refreshBadge();
+    }
+  },
+
+  // ── Debounced batch push ───────────────────────────────────────
+  // Called from renderAll() — flips on a 1.2s timer so a flurry of
+  // edits in one keystroke session collapses into one push per task.
+  markDirty(taskId) {
+    if (taskId) this.dirtyIds.add(taskId);
+  },
+  schedule() {
+    if (!this.isConfigured()) return;
+    if (this.pushTimer) clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(() => this.flush(), 1200);
+  },
+  async flush() {
+    if (!this.isConfigured()) return;
+    // If nothing was explicitly marked dirty, sync any task that has no
+    // asanaGid yet (first-time push for everything that should exist there).
+    const ids = this.dirtyIds.size
+      ? Array.from(this.dirtyIds)
+      : TASKS.filter(t => !t.asanaGid && t.assigneeId && t.weekLabel).map(t => t.id);
+    this.dirtyIds.clear();
+    for (const id of ids) {
+      const t = TASKS.find(x => x.id === id);
+      if (t) await this.syncTask(t);
+    }
+    saveState();
+  },
+
+  // ── UI sync — reflect status in the gear badge & menu meta ─────
+  refreshBadge() {
+    const badge = document.getElementById('sgearBadge');
+    const meta  = document.getElementById('asnMenuMeta');
+    if (badge) {
+      badge.classList.remove('show', 'is-syncing', 'is-ok');
+      if (this.status === 'error')   badge.classList.add('show');
+      if (this.status === 'syncing') badge.classList.add('show', 'is-syncing');
+    }
+    if (meta) {
+      const m = { off:'Off', ok:'Connected', syncing:'Syncing…', error:'Error', testing:'Testing…' };
+      meta.textContent = m[this.status] || '';
+    }
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════
+// ASANA MODAL — handlers wired from the Settings menu
+// ══════════════════════════════════════════════════════════════════
+let _asanaUsersCache    = null;
+let _asanaSectionsCache = null;
+
+function openAsanaModal() {
+  closeSettingsPop();
+  document.getElementById('asnToken').value    = ASANA.cfg.token || '';
+  document.getElementById('asnBoardGid').value = ASANA.cfg.boardGid || '';
+  asanaUpdateStatusUI();
+  document.getElementById('asnDisconnectBtn').style.display = ASANA.isConfigured() ? '' : 'none';
+  // If we already have a verified workspace, fetch fresh dropdown options.
+  if (ASANA.isConfigured() && ASANA.cfg.workspaceGid) asanaPopulateMappings(false);
+  else document.getElementById('asnMappingPanels').style.display = 'none';
+  document.getElementById('asanaModal').style.display = 'flex';
+}
+function closeAsanaModal() {
+  document.getElementById('asanaModal').style.display = 'none';
+  asanaSetSaveStatus('', '');
+}
+function closeSettingsPop() {
+  const p = document.getElementById('settingsPop');
+  if (p) p.hidden = true;
+}
+function asanaSetSaveStatus(msg, kind) {
+  const el = document.getElementById('asnSaveStatus');
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + kind : '');
+}
+function asanaUpdateStatusUI() {
+  const dot = document.getElementById('asnStatusDot');
+  const msg = document.getElementById('asnStatusMsg');
+  dot.className = 'asn-status-dot';
+  let txt;
+  switch (ASANA.status) {
+    case 'ok':      dot.classList.add('ok');      txt = 'Connected'; break;
+    case 'syncing': dot.classList.add('syncing'); txt = `Syncing (${ASANA.inflight} in flight)`; break;
+    case 'error':   dot.classList.add('err');     txt = 'Error: ' + (ASANA.lastError || 'unknown'); break;
+    case 'testing':                                txt = 'Testing connection…'; break;
+    default:                                       txt = ASANA.isConfigured() ? 'Saved, not yet tested' : 'Not configured';
+  }
+  msg.textContent = txt;
+}
+
+async function asanaTestConnection() {
+  // Read current form values into cfg before testing.
+  ASANA.cfg.token    = document.getElementById('asnToken').value.trim();
+  ASANA.cfg.boardGid = document.getElementById('asnBoardGid').value.trim();
+  if (!ASANA.cfg.token || !ASANA.cfg.boardGid) {
+    asanaSetSaveStatus('Enter both a token and a board GID first.', 'err');
+    return;
+  }
+  asanaSetSaveStatus('Testing…', '');
+  asanaUpdateStatusUI();
+  try {
+    const r = await ASANA.test();
+    asanaSetSaveStatus(`Connected to "${r.project.name}" as ${r.me.name}.`, 'ok');
+    ASANA.save();
+    await asanaPopulateMappings(true);
+  } catch (e) {
+    asanaSetSaveStatus('Failed: ' + e.message, 'err');
+  } finally {
+    asanaUpdateStatusUI();
+  }
+}
+
+async function asanaPopulateMappings(force) {
+  if (!ASANA.cfg.workspaceGid) return;
+  document.getElementById('asnMappingPanels').style.display = '';
+  if (force || !_asanaUsersCache) {
+    try { _asanaUsersCache = await ASANA.listUsers(); } catch (e) { _asanaUsersCache = []; console.warn(e); }
+  }
+  if (force || !_asanaSectionsCache) {
+    try { _asanaSectionsCache = await ASANA.listSections(); } catch (e) { _asanaSectionsCache = []; console.warn(e); }
+  }
+  // People rows
+  const peopleHtml = PEOPLE.map(p => {
+    const sel = ASANA.cfg.personMap[p.id] || '';
+    const opts = [`<option value="">— unmapped —</option>`].concat(
+      _asanaUsersCache.map(u => `<option value="${u.gid}" ${u.gid===sel?'selected':''}>${escHTML(u.name)}${u.email?` (${escHTML(u.email)})`:''}</option>`)
+    ).join('');
+    return `<tr>
+      <td><div class="asn-row-name"><span class="asn-row-dot" style="background:${p.color};"></span>${escHTML(p.name)}<span class="asn-row-meta">${escHTML(p.role)}</span></div></td>
+      <td><select class="sm-select" data-pid="${p.id}" onchange="asanaUpdatePersonMap(this)">${opts}</select></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('asnPeopleRows').innerHTML = peopleHtml || `<tr><td colspan="2" class="asn-empty">No people in Vizor yet.</td></tr>`;
+  // Project rows
+  const projHtml = PROJECTS.map(p => {
+    const sel = ASANA.cfg.projectMap[p.id] || '';
+    const opts = [`<option value="">— default section —</option>`].concat(
+      _asanaSectionsCache.map(s => `<option value="${s.gid}" ${s.gid===sel?'selected':''}>${escHTML(s.name)}</option>`)
+    ).join('');
+    return `<tr>
+      <td><div class="asn-row-name"><span class="asn-row-dot" style="background:${p.color};"></span>${escHTML(p.name)}<span class="asn-row-meta">${escHTML(p.status)}</span></div></td>
+      <td><select class="sm-select" data-pid="${p.id}" onchange="asanaUpdateProjMap(this)">${opts}</select></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('asnProjRows').innerHTML = projHtml || `<tr><td colspan="2" class="asn-empty">No projects in Vizor yet.</td></tr>`;
+}
+function asanaUpdatePersonMap(sel) {
+  const pid = sel.getAttribute('data-pid');
+  if (sel.value) ASANA.cfg.personMap[pid] = sel.value;
+  else delete ASANA.cfg.personMap[pid];
+}
+function asanaUpdateProjMap(sel) {
+  const pid = sel.getAttribute('data-pid');
+  if (sel.value) ASANA.cfg.projectMap[pid] = sel.value;
+  else delete ASANA.cfg.projectMap[pid];
+}
+
+function asanaSaveConfig() {
+  ASANA.cfg.token    = document.getElementById('asnToken').value.trim();
+  ASANA.cfg.boardGid = document.getElementById('asnBoardGid').value.trim();
+  ASANA.save();
+  ASANA.status = ASANA.isConfigured() ? (ASANA.lastError ? 'error' : 'ok') : 'off';
+  ASANA.refreshBadge();
+  asanaSetSaveStatus(ASANA.isConfigured() ? 'Saved. Tasks will sync on the next change.' : 'Saved. Sync is off until you add a token and board.', 'ok');
+  asanaUpdateStatusUI();
+  // If newly configured + verified, do an initial backfill push.
+  if (ASANA.isConfigured() && ASANA.cfg.workspaceGid) ASANA.schedule();
+}
+function asanaDisconnect() {
+  if (!confirm('Disconnect from Asana?\n\nThis clears your token and mappings from this browser. Tasks already pushed to Asana will stay there. Vizor will forget their Asana GIDs, so re-connecting later will create duplicates unless you clear them in Asana first.')) return;
+  ASANA.cfg = { token:'', boardGid:'', workspaceGid:'', personMap:{}, projectMap:{} };
+  ASANA.status = 'off';
+  ASANA.lastError = null;
+  ASANA.save();
+  TASKS.forEach(t => { delete t.asanaGid; delete t.asanaSyncedAt; delete t.asanaSyncError; });
+  saveState();
+  closeAsanaModal();
+  ASANA.refreshBadge();
+}
+
 // ══════════════════════════════════════════════════════════════════
 // CONSTANTS & HELPERS
 // ══════════════════════════════════════════════════════════════════
@@ -1246,7 +2240,7 @@ const BOARD_WEEK_END = new Date('2026-04-26');
 let TASKS = [
   // Brand refresh (active)
   { id:'t2',  projectId:'p1', name:'Color system',           role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 4/27', due:'5/05', done:true },
-  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 5/4',  due:'5/12', reviewBufferDays:2, reviewOwner:'stakeholder_feedback' },
+  { id:'t3',  projectId:'p1', name:'Brand guidelines doc',   role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 5/4',  due:'5/12', reviewBufferDays:2, reviewOwner:'stakeholder_feedback', state:'in_review', reviewSentAt: Date.now() - 1.7 * 86400000, reviewLog:[{ts: Date.now() - 1.7 * 86400000, action:'sent', reviewer:'stakeholder_feedback'}] },
   { id:'t4',  projectId:'p1', name:'Manifesto copy',         role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 4/27', due:'5/06', done:true },
   { id:'t5',  projectId:'p1', name:'Voice & tone guide',     role:'copy',   effortDays:2,   assigneeId:'hay',               weekLabel:'w/o 5/4',  due:'5/15', reviewBufferDays:2, reviewOwner:'internal' },
   { id:'t6',  projectId:'p1', name:'Final sign-off review',  role:'design', effortDays:1,   assigneeId:'jakob',             weekLabel:'w/o 5/11', due:'5/15', reviewBufferDays:3, reviewOwner:'final_approval' },
@@ -1255,14 +2249,14 @@ let TASKS = [
   // Landing page v2 (active) — partly staffed
   { id:'t7',  projectId:'p2', name:'Wireframes',             role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 4/20', due:'4/28', done:true },
   { id:'t8',  projectId:'p2', name:'Hero visuals',           role:'design', effortDays:3,   assigneeId:'andre',             weekLabel:'w/o 4/27', due:'5/06', done:true },
-  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:2, reviewOwner:'stakeholder_approval' },
+  { id:'t9',  projectId:'p2', name:'Section layouts',        role:'design', effortDays:3,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:2, reviewOwner:'stakeholder_approval', state:'in_review', reviewSentAt: Date.now() - 5.2 * 86400000, reviewLog:[{ts: Date.now() - 5.2 * 86400000, action:'sent', reviewer:'stakeholder_approval'}] },
   { id:'t10', projectId:'p2', name:'Hero headlines',         role:'copy',   effortDays:1,   assigneeId:'hay',               weekLabel:'w/o 5/11', due:'5/18', reviewBufferDays:1, reviewOwner:'internal' },
   { id:'t11', projectId:'p2', name:'Body copy pass',         role:'copy',   effortDays:2,   assigneeId:'james',             weekLabel:'w/o 5/11', due:'5/20' },
   { id:'t12', projectId:'p2', name:'Mobile adaptations',     role:'design', effortDays:2,   due:'5/25' },
   { id:'t13', projectId:'p2', name:'CTA microcopy',          role:'copy',   effortDays:0.5, due:'5/25' },
 
   // Newsletter redesign (active)
-  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:1, reviewOwner:'legal' },
+  { id:'t14', projectId:'p3', name:'Template skeleton',      role:'design', effortDays:2,   assigneeId:'warren',            weekLabel:'w/o 5/4',  due:'5/14', reviewBufferDays:1, reviewOwner:'legal', state:'in_review', reviewSentAt: Date.now() - 0.4 * 86400000, reviewLog:[{ts: Date.now() - 0.4 * 86400000, action:'sent', reviewer:'legal'}] },
   { id:'t15', projectId:'p3', name:'Sample illustrations',   role:'design', effortDays:2,   assigneeId:'andre',             weekLabel:'w/o 5/11', due:'5/22', reviewBufferDays:2, reviewOwner:'stakeholder_feedback' },
   { id:'t16', projectId:'p3', name:'Welcome sequence copy',  role:'copy',   effortDays:1,   assigneeId:'james',             weekLabel:'w/o 5/4',  due:'5/13' },
 
@@ -1290,7 +2284,10 @@ let _ovWeekOffset = {};
 // Time-window selector for the Team Utilization card. Values: 'week' (current
 // week only), '4wk' (current + next 3), '8wk' (current + next 7), 'all'
 // (every visible week). Default: 'week' — the most actionable horizon.
-let _utilPeriod = 'week';
+// Default to the 4-week forward roll-up. The "This week" snapshot is already
+// covered by the top-left stat card, so opening the panel on the multi-week
+// view avoids duplication and lands on the more useful planning horizon.
+let _utilPeriod = '4wk';
 // Utilization card view: 'team' (one sparkline) or 'role' (rows-per-role heatmap).
 // Per-person breakdown lives in the right-hand person cards already; rolling
 // up by role here answers "do we have enough designer / copy capacity?"
@@ -1404,16 +2401,33 @@ function renderAllocationGrid() {
         <div class="week-cell-inner">`;
       list.forEach(t => {
         const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
-        html += `<div class="task-chip" draggable="true"
+        const isParked = t.state === 'in_review';
+        const isDone   = t.state === 'done';
+        // Parked tooltip is loud on purpose: capacity is still consumed,
+        // we want anyone scanning the planner to understand "don't book over."
+        const stateTitle = isParked
+          ? ` · ⏸ in review with ${t.reviewOwner ? reviewOwnerFull(t.reviewOwner).toLowerCase() : 'reviewer'} — slot still reserved, not free`
+          : isDone ? ' · done' : '';
+        const stateCls = isParked ? 'is-parked' : isDone ? 'is-done' : '';
+        // Tiny ⏸ pip + sub-line so the parked state is unmissable, but the
+        // chip stays the same height so the cell layout doesn't jump.
+        const parkedTag = isParked
+          ? `<span class="tc-park" title="In review — capacity still held for the same person">
+               <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg>
+               in review
+             </span>`
+          : '';
+        html += `<div class="task-chip ${stateCls}" draggable="true"
           data-tid="${t.id}"
           style="border-left-color:${proj.color};"
           ondragstart="onChipDragStart(event,'${t.id}')"
           ondragend="onChipDragEnd(event)"
           onclick="event.stopPropagation(); openCellModalForEdit('${t.id}')"
-          title="${escHTML(proj.name)} · ${escHTML(t.name)}">
+          title="${escHTML(proj.name)} · ${escHTML(t.name)}${escHTML(stateTitle)}">
           <span class="tc-name">${escHTML(t.name)}</span>
           <span class="tc-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="${t.reviewBufferDays} day${t.reviewBufferDays===1?'':'s'} of review wait with ${reviewOwnerFull(t.reviewOwner).toLowerCase()} — calendar time the project is parked. Does not burn this person's capacity.">${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="+${t.reviewBufferDays}d review wait${t.reviewOwner ? ` · ${reviewOwnerFull(t.reviewOwner).toLowerCase()}` : ''} — calendar time the project is parked. Does not burn this person's capacity.">+${t.reviewBufferDays}d</span>` : ''}
+          ${parkedTag}
           <span class="tc-x" onclick="event.stopPropagation(); unassignTask('${t.id}')" title="Unassign">×</span>
         </div>`;
       });
@@ -1512,7 +2526,7 @@ function renderUpcomingPanel() {
         <span class="up-task-meta">
           <span class="up-task-role ${rm.cls}">${rm.label}</span>
           <span class="up-task-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="${t.reviewBufferDays}d of review wait with ${reviewOwnerFull(t.reviewOwner).toLowerCase()} — calendar time, not capacity">${t.reviewBufferDays}d${t.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(t.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+          ${t.reviewBufferDays ? `<span class="tc-rev" title="+${t.reviewBufferDays}d review wait${t.reviewOwner ? ` · ${reviewOwnerFull(t.reviewOwner).toLowerCase()}` : ''} — calendar time, not capacity">+${t.reviewBufferDays}d</span>` : ''}
         </span>
       </div>`;
     });
@@ -1526,7 +2540,8 @@ function renderUpcomingPanel() {
 // RENDER: CAPACITY HEATMAP
 // ══════════════════════════════════════════════════════════════════
 function capColor(pct) {
-  if (pct === 0)   return { bg:'#F1F5F9', fg:'transparent' };
+  // 0% = empty, use the soft surface token so dark mode inverts cleanly.
+  if (pct === 0)   return { bg:'var(--border-soft)', fg:'transparent' };
   if (pct <= 0.20) return { bg:'#E5EEF2', fg:'#4A6880' };
   if (pct <= 0.40) return { bg:'#C4DCE3', fg:'#2F5A6E' };
   if (pct <= 0.80) return { bg:'#7FC8D4', fg:'#1E3F4C' };
@@ -1539,34 +2554,44 @@ function renderHeatmap() {
   const curWkLabel = WEEKS[CUR_WEEK] || WEEKS[0];
   const curWkShort = curWkLabel ? curWkLabel.replace('w/o ','') : '';
 
-  // Header: spacer · current-week label (pinned) · rest-week labels (scrollable)
-  let html = '<div class="hm-scroll"><div class="hm-content">';
-  html += '<div class="hm-hdr">';
+  // Two-column layout: fixed left (names + now) is a real DOM sibling of the
+  // scrollable right (week labels + cells). Cells physically can't appear in
+  // the names column — there's nothing to bleed through.
+  let html = '<div class="hm-frame">';
+
+  // ── Fixed left column: header spacer + name rows ──
+  html += '<div class="hm-fixed">';
+  html += '<div class="hm-fix-hdr">';
   html += '<div class="hm-name-sp"></div>';
   html += `<div class="hm-now-hdr">Now<small>${escHTML(curWkShort)}</small></div>`;
-  html += '<div class="hm-rest-hdr">';
-  WEEKS.forEach((w, wi) => {
-    if (wi === CUR_WEEK) return;
-    html += `<div class="hm-wk-lbl" title="${escHTML(w)}">${w.replace('w/o ','').replace('/','<br>/')}</div>`;
-  });
-  html += '</div></div>';
-
-  // Rows
+  html += '</div>';
   PEOPLE.forEach(p => {
     const cur = rollup[p.id][curWkLabel];
     const cc = capColor(cur.pct);
     const curLbl = cur.pct > 0 ? Math.round(cur.pct*100)+'%' : '';
     const curCapLbl = cur.capacity === 0 ? 'PTO' : cur.capacity + 'd available';
     const curTT = `${p.name} — ${curWkLabel}: ${cur.days}d of ${curCapLbl} (${Math.round(cur.pct*100)}%)`;
-
-    html += `<div class="hm-row">
+    html += `<div class="hm-fix-row">
       <div class="hm-name" title="${escHTML(p.name)} — ${escHTML(ROLE_META[p.role].label)}">
         <span style="display:inline-block;width:7px;height:7px;background:${p.color};border-radius:50%;margin-right:4px;flex-shrink:0;"></span>${escHTML(p.name)}
       </div>
       <div class="hm-now-wrap">
         <div class="hm-now-cell" style="background:${cc.bg};color:${cc.fg};" title="${escHTML(curTT)}">${curLbl}</div>
       </div>
-      <div class="hm-rest">`;
+    </div>`;
+  });
+  html += '</div>';
+
+  // ── Scrollable right column: week labels + cell rows ──
+  html += '<div class="hm-scroll"><div class="hm-scroll-inner">';
+  html += '<div class="hm-rest-hdr">';
+  WEEKS.forEach((w, wi) => {
+    if (wi === CUR_WEEK) return;
+    html += `<div class="hm-wk-lbl" title="${escHTML(w)}">${w.replace('w/o ','').replace('/','<br>/')}</div>`;
+  });
+  html += '</div>';
+  PEOPLE.forEach(p => {
+    html += '<div class="hm-data-row"><div class="hm-rest">';
     WEEKS.forEach((w, wi) => {
       if (wi === CUR_WEEK) return;
       const r = rollup[p.id][w];
@@ -1579,6 +2604,8 @@ function renderHeatmap() {
     html += '</div></div>';
   });
   html += '</div></div>';
+
+  html += '</div>';
   el.innerHTML = html;
 }
 
@@ -1593,83 +2620,165 @@ function renderWaitingPanel() {
   const totalEl = document.getElementById('waitingTotal');
   if (!el) return;
 
-  // Consider staffed tasks with a review buffer. (Unstaffed tasks with a
-  // buffer are still "planned wait" but they haven't entered the pipeline
-  // yet — they show up in Upcoming Needs.)
-  const waiting = TASKS.filter(t => (t.reviewBufferDays || 0) > 0 && isStaffed(t));
-  const totalWait = waiting.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
+  // Two flavors of "waiting":
+  //   ACTIVE  — task.state === 'in_review'. Wall-clock matters; we compare
+  //             actual elapsed days to the user's baseline for that
+  //             reviewer type and surface drag.
+  //   PLANNED — task has a reviewBufferDays buffer set, but hasn't been
+  //             sent yet. This is forward-looking ("we expect to lose
+  //             N days here"), not actionable today.
+  // Splitting them keeps the headline number ("6d actually parked")
+  // honest, instead of adding planned + actual into one ambiguous total.
+  const active  = TASKS.filter(t => t.state === 'in_review' && isStaffed(t));
+  const planned = TASKS.filter(t => (t.reviewBufferDays || 0) > 0 && isStaffed(t) && t.state !== 'in_review' && t.state !== 'done');
 
+  // Headline counts ACTUAL parked time only — that's the "right now" number.
+  const totalActiveDays = active.reduce((s,t) => s + elapsedReviewDays(t), 0);
   if (totalEl) {
-    // "in review" reads correctly: these are days project time is parked,
-    // not days the team is idle. "planned" was vague; "in review" names the state.
-    totalEl.innerHTML = waiting.length
-      ? `${totalWait}d in review &middot; ${waiting.length} task${waiting.length===1?'':'s'}`
-      : 'no review waits';
+    if (active.length) {
+      totalEl.innerHTML = `${fmtDays(totalActiveDays)}d parked &middot; ${active.length} active`;
+    } else if (planned.length) {
+      const pTotal = planned.reduce((s,t) => s + (t.reviewBufferDays||0), 0);
+      totalEl.innerHTML = `${pTotal}d planned wait &middot; ${planned.length} task${planned.length===1?'':'s'}`;
+    } else {
+      totalEl.innerHTML = 'no review waits';
+    }
   }
 
-  if (!waiting.length) {
-    el.innerHTML = `<div class="wo-empty">Nothing parked in review. Add a review buffer when creating a task to track waits.</div>`;
+  if (!active.length && !planned.length) {
+    el.innerHTML = `<div class="wo-empty">Nothing parked in review. Add a review buffer when creating a task to track planned waits, then mark a task "In review" when it actually goes out.</div>`;
     return;
   }
 
-  // Group by review owner, with "unassigned reviewer" (no reviewOwner set)
-  // bucketed under "other" so it still surfaces.
-  const groups = {};
-  REVIEW_OWNER_ORDER.forEach(k => { groups[k] = []; });
-  waiting.forEach(t => {
-    const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
-    groups[k].push(t);
-  });
-
-  // Single longest wait drives the bar scale across the whole panel — bars
-  // become comparable across groups (otherwise each group would normalize
-  // its own bars and the visual lies).
-  const maxWait = waiting.reduce((m,t) => Math.max(m, t.reviewBufferDays || 0), 1);
-
   let html = '';
-  REVIEW_OWNER_ORDER.forEach(k => {
-    const items = groups[k];
-    if (!items.length) return;
-    const meta = REVIEW_OWNER_META[k];
-    const gTotal = items.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
-    // Tone class moves to the group container so --rev-dot cascades into items
-    // (their wait bars use it for fill color).
-    html += `<div class="wo-group ${meta.tone}">
-      <div class="wo-ghdr">
-        <span class="wo-ghdr-lbl">${escHTML(meta.full)}</span>
-        <span class="wo-ghdr-total">${gTotal}d &middot; ${items.length} task${items.length===1?'':'s'}</span>
-      </div>`;
-    // Sort each bucket: longest wait first (that's usually where the bottleneck is).
-    items.sort((a,b) => (b.reviewBufferDays||0) - (a.reviewBufferDays||0));
-    items.forEach(t => {
-      const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
-      const person = personById(t.assigneeId) || { name:'?' };
-      const work = t.effortDays || 0;
-      const wait = t.reviewBufferDays || 0;
-      const fillPct = Math.round((wait / maxWait) * 100);
-      const tooltip = `${t.name} — ${wait}d in review with ${reviewOwnerFull(k).toLowerCase()}; ${work}d of staffed work (work doesn't sit during review)`;
-      html += `<div class="wo-item" title="${escHTML(tooltip)}" onclick="openCellModalForEdit('${t.id}')">
-        <div class="wo-item-top">
-          <span class="wo-item-name">${escHTML(t.name)}</span>
-          <span class="wo-item-wait">${wait}d<span class="wo-item-wait-lbl">in review</span></span>
-        </div>
-        <div class="wo-item-meta">
-          <span class="wo-item-proj" style="--proj-c:${proj.color};">
-            <span class="wo-item-proj-name">${escHTML(proj.name)}</span>
-          </span>
-          <span>&middot;</span>
-          <span>${escHTML(person.name)}</span>
-          <span>&middot;</span>
-          <span class="wo-item-work"><b>${work}d</b> work</span>
-        </div>
-        <div class="wo-item-bar">
-          <div class="wo-item-bar-fill" style="width:${fillPct}%;"></div>
-        </div>
-      </div>`;
+
+  // ── ACTIVE PARKED ──────────────────────────────────────────────
+  if (active.length) {
+    html += `<div class="wo-section-hdr">
+      <span class="wo-section-lbl">Parked now</span>
+      <span class="wo-section-sub">capacity still held — toggle when feedback comes back</span>
+    </div>`;
+    // Group by reviewer — same convention as planned, so the eye learns one map.
+    const aGroups = {};
+    REVIEW_OWNER_ORDER.forEach(k => { aGroups[k] = []; });
+    active.forEach(t => {
+      const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
+      aGroups[k].push(t);
     });
-    html += `</div>`;
-  });
+    REVIEW_OWNER_ORDER.forEach(k => {
+      const items = aGroups[k];
+      if (!items.length) return;
+      const meta = REVIEW_OWNER_META[k];
+      const baseline = getBaselineFor(k);
+      const gTotal = items.reduce((s,t) => s + elapsedReviewDays(t), 0);
+      html += `<div class="wo-group active ${meta.tone}">
+        <div class="wo-ghdr">
+          <span class="wo-ghdr-lbl">${escHTML(meta.full)}</span>
+          <span class="wo-ghdr-total">${fmtDays(gTotal)}d actual &middot; ${baseline}d baseline</span>
+        </div>`;
+      // Longest actual wait first — that's the biggest drag.
+      items.sort((a,b) => elapsedReviewDays(b) - elapsedReviewDays(a));
+      items.forEach(t => {
+        const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
+        const person = personById(t.assigneeId) || { name:'?' };
+        const elapsed = elapsedReviewDays(t);
+        const ratio   = baseline > 0 ? elapsed / baseline : 0;
+        // Drag class: green ≤ baseline, amber > baseline, red ≥ 2× baseline.
+        const dragCls = ratio <= 1 ? 'on-pace' : ratio < 2 ? 'over-pace' : 'way-over';
+        const sentCopy = t.reviewSentAt
+          ? new Date(t.reviewSentAt).toLocaleDateString(undefined, { month:'short', day:'numeric' })
+          : 'just now';
+        const tooltip = `${t.name} — sent ${sentCopy}, ${fmtDays(elapsed)}d elapsed vs ${baseline}d baseline. Capacity is still reserved for ${person.name}.`;
+        html += `<div class="wo-item active" title="${escHTML(tooltip)}">
+          <div class="wo-item-top" onclick="openCellModalForEdit('${t.id}')">
+            <span class="wo-item-name">${escHTML(t.name)}</span>
+            <span class="wo-item-wait ${dragCls}">${fmtDays(elapsed)}d<span class="wo-item-wait-lbl">/ ${baseline}d</span></span>
+          </div>
+          <div class="wo-item-meta">
+            <span class="wo-item-proj" style="--proj-c:${proj.color};">
+              <span class="wo-item-proj-name">${escHTML(proj.name)}</span>
+            </span>
+            <span>&middot;</span>
+            <span>${escHTML(person.name)}</span>
+            <span>&middot;</span>
+            <span class="wo-item-work">sent ${sentCopy}</span>
+          </div>
+          <div class="wo-item-bar">
+            <div class="wo-item-bar-fill ${dragCls}" style="width:${Math.min(100, Math.round(ratio * 100))}%;"></div>
+          </div>
+          <div class="wo-item-actions">
+            <button class="wo-recv" onclick="event.stopPropagation(); markReceived('${t.id}')" title="Mark feedback received and resume work">Received ✓</button>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  }
+
+  // ── PLANNED WAITS ──────────────────────────────────────────────
+  if (planned.length) {
+    html += `<div class="wo-section-hdr">
+      <span class="wo-section-lbl">Planned waits</span>
+      <span class="wo-section-sub">buffer set, not yet sent — open the task to mark it "In review" when it goes out</span>
+    </div>`;
+    const groups = {};
+    REVIEW_OWNER_ORDER.forEach(k => { groups[k] = []; });
+    planned.forEach(t => {
+      const k = t.reviewOwner && REVIEW_OWNER_META[t.reviewOwner] ? t.reviewOwner : 'other';
+      groups[k].push(t);
+    });
+    const maxWait = planned.reduce((m,t) => Math.max(m, t.reviewBufferDays || 0), 1);
+    REVIEW_OWNER_ORDER.forEach(k => {
+      const items = groups[k];
+      if (!items.length) return;
+      const meta = REVIEW_OWNER_META[k];
+      const baseline = getBaselineFor(k);
+      const gTotal = items.reduce((s,t) => s + (t.reviewBufferDays || 0), 0);
+      html += `<div class="wo-group ${meta.tone}">
+        <div class="wo-ghdr">
+          <span class="wo-ghdr-lbl">${escHTML(meta.full)}</span>
+          <span class="wo-ghdr-total">${gTotal}d planned &middot; ${baseline}d baseline</span>
+        </div>`;
+      items.sort((a,b) => (b.reviewBufferDays||0) - (a.reviewBufferDays||0));
+      items.forEach(t => {
+        const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
+        const person = personById(t.assigneeId) || { name:'?' };
+        const work = t.effortDays || 0;
+        const wait = t.reviewBufferDays || 0;
+        const fillPct = Math.round((wait / maxWait) * 100);
+        // Soft warning when planned buffer is below baseline — likely under-budgeted.
+        const buffWarn = wait < baseline ? ` <span class="wo-buf-warn" title="Buffer is below your baseline of ${baseline}d for ${reviewOwnerFull(k).toLowerCase()} — may run long">⚠</span>` : '';
+        const tooltip = `${t.name} — ${wait}d planned wait with ${reviewOwnerFull(k).toLowerCase()}; ${work}d of staffed work. Open and toggle "In review" when it actually goes out.`;
+        html += `<div class="wo-item" title="${escHTML(tooltip)}" onclick="openCellModalForEdit('${t.id}')">
+          <div class="wo-item-top">
+            <span class="wo-item-name">${escHTML(t.name)}${buffWarn}</span>
+            <span class="wo-item-wait">${wait}d<span class="wo-item-wait-lbl">planned</span></span>
+          </div>
+          <div class="wo-item-meta">
+            <span class="wo-item-proj" style="--proj-c:${proj.color};">
+              <span class="wo-item-proj-name">${escHTML(proj.name)}</span>
+            </span>
+            <span>&middot;</span>
+            <span>${escHTML(person.name)}</span>
+            <span>&middot;</span>
+            <span class="wo-item-work"><b>${work}d</b> work</span>
+          </div>
+          <div class="wo-item-bar">
+            <div class="wo-item-bar-fill" style="width:${fillPct}%;"></div>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  }
+
   el.innerHTML = html;
+}
+
+// Days formatter — drops trailing .0 so "1.0d" doesn't shout at the user.
+function fmtDays(n) {
+  const r = Math.round((n || 0) * 10) / 10;
+  return r % 1 === 0 ? String(r) : r.toFixed(1);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1764,7 +2873,7 @@ function renderBoardCard(c, col) {
       <div class="bc-meta-left">
         <div class="av" style="background:${p.color};width:22px;height:22px;font-size:9px;" title="${escHTML(p.name)}">${escHTML(p.initials)}</div>
         <span class="bc-date ${overdue?'overdue':''}">${dateLbl}</span>
-        ${c.reviewBufferDays ? `<span class="bc-rev" title="${c.reviewBufferDays} day${c.reviewBufferDays===1?'':'s'} of review wait with ${reviewOwnerFull(c.reviewOwner).toLowerCase()} — calendar time, not capacity">${c.reviewBufferDays}d${c.reviewOwner ? ` <span class="tc-rev-arrow">&rarr;</span> ${escHTML(reviewOwnerLabel(c.reviewOwner).toLowerCase())}` : ' rev'}</span>` : ''}
+        ${c.reviewBufferDays ? `<span class="bc-rev" title="+${c.reviewBufferDays}d review wait${c.reviewOwner ? ` · ${reviewOwnerFull(c.reviewOwner).toLowerCase()}` : ''} — calendar time, not capacity">+${c.reviewBufferDays}d</span>` : ''}
       </div>
     </div>
   </div>`;
@@ -1863,6 +2972,8 @@ function deleteTaskFromProjectsView(taskId) {
   if (!t) return;
   const ok = confirm(`Delete task "${t.name}"? This cannot be undone.`);
   if (!ok) return;
+  // Tell Asana before we drop the local record (we lose asanaGid otherwise).
+  if (typeof ASANA !== 'undefined') ASANA.deleteTask(t);
   const idx = TASKS.findIndex(x => x.id === taskId);
   if (idx >= 0) TASKS.splice(idx, 1);
   renderAll();
@@ -1978,10 +3089,54 @@ function openCellModalForEdit(taskId) {
   document.getElementById('cmReviewBuf').value = t.reviewBufferDays || 0;
   document.getElementById('cmReviewOwner').value = t.reviewOwner || '';
   updateReviewOwnerVisibility();
+  // Status segmented control: only meaningful for staffed tasks.
+  const stateField = document.getElementById('cmStateField');
+  if (isStaffed(t)) {
+    stateField.style.display = '';
+    paintCmState(t.state || 'doing');
+  } else {
+    stateField.style.display = 'none';
+  }
   document.getElementById('cmDelete').style.display = isStaffed(t) ? '' : 'none';
   document.getElementById('cmSave').textContent = 'Save';
   setCmStatus('', null);
   document.getElementById('cellModal').classList.add('show');
+}
+
+// Paint the segmented control to match the given state and update the
+// hint copy beneath it. Doesn't touch task data — that's setCmState's job.
+function paintCmState(state) {
+  const seg = document.getElementById('cmStateSeg');
+  if (!seg) return;
+  seg.querySelectorAll('.seg-opt').forEach(b => {
+    b.classList.toggle('on', b.dataset.state === state);
+  });
+  const hint = document.getElementById('cmStateHint');
+  if (hint) {
+    hint.textContent = state === 'in_review'
+      ? 'Slot stays reserved for the same person — capacity isn\'t freed. Toggle back to Doing when feedback is in.'
+      : state === 'done'
+      ? 'Marked done. Capacity for this slot is unchanged for the planning view.'
+      : 'Active work. Counts toward this person\'s allocation as normal.';
+  }
+}
+
+// User clicked a segment — fire the right action so we capture the
+// timestamp + log entry, then repaint.
+function setCmState(next) {
+  if (!_modalState || _modalState.mode !== 'edit') return;
+  const t = TASKS.find(x => x.id === _modalState.taskId);
+  if (!t) return;
+  const cur = t.state || 'doing';
+  if (cur === next) return;
+  if (next === 'in_review') {
+    markInReview(t.id);
+  } else if (cur === 'in_review' && next === 'doing') {
+    markReceived(t.id);
+  } else {
+    setTaskDone(t.id, next === 'done');
+  }
+  paintCmState(t.state);
 }
 
 function closeCellModal() {
@@ -2025,6 +3180,7 @@ function saveCellModal() {
     t.effortDays = days; t.role = role;
     if (rev > 0) t.reviewBufferDays = rev; else delete t.reviewBufferDays;
     if (rev > 0 && revOwner) t.reviewOwner = revOwner; else delete t.reviewOwner;
+    if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
     closeCellModal(); renderAll(); return;
   }
 
@@ -2050,6 +3206,7 @@ function saveCellModal() {
     t.assigneeId = _modalState.personId;
     t.weekLabel  = _modalState.weekLabel;
   }
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
   closeCellModal(); renderAll();
 }
 
@@ -2062,6 +3219,7 @@ function unassignTask(taskId) {
   const t = TASKS.find(x => x.id === taskId);
   if (!t) return;
   delete t.assigneeId; delete t.weekLabel;
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
   renderAll();
 }
 
@@ -2734,31 +3892,132 @@ function renderOverview() {
   const el = document.getElementById('overviewBody');
   if (!el) return;
 
-  // ── Team-wide stats ──────────────────────────────────────────
-  const activeProjects = PROJECTS.filter(p => p.status === 'active').length;
-  const upcomingProjects = PROJECTS.filter(p => p.status === 'upcoming').length;
+  // ── Diagnostic stats (this week + forward) ───────────────────
+  // The old row was vanity counts (Team / Projects / Days allocated). Days
+  // allocated in particular summed effort across the entire 12-week horizon
+  // and called itself a snapshot — misleading. The new row answers the three
+  // triage questions an ops manager actually asks at a glance:
+  //   1. How loaded is the team THIS WEEK?
+  //   2. Anyone in trouble RIGHT NOW (over capacity)?
+  //   3. What does the next month look like — booked or empty?
   const staffedTasks = TASKS.filter(isStaffed);
-  const totalAllocDays = staffedTasks.reduce((s, t) => s + (t.effortDays || 0), 0);
+  const rollup = computeRollup();
+  const curWk = WEEKS[CUR_WEEK];
 
-  // Stats row (3 small) — the period-aware Team Utilization card lives below
-  // and gets its own surface so it can carry a sparkline + period toggle.
-  let html = `<div class="ov-stats">
-    <div class="ov-stat">
-      <div class="ov-stat-lbl">Team</div>
-      <div class="ov-stat-val">${PEOPLE.length}</div>
-      <div class="ov-stat-sub">${PEOPLE.filter(p=>p.role==='design').length} design &middot; ${PEOPLE.filter(p=>p.role==='copy').length} copy</div>
-    </div>
-    <div class="ov-stat">
-      <div class="ov-stat-lbl">Projects</div>
-      <div class="ov-stat-val">${activeProjects}</div>
-      <div class="ov-stat-sub">active &middot; ${upcomingProjects} upcoming</div>
-    </div>
-    <div class="ov-stat">
-      <div class="ov-stat-lbl">Days allocated</div>
-      <div class="ov-stat-val">${totalAllocDays}d</div>
-      <div class="ov-stat-sub">across ${staffedTasks.length} tasks &middot; ${WEEKS.length} weeks</div>
-    </div>
+  // Helper: aggregate team utilization for a given week
+  function teamUtilFor(wk) {
+    let d = 0, c = 0;
+    PEOPLE.forEach(p => {
+      const r = rollup[p.id][wk];
+      if (!r) return;
+      d += r.days;
+      c += r.capacity;
+    });
+    return { days: d, cap: c, pct: c > 0 ? d / c : 0 };
+  }
+  // Healthy band: 60-85% team utilization. Below = bench/cold, above = hot,
+  // >100% = over (literally cannot deliver without slipping or burning OT).
+  function bandFor(pct) {
+    if (pct < 0.6)  return { band:'cool', label:'Underbooked' };
+    if (pct <= 0.85) return { band:'ok',   label:'Healthy' };
+    if (pct <= 1.0)  return { band:'warn', label:'Running hot' };
+    return                  { band:'bad',  label:'Over capacity' };
+  }
+  function bandColor(pct) {
+    if (pct < 0.6)  return 'var(--cyan)';
+    if (pct <= 0.85) return 'var(--green)';
+    if (pct <= 1.0)  return 'var(--amber)';
+    return                  'var(--red)';
+  }
+
+  // ── Card 1: This week ────────────────────────────────────────
+  const cur = teamUtilFor(curWk);
+  const curPct = Math.round(cur.pct * 100);
+  const curBand = bandFor(cur.pct);
+  // Position on the band: clamp 0-130% across the gradient so over-cap still
+  // visibly "spikes off" the right edge.
+  const markPct = Math.max(0, Math.min(130, curPct));
+  const markLeft = `${(markPct / 130) * 100}%`;
+  const card1 = `<div class="ov-stat">
+    <div class="ov-stat-lbl">This week <span class="ov-stat-lbl-pill">${escHTML(curWk.replace('w/o ',''))}</span></div>
+    <div class="ov-stat-val ${curBand.band}">${curPct}% <span style="font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;">${cur.days}d / ${cur.cap}d</span></div>
+    <div class="ov-stat-sub">${curBand.label} &middot; ${PEOPLE.length} on team</div>
+    <div class="ov-band" title="0–130% scale · healthy band 60–85%"><div class="ov-band-mark" style="left:${markLeft};"></div></div>
   </div>`;
+
+  // ── Card 2: At risk this week ────────────────────────────────
+  const overPeople = PEOPLE
+    .map(p => ({ p, r: rollup[p.id][curWk] }))
+    .filter(x => x.r && x.r.pct > 1.0)
+    .sort((a, b) => b.r.pct - a.r.pct);
+  const benchPeople = PEOPLE
+    .map(p => ({ p, r: rollup[p.id][curWk] }))
+    .filter(x => x.r && x.r.capacity > 0 && x.r.days === 0);
+  let card2;
+  if (overPeople.length > 0) {
+    const names = overPeople.slice(0, 3).map(x =>
+      `<span class="ov-name-pill" style="--pill-c:${x.p.color};">${escHTML(x.p.name.split(' ')[0])}<span class="ov-name-pct">${Math.round(x.r.pct*100)}%</span></span>`
+    ).join('');
+    const moreCount = overPeople.length - 3;
+    const moreHTML = moreCount > 0 ? `<span class="ov-name-pill" style="--pill-c:var(--muted);">+${moreCount} more</span>` : '';
+    card2 = `<div class="ov-stat">
+      <div class="ov-stat-lbl">At risk this week</div>
+      <div class="ov-stat-val bad">${overPeople.length} over capacity</div>
+      <div class="ov-names">${names}${moreHTML}</div>
+    </div>`;
+  } else {
+    const subBits = [];
+    if (benchPeople.length > 0) subBits.push(`<strong>${benchPeople.length}</strong> on the bench`);
+    subBits.push('No one over capacity');
+    card2 = `<div class="ov-stat">
+      <div class="ov-stat-lbl">At risk this week</div>
+      <div class="ov-stat-val"><span class="ov-clear">All clear</span></div>
+      <div class="ov-stat-sub">${subBits.join(' &middot; ')}</div>
+    </div>`;
+  }
+
+  // ── Card 3: Pipeline (incoming work that needs staffing) ─────
+  // Different axis from cards 1 & 2. Those answer "are we OK with what we've
+  // committed?" — this answers "what's coming that I still need to act on?"
+  // The forward-utilization view lives in the Team Utilization panel below
+  // (defaults to 4wk now, so we don't duplicate that here).
+  const unstaffed = TASKS.filter(t => !isStaffed(t));
+  const unstaffedDays = unstaffed.reduce((s, t) => s + (t.effortDays || 0), 0);
+  const unstaffedDesign = unstaffed.filter(t => t.role === 'design').reduce((s,t) => s + (t.effortDays||0), 0);
+  const unstaffedCopy   = unstaffed.filter(t => t.role === 'copy'  ).reduce((s,t) => s + (t.effortDays||0), 0);
+  const upcomingProjs = PROJECTS.filter(p => p.status === 'upcoming');
+  const projsWithUnstaffed = new Set(unstaffed.map(t => t.projectId)).size;
+  let card3;
+  if (unstaffed.length === 0 && upcomingProjs.length === 0) {
+    card3 = `<div class="ov-stat">
+      <div class="ov-stat-lbl">Pipeline</div>
+      <div class="ov-stat-val"><span class="ov-clear">Pipeline clear</span></div>
+      <div class="ov-stat-sub">No unstaffed work &middot; no upcoming projects</div>
+    </div>`;
+  } else if (unstaffed.length === 0) {
+    card3 = `<div class="ov-stat">
+      <div class="ov-stat-lbl">Pipeline</div>
+      <div class="ov-stat-val cool">${upcomingProjs.length} upcoming</div>
+      <div class="ov-stat-sub">Projects on the horizon &middot; nothing waiting to staff</div>
+    </div>`;
+  } else {
+    // Headline counts as task count (most concrete) with day-volume right after.
+    // Sub gives the role split so you know what kind of capacity you need to
+    // free up, plus a count of upcoming projects for context.
+    const roleBits = [];
+    if (unstaffedDesign > 0) roleBits.push(`<strong>${unstaffedDesign}d</strong> design`);
+    if (unstaffedCopy   > 0) roleBits.push(`<strong>${unstaffedCopy}d</strong> copy`);
+    const projCtx = projsWithUnstaffed > 1 ? `across ${projsWithUnstaffed} projects` : `1 project`;
+    const upcomingCtx = upcomingProjs.length > 0 ? ` &middot; ${upcomingProjs.length} upcoming` : '';
+    card3 = `<div class="ov-stat">
+      <div class="ov-stat-lbl">Pipeline</div>
+      <div class="ov-stat-val warn">${unstaffed.length} to staff <span style="font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;">${unstaffedDays}d</span></div>
+      <div class="ov-stat-sub">${roleBits.join(' &middot; ')}</div>
+      <div class="ov-stat-sub" style="margin-top:auto;">${projCtx}${upcomingCtx}</div>
+    </div>`;
+  }
+
+  let html = `<div class="ov-stats">${card1}${card2}${card3}</div>`;
 
   // ── Featured Team Utilization card (period-aware, with sparkline) ────
   html += renderUtilizationCard();
@@ -3072,13 +4331,17 @@ function renderCycleTimeCard(staffedTasks) {
         projAgg[pid] = {
           proj: projectById(pid) || { id:pid, name:'Unknown', color:'#94A3B8' },
           totalActual: 0,
-          byReviewer: {}
+          tasks: []
         };
       }
       projAgg[pid].totalActual += actual;
-      if (!projAgg[pid].byReviewer[k]) projAgg[pid].byReviewer[k] = { actual:0, count:0 };
-      projAgg[pid].byReviewer[k].actual += actual;
-      projAgg[pid].byReviewer[k].count  += 1;
+      projAgg[pid].tasks.push({
+        name:    t.name,
+        days:    actual,
+        owner:   k,
+        meta:    REVIEW_OWNER_META[k],
+        person:  personById(t.assigneeId)
+      });
     });
 
     const projRows = Object.values(projAgg)
@@ -3086,28 +4349,33 @@ function renderCycleTimeCard(staffedTasks) {
 
     headlineRight = `<span class="ov-cycle-count">${projRows.length} project${projRows.length===1?'':'s'} on hold</span>`;
 
-    // Each row: project name + total parked days, then a chip per blocking
-    // reviewer with that reviewer's days. No "vs expected", no over/under
-    // styling — until we have actual review events, those would be made-up
-    // signals.
+    // Each row: project name + total parked days, then one line per actual
+    // task that's parked — name, who's holding it, which reviewer, how many
+    // days. Naming the tasks is the bit that lets the user trace each row
+    // back to a chip in the planner; without it the rollup feels invented.
     const projHTML = projRows.map(r => {
-      const chips = REVIEW_OWNER_ORDER
-        .filter(k => r.byReviewer[k])
-        .map(k => {
-          const meta = REVIEW_OWNER_META[k];
-          const x = r.byReviewer[k];
-          return `<span class="ov-cycle-rev-chip ${meta.tone}" title="${fmt(x.actual)}d on ${escHTML(meta.full.toLowerCase())} across ${x.count} task${x.count===1?'':'s'}">
-            <span class="ov-cycle-rev-name">${escHTML(meta.short)}</span>
-            <span class="ov-cycle-rev-num"><b>${fmt(x.actual)}d</b></span>
-          </span>`;
+      const taskRows = r.tasks
+        .sort((a, b) => b.days - a.days)
+        .map(tk => {
+          const tone   = tk.meta ? tk.meta.tone : 'internal';
+          const reviewer = tk.meta ? tk.meta.short : 'Review';
+          const personLabel = tk.person ? `<span class="ov-cycle-task-person">${escHTML(tk.person.name)}</span>` : '';
+          return `<div class="ov-cycle-task">
+            <span class="ov-cycle-task-name" title="${escHTML(tk.name)}">${escHTML(tk.name)}</span>
+            ${personLabel}
+            <span class="ov-cycle-task-rev ${tone}" title="${fmt(tk.days)}d parked with ${escHTML((tk.meta?tk.meta.full:'review').toLowerCase())}">
+              <span class="ov-cycle-task-rev-name">${escHTML(reviewer)}</span>
+              <span class="ov-cycle-task-rev-num"><b>${fmt(tk.days)}d</b></span>
+            </span>
+          </div>`;
         }).join('');
 
       return `<div class="ov-cycle-proj">
         <div class="ov-cycle-proj-hdr">
           <span class="ov-cycle-proj-name"><span class="ov-cycle-proj-dot" style="background:${r.proj.color};"></span>${escHTML(r.proj.name)}</span>
-          <span class="ov-cycle-proj-stat"><span class="ov-cycle-proj-actual"><b>${fmt(r.totalActual)}d</b> parked</span></span>
+          <span class="ov-cycle-proj-stat"><span class="ov-cycle-proj-actual"><b>${fmt(r.totalActual)}d</b> parked &middot; ${r.tasks.length} task${r.tasks.length===1?'':'s'}</span></span>
         </div>
-        <div class="ov-cycle-proj-chips">${chips}</div>
+        <div class="ov-cycle-tasks">${taskRows}</div>
       </div>`;
     }).join('');
 
@@ -3115,7 +4383,7 @@ function renderCycleTimeCard(staffedTasks) {
     // setting reviewBufferDays on a new task). Trend teaser stays.
     body = `<div class="ov-cycle-projects">${projHTML}</div>
       <div class="ov-cycle-foot">
-        <div>Typical reviewer wait — use as a reference when you set buffers: internal review <b>${fmt(REVIEW_OWNER_META.internal.baselineDays)}d</b> &middot; stakeholder feedback <b>${fmt(REVIEW_OWNER_META.stakeholder_feedback.baselineDays)}d</b> &middot; approval / sign-off <b>${fmt(REVIEW_OWNER_META.final_approval.baselineDays)}d</b>.</div>
+        <div>Typical reviewer wait — use as a reference when you set buffers: internal review <b>${fmt(getBaselineFor('internal'))}d</b> &middot; stakeholder feedback <b>${fmt(getBaselineFor('stakeholder_feedback'))}d</b> &middot; approval / sign-off <b>${fmt(getBaselineFor('final_approval'))}d</b>. <span style="color:var(--muted);">Tune these in Settings → Review baselines.</span></div>
         <div class="ov-cycle-trend">Coming soon: a history view to look back at how long projects sat with each reviewer over time.</div>
       </div>`;
   }
@@ -3164,6 +4432,11 @@ function renderOverviewPersonCard(person) {
     byProj[t.projectId] = (byProj[t.projectId] || 0) + (t.effortDays || 0);
   });
   const totalDays = Object.values(byProj).reduce((a, b) => a + b, 0);
+  // Capacity for THIS person THIS week — 5d default, less for PTO/part-time.
+  // Percentages in the legend are days / capacity so they read as "share of
+  // your week", not "share of your work" (which always summed to 100% and was
+  // misleading on over-cap weeks like 9d / 5d).
+  const capacity = getCapacity(person.id, activeWeek.label);
   const entries = Object.entries(byProj)
     .map(([pid, days]) => ({ proj: projectById(pid), days }))
     .filter(e => e.proj)
@@ -3227,11 +4500,17 @@ function renderOverviewPersonCard(person) {
 
   const legend = `<div class="ov-legend">
     ${entries.map(e => {
-      const pct = Math.round((e.days / totalDays) * 100);
+      // % of weekly capacity, not % of total work — so two 3d projects on a
+      // 5d week read as 60% + 60% (not 50% + 50%) and over-cap weeks like
+      // Shaun's 9d show as e.g. 120% + 60%. PTO weeks (cap=0) hide the %
+      // since there's no baseline to divide by.
+      const pctLbl = capacity > 0
+        ? Math.round((e.days / capacity) * 100) + '%'
+        : '';
       return `<div class="ov-legend-row">
         <span class="ov-legend-dot" style="background:${e.proj.color};"></span>
         <span class="ov-legend-name">${escHTML(e.proj.name)}</span>
-        <span class="ov-legend-val">${e.days}d &middot; ${pct}%</span>
+        <span class="ov-legend-val">${e.days}d${pctLbl ? ` &middot; ${pctLbl}` : ''}</span>
       </div>`;
     }).join('')}
   </div>`;
@@ -3313,6 +4592,113 @@ function migrateLegacyReviewOwners() {
   return changed;
 }
 
+// Fold the old `done:true` flag into the new `state` field. We preserve
+// `done` so any older code path that still reads it keeps working — the new
+// state field is the canonical source going forward.
+//
+// IMPORTANT capacity rule: `state === 'in_review'` does NOT free the
+// person's allocation. The day total still counts in weeklyDays(). Marking
+// something parked is a tracking + visibility action, not a capacity move.
+// The reasoning: when feedback comes back the same person has to pick the
+// work back up, so the slot stays reserved. If we freed it, someone else
+// could book on top, and unparking would silently double-book the person.
+function migrateTaskStates() {
+  let changed = false;
+  TASKS.forEach(t => {
+    if (!t.state) {
+      t.state = t.done ? 'done' : 'doing';
+      changed = true;
+    }
+    if (!Array.isArray(t.reviewLog)) {
+      t.reviewLog = [];
+    }
+  });
+  return changed;
+}
+
+// Editable per-reviewer baseline overrides. Falls back to the hardcoded
+// REVIEW_OWNER_META[k].baselineDays when the user hasn't set their own.
+// Stored separately from the main state so re-seeding demo data doesn't
+// wipe a user's tuned numbers.
+const REVIEW_BASELINES_KEY = 'vizor.reviewBaselines.v1';
+let _reviewBaselines = {}; // { [reviewerKey]: number }
+function loadReviewBaselines() {
+  try {
+    const raw = localStorage.getItem(REVIEW_BASELINES_KEY);
+    if (!raw) return;
+    const o = JSON.parse(raw);
+    if (o && typeof o === 'object') _reviewBaselines = o;
+  } catch (e) {}
+}
+function saveReviewBaselines() {
+  try { localStorage.setItem(REVIEW_BASELINES_KEY, JSON.stringify(_reviewBaselines)); } catch (e) {}
+}
+function getBaselineFor(reviewerKey) {
+  const k = reviewerKey && REVIEW_OWNER_META[reviewerKey] ? reviewerKey : 'other';
+  if (typeof _reviewBaselines[k] === 'number' && !isNaN(_reviewBaselines[k])) {
+    return _reviewBaselines[k];
+  }
+  return REVIEW_OWNER_META[k].baselineDays;
+}
+function resetReviewBaseline(reviewerKey) {
+  delete _reviewBaselines[reviewerKey];
+  saveReviewBaselines();
+}
+
+// ── Review state actions ─────────────────────────────────────────
+// Wall-clock timestamps so the analytics/history view can show real
+// elapsed time later. We do NOT touch t.assigneeId or t.weekLabel — the
+// person stays on the hook for this work while it's parked.
+function markInReview(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  if (t.state === 'in_review') return; // idempotent
+  const now = Date.now();
+  t.state = 'in_review';
+  t.reviewSentAt = now;
+  t.reviewLog.push({
+    ts: now,
+    action: 'sent',
+    reviewer: t.reviewOwner || null,
+  });
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+  renderAll();
+}
+function markReceived(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  if (t.state !== 'in_review') return;
+  const now = Date.now();
+  // Calendar days parked, rounded to one decimal for the log.
+  const elapsedMs = t.reviewSentAt ? (now - t.reviewSentAt) : 0;
+  const elapsedDays = Math.max(0, Math.round((elapsedMs / 86400000) * 10) / 10);
+  t.reviewLog.push({
+    ts: now,
+    action: 'received',
+    reviewer: t.reviewOwner || null,
+    elapsedDays,
+  });
+  t.state = 'doing';
+  delete t.reviewSentAt;
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+  renderAll();
+}
+function setTaskDone(taskId, done) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  t.state = done ? 'done' : 'doing';
+  t.done  = !!done; // keep legacy flag in sync for the Board view
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+  renderAll();
+}
+
+// How long a task has been parked (in calendar days) — used for the
+// "actual vs baseline" copy on the Waiting On rail and the chip subline.
+function elapsedReviewDays(t) {
+  if (t.state !== 'in_review' || !t.reviewSentAt) return 0;
+  return Math.max(0, (Date.now() - t.reviewSentAt) / 86400000);
+}
+
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -3336,7 +4722,8 @@ function loadState() {
     }
     const colorsFixed  = migrateLegacyColors();
     const ownersFixed  = migrateLegacyReviewOwners();
-    if (colorsFixed || ownersFixed) {
+    const statesFixed  = migrateTaskStates();
+    if (colorsFixed || ownersFixed || statesFixed) {
       // persist the fix so we don't re-run on every load
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify({
         PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, CAPACITY_OVERRIDES
@@ -3349,6 +4736,71 @@ function resetState() {
   if (!confirm('Reset all data back to the demo seed?\n\nThis removes every person, project, and task you\'ve added — cannot be undone.')) return;
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   location.reload();
+}
+
+// ── About / Get to know Vizor ────────────────────────────────────
+function openAboutModal() {
+  closeSettingsMenu();
+  const m = document.getElementById('aboutModal');
+  if (!m) return;
+  m.classList.add('show');
+  // Reset scroll so first-time openers always start at the hero.
+  const card = m.querySelector('.about-card');
+  if (card) card.scrollTop = 0;
+}
+function closeAboutModal() {
+  const m = document.getElementById('aboutModal');
+  if (m) m.classList.remove('show');
+}
+
+// ── Review baselines modal ───────────────────────────────────────
+function openBaselinesModal() {
+  closeSettingsMenu();
+  renderBaselinesList();
+  document.getElementById('baselinesModal').classList.add('show');
+}
+function closeBaselinesModal() {
+  document.getElementById('baselinesModal').classList.remove('show');
+}
+function renderBaselinesList() {
+  const el = document.getElementById('bmList');
+  if (!el) return;
+  el.innerHTML = REVIEW_OWNER_ORDER.map(k => {
+    const meta = REVIEW_OWNER_META[k];
+    const cur  = getBaselineFor(k);
+    const def  = meta.baselineDays;
+    const isOverridden = (typeof _reviewBaselines[k] === 'number');
+    return `<div class="bm-row ${meta.tone}">
+      <div class="bm-row-meta">
+        <span class="bm-row-dot"></span>
+        <div class="bm-row-text">
+          <div class="bm-row-name">${escHTML(meta.full)}</div>
+          <div class="bm-row-default">Default ${def}d ${isOverridden ? '· you set <b>'+cur+'d</b>' : ''}</div>
+        </div>
+      </div>
+      <div class="bm-row-input">
+        <input type="number" min="0" max="20" step="0.5" value="${cur}" data-k="${k}" oninput="onBaselineEdit(this)">
+        <span>d</span>
+        ${isOverridden ? `<button class="bm-reset" onclick="resetBaselineRow('${k}')" title="Restore default">Reset</button>` : '<span class="bm-reset-spacer"></span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function onBaselineEdit(input) {
+  const k = input.dataset.k;
+  const v = parseFloat(input.value);
+  if (isNaN(v) || v < 0) { return; }
+  _reviewBaselines[k] = v;
+  saveReviewBaselines();
+  renderAll();
+  // Re-render the list to update the "you set Xd" subtext + show the Reset
+  // button on rows that just gained an override.
+  renderBaselinesList();
+}
+function resetBaselineRow(k) {
+  resetReviewBaseline(k);
+  renderAll();
+  renderBaselinesList();
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -3653,6 +5105,7 @@ function renderAll() {
   if (document.getElementById('overviewView').style.display !== 'none') renderOverview();
   saveState();
   scheduleCloudPush();
+  if (typeof ASANA !== 'undefined') ASANA.schedule();
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -3731,6 +5184,12 @@ function confirmReset() {
 function bootApp() {
   loadState();
   loadCloudConfig();
+  loadReviewBaselines();
+  // Demo seed (when no saved state) doesn't carry the new state field.
+  // Run the migration here so freshly-loaded users get state:'doing' on
+  // every task instead of undefined.
+  migrateTaskStates();
+  ASANA.load();
   if (isCloudConnected()) {
     setCloudStatus('syncing');
     updateCloudChip();
