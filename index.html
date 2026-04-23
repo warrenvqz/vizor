@@ -496,9 +496,10 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .sb-about-cta:hover { border-color:var(--cyan); background:linear-gradient(135deg, rgba(127,200,212,0.22), rgba(178,152,212,0.16)); transform:translateY(-1px); box-shadow:0 2px 8px rgba(127,200,212,0.18); }
 .sb-about-ico { width:26px; height:26px; border-radius:6px; background:var(--white); display:flex; align-items:center; justify-content:center; color:var(--cyan); flex-shrink:0; box-shadow:0 1px 2px rgba(0,0,0,0.06); }
 .sb-about-text { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
-.sb-about-title { font-size:11px; font-weight:700; color:var(--text); letter-spacing:.01em; }
-.sb-about-sub { font-size:10px; color:var(--muted); }
-.sb-about-arrow { color:var(--muted); flex-shrink:0; transition:transform .15s, color .15s; }
+.sb-about-title { font-size:11.5px; font-weight:700; color:#fff; letter-spacing:.01em; line-height:1.3; }
+.sb-about-sub { font-size:10px; color:rgba(255,255,255,.65); margin-top:1px; line-height:1.3; }
+.sb-about-arrow { color:rgba(255,255,255,.55); flex-shrink:0; transition:transform .15s, color .15s; }
+.sb-about-cta:hover .sb-about-title { color:var(--cyan); }
 .sb-about-cta:hover .sb-about-arrow { color:var(--cyan); transform:translateX(2px); }
 
 /* ── ABOUT MODAL (one-pager) ────────────────────────── */
@@ -4740,7 +4741,7 @@ function resetState() {
 
 // ── About / Get to know Vizor ────────────────────────────────────
 function openAboutModal() {
-  closeSettingsMenu();
+  if (typeof _hideSettings === 'function') _hideSettings();
   const m = document.getElementById('aboutModal');
   if (!m) return;
   m.classList.add('show');
@@ -4755,7 +4756,7 @@ function closeAboutModal() {
 
 // ── Review baselines modal ───────────────────────────────────────
 function openBaselinesModal() {
-  closeSettingsMenu();
+  if (typeof _hideSettings === 'function') _hideSettings();
   renderBaselinesList();
   document.getElementById('baselinesModal').classList.add('show');
 }
