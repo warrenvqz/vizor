@@ -190,7 +190,8 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
    `.total-cell` rule. Use flex to bulletproof horizontal + vertical centering. */
 .alloc-grid tbody td.total-cell { position:sticky; right:0; z-index:2; background:var(--surface-3); border-left:1px solid var(--border); box-shadow:-6px 0 8px -6px rgba(15,23,42,.08); width:120px; min-width:120px; padding:12px 16px; text-align:center; vertical-align:middle; }
 .alloc-grid tbody td.total-cell > .total-pct,
-.alloc-grid tbody td.total-cell > .total-days { display:block; width:100%; text-align:center; }
+.alloc-grid tbody td.total-cell > .total-days,
+.alloc-grid tbody td.total-cell > .total-meet { display:block; width:100%; text-align:center; }
 /* over-cap rows: layer the translucent tint on a SOLID surface so sticky cells
    don't let scrolled-behind chip text bleed through. */
 .alloc-grid tbody tr.over td.total-cell {
@@ -236,6 +237,23 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .pm-cap-quick button { font-size:9px; padding:3px 6px; border:1px solid var(--border); background:var(--white); border-radius:4px; cursor:pointer; color:var(--muted); font-family:inherit; font-weight:600; }
 .pm-cap-quick button:hover { border-color:var(--cyan); color:var(--cyan); }
 .pm-cap-quick button.active { background:var(--cyan); color:var(--dark); border-color:var(--cyan); }
+/* Standing-meetings field — single row of quick chips + numeric input + percentage hint. */
+.pm-meet-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:2px 0; }
+.pm-meet-quick { display:flex; gap:2px; }
+.pm-meet-quick button { font-size:9px; padding:3px 7px; border:1px solid var(--border); background:var(--white); border-radius:4px; cursor:pointer; color:var(--muted); font-family:inherit; font-weight:600; }
+.pm-meet-quick button:hover { border-color:var(--cyan); color:var(--cyan); }
+.pm-meet-quick button.active { background:var(--cyan); color:var(--dark); border-color:var(--cyan); }
+.pm-meet-input { width:58px; border:1px solid var(--border); background:var(--white); border-radius:5px; padding:4px 6px; font-size:12px; font-family:inherit; color:var(--text); text-align:center; }
+.pm-meet-input:focus { outline:none; border-color:var(--cyan); }
+.pm-meet-hint { font-size:10px; color:var(--muted); font-style:italic; }
+:root[data-theme="dark"] .pm-meet-input { background:var(--white); color:var(--text); border-color:var(--border); }
+@media (max-width: 720px) {
+  .pm-meet-row { gap:6px; }
+  .pm-meet-quick { flex:1; }
+  .pm-meet-quick button { flex:1; padding:5px 4px; }
+  .pm-meet-input { width:52px; }
+  .pm-meet-hint { width:100%; text-align:left; margin-top:2px; }
+}
 .person-row { display:flex; align-items:center; gap:8px; }
 .person-info { flex:1; min-width:0; }
 .person-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -268,10 +286,22 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .tc-park svg { flex-shrink:0; }
 .task-chip.is-done { opacity:.6; }
 .task-chip.is-done .tc-name { text-decoration:line-through; color:var(--muted); }
+/* Split-task variants. Primary chip gets a small "→" hint pointing at the
+   spillover week. Continuation chip in the split week is dimmed and tagged
+   "cont." so it reads as the same task spilling over, not a duplicate. */
+.task-chip.is-split-primary { box-shadow:inset -2px 0 0 rgba(127,200,212,0.45); }
+.task-chip.is-split-cont { background:rgba(127,200,212,0.06); }
+.task-chip.is-split-cont .tc-name { color:var(--muted); font-style:italic; }
+.task-chip.is-split-cont .tc-days { background:rgba(127,200,212,0.18); color:#0E5664; }
+.tc-cont { display:inline-flex; align-items:center; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#0E5664; padding:1px 5px; border-radius:3px; background:rgba(127,200,212,0.22); white-space:nowrap; }
+.tc-split-arrow { display:inline-flex; align-items:center; font-size:11px; line-height:1; color:var(--cyan); padding:0 2px; font-weight:700; }
 .total-cell { width:120px; min-width:120px; text-align:center; padding:12px 16px; vertical-align:middle; background:var(--surface-3); }
 .total-pct { font-size:15px; font-weight:800; line-height:1.1; text-align:center; }
 .total-days { font-size:10px; color:var(--muted); margin-top:3px; text-align:center; }
 .total-days-reduced { font-weight:700; color:var(--amber); }
+/* Recurring-meetings sub-tag under the totals chip. Whisper-quiet so it
+   doesn't compete with the % and days; only appears when meetings > 0. */
+.total-meet { font-size:9px; color:var(--muted); opacity:.75; margin-top:2px; text-align:center; letter-spacing:.01em; }
 .total-over { color:var(--red); }
 .total-cap { color:var(--amber); }
 .total-ok { color:var(--green); }
@@ -339,6 +369,38 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 
 /* ── WAITING ON PANEL ───────────────────────────────── */
 .rp-sec-waiting { max-height:38%; }
+/* "Vizor noticed" recommendations section. Soft cyan tint to set it apart
+   from the data sections; "Tell me" button on the right invokes narrator. */
+.rp-sec-recs { background:linear-gradient(180deg, rgba(127,200,212,0.06), transparent); }
+.rp-sec-recs .rp-title { color:var(--text); display:inline-flex; align-items:center; }
+.rp-narrate { display:inline-flex; align-items:center; gap:4px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--cyan); background:transparent; border:1px solid rgba(127,200,212,0.45); border-radius:4px; padding:3px 7px; cursor:pointer; font-family:inherit; }
+.rp-narrate:hover { background:rgba(127,200,212,0.12); border-color:var(--cyan); }
+.rp-narrate:disabled { opacity:.45; cursor:not-allowed; }
+.rp-narrate.is-busy { opacity:.7; cursor:progress; background:rgba(127,200,212,0.10); }
+.rp-narrate.is-busy::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; border:1.5px solid var(--cyan); border-top-color:transparent; animation:vizorSpin .8s linear infinite; }
+.rp-narrate.is-playing { background:var(--cyan); border-color:var(--cyan); color:var(--dark); }
+@keyframes vizorSpin { to { transform:rotate(360deg); } }
+.recs { display:flex; flex-direction:column; gap:6px; padding:0 12px 12px; max-height:240px; overflow-y:auto; }
+.rec { display:flex; flex-direction:column; gap:6px; background:var(--surface-2); border:1px solid var(--border); border-left:3px solid var(--cyan); border-radius:6px; padding:9px 11px; }
+.rec.rec-warn { border-left-color:var(--amber); }
+.rec.rec-over { border-left-color:#E28A8A; }
+.rec-text { font-size:11.5px; line-height:1.45; color:var(--text); }
+.rec-text b { font-weight:700; }
+.rec-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.rec-btn { font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:4px; border:1px solid var(--border); background:var(--white); color:var(--text); cursor:pointer; font-family:inherit; }
+.rec-btn.primary { background:var(--cyan); color:var(--dark); border-color:var(--cyan); }
+.rec-btn.primary:hover { filter:brightness(1.05); }
+.rec-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+.rec-btn.dismiss { color:var(--muted); border-color:transparent; background:transparent; padding:4px 6px; }
+.rec-btn.dismiss:hover { color:var(--text); background:var(--bg); }
+/* Inline over-cap marker on the offending cell. Sits at the top of the cell,
+   small + non-blocking. Click "split" runs the same action as the panel. */
+.cap-over-marker { display:flex; align-items:center; justify-content:space-between; gap:6px; background:rgba(226,138,138,0.12); border:1px solid rgba(226,138,138,0.45); border-radius:4px; padding:2px 5px 2px 6px; margin-bottom:3px; font-size:9.5px; font-weight:700; color:#9B3535; }
+.cap-over-marker .com-pct { letter-spacing:.02em; }
+.cap-over-marker .com-act { font-size:9px; font-weight:700; padding:2px 7px; border-radius:3px; background:#FFF; border:1px solid rgba(226,138,138,0.6); color:#9B3535; cursor:pointer; font-family:inherit; }
+.cap-over-marker .com-act:hover { background:#9B3535; color:#FFF; border-color:#9B3535; }
+:root[data-theme="dark"] .cap-over-marker { background:rgba(226,138,138,0.18); color:#FFB5B5; }
+:root[data-theme="dark"] .cap-over-marker .com-act { background:transparent; color:#FFB5B5; border-color:rgba(226,138,138,0.5); }
 .wo { padding:2px 14px 12px; overflow-y:auto; }
 .wo-empty { font-size:11px; color:var(--muted); font-style:italic; padding:12px 2px 4px; }
 .wo-group { margin-top:10px; }
@@ -480,6 +542,18 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .sm-hint { background:var(--surface-2); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:11px; color:var(--muted); line-height:1.6; margin-top:12px; }
 .sm-hint code { background:var(--white); padding:1px 5px; border-radius:3px; font-size:10px; border:1px solid var(--border); }
 .sm-hint b { color:var(--text); }
+.sm-section-lbl { font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin:0 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+.cm-split-card { display:flex; align-items:center; gap:10px; padding:8px 10px; background:linear-gradient(135deg, rgba(127,200,212,0.10), rgba(178,152,212,0.06)); border:1px solid rgba(127,200,212,0.35); border-radius:6px; }
+.cm-split-text { flex:1; font-size:11px; line-height:1.5; color:var(--text); }
+.cm-split-text b { color:var(--text); }
+.cm-split-undo { padding:5px 10px !important; font-size:10.5px !important; flex-shrink:0; color:var(--muted) !important; }
+.cm-split-undo:hover { color:var(--text) !important; border-color:var(--cyan) !important; }
+.sm-tag-opt { display:inline-block; margin-left:6px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); background:var(--surface-2); border:1px solid var(--border); border-radius:3px; padding:1px 5px; vertical-align:1px; }
+.sm-segmented { display:flex; gap:0; border:1px solid var(--border); border-radius:7px; overflow:hidden; background:var(--surface-2); width:fit-content; }
+.sm-seg { padding:6px 12px; font-size:11px; font-weight:600; color:var(--muted); background:transparent; border:none; cursor:pointer; font-family:inherit; transition:background .1s, color .1s; border-right:1px solid var(--border); }
+.sm-seg:last-child { border-right:none; }
+.sm-seg:hover { color:var(--text); }
+.sm-seg.is-on { background:var(--white); color:var(--text); box-shadow:inset 0 -2px 0 var(--cyan); }
 
 /* ── SEGMENTED CONTROL (modal status switcher) ──────── */
 .seg { display:inline-flex; gap:0; border:1px solid var(--border); border-radius:7px; overflow:hidden; background:var(--surface-2); }
@@ -1262,6 +1336,13 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       </div>
       <div class="seg-hint" id="cmStateHint"></div>
     </div>
+    <div class="sm-field cm-split-row" id="cmSplitField" style="display:none;">
+      <label class="sm-label">Split across weeks</label>
+      <div class="cm-split-card">
+        <div class="cm-split-text" id="cmSplitText"></div>
+        <button type="button" class="sm-btn ghost cm-split-undo" onclick="unsplitFromModal()">Unsplit</button>
+      </div>
+    </div>
     <div class="sm-status" id="cmStatus"></div>
     <div class="sm-row">
       <button class="sm-btn danger" id="cmDelete" style="display:none;" onclick="deleteTaskFromModal()">Remove from week</button>
@@ -1292,6 +1373,24 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <div class="sm-field">
         <label class="sm-label">Color</label>
         <div class="pm-color-picker" id="pmColorPicker"></div>
+      </div>
+    </div>
+    <div class="sm-field" id="pmMeetingsSection">
+      <label class="sm-label">Standing meetings</label>
+      <div class="pm-cap-hint">Recurring time this person spends in meetings each week. Subtracted from their effective capacity, every week.</div>
+      <div class="pm-meet-row">
+        <div class="pm-meet-quick">
+          <button type="button" id="pmMeetQ0"   class="" onclick="pmSetMeetings(0)">None</button>
+          <button type="button" id="pmMeetQ05"  class="" onclick="pmSetMeetings(0.5)">½d</button>
+          <button type="button" id="pmMeetQ1"   class="" onclick="pmSetMeetings(1)">1d</button>
+          <button type="button" id="pmMeetQ15"  class="" onclick="pmSetMeetings(1.5)">1½d</button>
+          <button type="button" id="pmMeetQ2"   class="" onclick="pmSetMeetings(2)">2d</button>
+        </div>
+        <input type="number" class="pm-meet-input" id="pmMeetInput"
+          step="0.5" min="0" max="5" value="0"
+          oninput="pmUpdateMeetings(this.value)"
+          aria-label="Standing meetings per week (days)">
+        <span class="pm-meet-hint" id="pmMeetHint">= 0% of a 5-day week</span>
       </div>
     </div>
     <div class="sm-field" id="pmCapacitySection">
@@ -1714,13 +1813,15 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 
 <!-- VOICE / ANTHROPIC API KEY MODAL -->
 <div class="modal-bg" id="voiceModal" onclick="if(event.target===this)closeVoiceModal()">
-  <div class="modal-card" style="max-width:520px;">
-    <div class="sm-title">Voice control</div>
-    <div class="sm-sub">Hold <code>Space</code> (or click the mic button) and speak &mdash; Vizor fills the open Edit Task modal, or runs quick edits like &ldquo;move Section layouts to Andre next week.&rdquo;</div>
+  <div class="modal-card" style="max-width:560px;">
+    <div class="sm-title">Voice &amp; narration</div>
+    <div class="sm-sub">Hold <code>Space</code> (or click the mic button) and speak &mdash; Vizor fills the open Edit Task modal, or runs quick edits like &ldquo;move Section layouts to Andre next week.&rdquo; The narrator reads recommendations aloud in a calm British voice.</div>
+
+    <div class="sm-section-lbl">You speak to Vizor</div>
     <div class="sm-field">
       <label class="sm-label">Anthropic API key</label>
       <input type="password" class="sm-input" id="vmApiKey" placeholder="sk-ant-..." autocomplete="off">
-      <div class="sm-help">Create one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com / Settings / API keys</a>. Stored only in this browser's localStorage.</div>
+      <div class="sm-help">Create one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com / Settings / API keys</a>. Used to turn your speech into actions. Stored only in this browser.</div>
     </div>
     <div class="sm-field">
       <label class="sm-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
@@ -1728,12 +1829,29 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       </label>
       <div class="sm-help">When off, the mic button hides and Space behaves normally.</div>
     </div>
+
+    <div class="sm-section-lbl" style="margin-top:18px;">Vizor speaks to you</div>
+    <div class="sm-field">
+      <label class="sm-label">OpenAI API key <span class="sm-tag-opt">optional</span></label>
+      <input type="password" class="sm-input" id="vmTtsKey" placeholder="sk-..." autocomplete="off">
+      <div class="sm-help">Create one at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com / API keys</a>. Used for the narrator only (OpenAI <code>tts-1</code>, &ldquo;fable&rdquo; voice). Skip this and the &ldquo;Tell me&rdquo; button stays quiet.</div>
+    </div>
+    <div class="sm-field">
+      <label class="sm-label">Narrator chattiness</label>
+      <div class="sm-segmented" id="vmTtsMode" role="tablist">
+        <button type="button" class="sm-seg" data-mode="silent">Silent</button>
+        <button type="button" class="sm-seg is-on" data-mode="ondemand">On request</button>
+        <button type="button" class="sm-seg" data-mode="auto">Auto&middot;narrate</button>
+      </div>
+      <div class="sm-help"><b>Silent:</b> hide the narrator button. <b>On request:</b> click <em>Tell me</em> when you want it. <b>Auto&middot;narrate:</b> Vizor speaks each time a new over-capacity recommendation appears.</div>
+    </div>
+
     <div class="sm-hint">
-      <b>How it works:</b> the browser transcribes your voice locally with Web Speech API, then sends the text plus your current Vizor state to Claude (via your API key) to figure out what to do. Your key never leaves this device except to call Anthropic directly.
+      <b>How it works:</b> the browser transcribes your voice locally with Web Speech API, then sends the text plus your current Vizor state to Claude (via your Anthropic key) to figure out what to do. The narrator sends a short observation to OpenAI&rsquo;s TTS endpoint and plays the audio back. Both keys stay on this device.
     </div>
     <div class="sm-status" id="vmStatus"></div>
     <div class="sm-row">
-      <button class="sm-btn danger" id="vmClear" onclick="clearVoiceKey()">Clear key</button>
+      <button class="sm-btn danger" id="vmClear" onclick="clearVoiceKey()">Clear keys</button>
       <div class="spacer"></div>
       <button class="sm-btn" onclick="closeVoiceModal()">Cancel</button>
       <button class="sm-btn primary" onclick="saveVoiceSettings()">Save</button>
@@ -1890,6 +2008,16 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 
 <!-- RIGHT RAIL -->
 <aside class="rp">
+  <div class="rp-sec rp-sec-recs" id="recsSection" style="display:none;">
+    <div class="rp-hdr">
+      <span class="rp-title"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-1px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Vizor noticed</span>
+      <button type="button" class="rp-narrate" id="recsNarrateBtn" onclick="narrateRecommendations()" title="Hear it in narrator voice">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+        <span>Tell me</span>
+      </button>
+    </div>
+    <div class="recs" id="recsPanel"></div>
+  </div>
   <div class="rp-sec">
     <div class="rp-hdr"><span class="rp-title">Capacity</span><span class="rp-sub">this week &middot; scroll &rarr; for upcoming</span></div>
     <div class="hm" id="heatmap"></div>
@@ -2324,6 +2452,12 @@ const ALLOC = {
 };
 const daysToPct = d => Math.min(d / 5, 10);
 const daysLabel = d => d === 5 ? 'Full' : d === 0.5 ? '½d' : d + 'd';
+// Format a half-step day count without a trailing zero ("4.5" not "4.50",
+// "4" not "4.0"). Used wherever we display fractional days in totals chips.
+const stripTrailingZero = d => {
+  const n = Math.round((+d || 0) * 2) / 2;
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+};
 const escHTML = s => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
 
 // ══════════════════════════════════════════════════════════════════
@@ -2481,33 +2615,78 @@ const isStaffed = t => !!(t.assigneeId && t.weekLabel);
 function tasksFor(personId, weekLabel, tasks = TASKS) {
   return tasks.filter(t => t.assigneeId === personId && t.weekLabel === weekLabel);
 }
+// How many days a task contributes to a SPECIFIC week. A split task spans
+// two weeks: the primary (weekLabel) absorbs effortDays − splitDays, and
+// the split week (splitWeek) absorbs splitDays. Non-split tasks contribute
+// their full effortDays to weekLabel and 0 elsewhere.
+function effortInWeek(t, weekLabel) {
+  const total = t.effortDays || 0;
+  const splitDays = t.splitDays || 0;
+  if (t.splitWeek === weekLabel && splitDays > 0) return splitDays;
+  if (t.weekLabel === weekLabel) return Math.max(0, total - splitDays);
+  return 0;
+}
+// Visible chips for one person×week cell. Returns each task plus an `isSplit`
+// flag so renderers can dim and label the continuation chip differently from
+// the primary chip. Split tasks appear in TWO cells (primary + splitWeek).
+function tasksForCell(personId, weekLabel, tasks = TASKS) {
+  const out = [];
+  tasks.forEach(t => {
+    if (t.assigneeId !== personId) return;
+    if (t.weekLabel === weekLabel) {
+      out.push({ task: t, isSplit: false });
+    } else if (t.splitWeek === weekLabel && (t.splitDays || 0) > 0) {
+      out.push({ task: t, isSplit: true });
+    }
+  });
+  return out;
+}
 function weeklyDays(personId, weekLabel, tasks = TASKS) {
   // Capacity rule: state === 'in_review' frees the slot. The work is parked
   // with someone else (reviewer / stakeholder), so the assignee can pick up
   // other work during the wait. Done tasks are also free. Only 'doing' (the
   // default) burns this person's weekly capacity.
-  return tasksFor(personId, weekLabel, tasks).reduce((s,t) => {
+  return tasksForCell(personId, weekLabel, tasks).reduce((s, x) => {
+    const t = x.task;
     if (t.state === 'in_review' || t.state === 'done') return s;
-    return s + (t.effortDays || 0);
+    return s + effortInWeek(t, weekLabel);
   }, 0);
 }
 // How many days this person is actually available in this week
-// (accounts for PTO / partial availability overrides).
+// (accounts for PTO / partial availability overrides). Raw availability —
+// does NOT subtract recurring meeting overhead. Use getEffectiveCapacity
+// for the number that should drive utilization math.
 function getCapacity(personId, weekLabel) {
   const v = CAPACITY_OVERRIDES[personId]?.[weekLabel];
   return (typeof v === 'number' && !isNaN(v)) ? v : DEFAULT_CAPACITY;
+}
+// Recurring weekly meeting overhead in days. Default 0. Clamped to [0, 5]
+// so a misconfigured value can't take a person below 0d effective capacity.
+function getMeetingDays(personId) {
+  const p = personById(personId);
+  const v = p && typeof p.meetingDays === 'number' ? p.meetingDays : 0;
+  return Math.max(0, Math.min(DEFAULT_CAPACITY, v));
+}
+// Capacity left for project work after subtracting meetings. This is what
+// the totals chip and over-cap math should use. The cap badge (PTO marker)
+// still reads off raw availability.
+function getEffectiveCapacity(personId, weekLabel) {
+  return Math.max(0, getCapacity(personId, weekLabel) - getMeetingDays(personId));
 }
 function computeRollup(tasks = TASKS, weeks = WEEKS, people = PEOPLE) {
   const rollup = {};
   people.forEach(p => {
     rollup[p.id] = {};
+    const meetings = getMeetingDays(p.id);
     weeks.forEach(w => {
       const days = weeklyDays(p.id, w, tasks);
-      const capacity = getCapacity(p.id, w);
-      // pct is allocation / available capacity. Guard 0-day capacity (100% PTO) so division-by-0
-      // reads as "over" whenever anything is allocated, and "0%" when nothing is.
-      const pct = capacity > 0 ? (days / capacity) : (days > 0 ? 10 : 0);
-      rollup[p.id][w] = { days, capacity, pct };
+      const capacity  = getCapacity(p.id, w);            // raw availability
+      const effective = Math.max(0, capacity - meetings); // post-meetings capacity
+      // pct is allocation / effective capacity. Guard 0-day effective (full PTO
+      // or meetings ≥ availability) so division-by-0 reads as "over" whenever
+      // anything is allocated, and "0%" when nothing is.
+      const pct = effective > 0 ? (days / effective) : (days > 0 ? 10 : 0);
+      rollup[p.id][w] = { days, capacity, meetings, effective, pct };
     });
   });
   return rollup;
@@ -2519,7 +2698,7 @@ function computeRollup(tasks = TASKS, weeks = WEEKS, people = PEOPLE) {
 function nextAvailableWeek(personId, minDays = 1, tasks = TASKS, weeks = WEEKS) {
   for (let i = 0; i < weeks.length; i++) {
     const w = weeks[i];
-    const cap = getCapacity(personId, w);
+    const cap = getEffectiveCapacity(personId, w);
     const used = weeklyDays(personId, w, tasks);
     if (cap - used >= minDays) return w;
   }
@@ -2559,13 +2738,48 @@ function renderAllocationGrid() {
       </div>
     </td>`;
     WEEKS.forEach(w => {
-      const list = tasksFor(p.id, w);
+      const list = tasksForCell(p.id, w);
       const isCur = w === curWk;
-      const cap  = rollup[p.id][w].capacity;
+      const wkRoll = rollup[p.id][w];
+      const cap  = wkRoll.capacity;
       const isReduced = cap < DEFAULT_CAPACITY;
       const capBadge = isReduced
         ? `<span class="cap-badge" title="${cap === 0 ? 'Out (PTO)' : cap + 'd available'} — click person to edit">${cap === 0 ? 'PTO' : cap + 'd'}</span>`
         : '';
+      // Inline over-cap marker: shown on any cell over 100% utilization.
+      // The "Split" action picks the largest doing-state task in the cell
+      // and pushes the overflow into the next week with room. Same data
+      // path as the recommendations panel — two surfaces, one source.
+      let overMarker = '';
+      if (wkRoll.pct > 1.0) {
+        const cellTasks = list
+          .filter(x => !x.isSplit && x.task.state !== 'in_review' && x.task.state !== 'done')
+          .map(x => x.task)
+          .filter(t => (t.effortDays || 0) > 0.5)
+          .sort((a, b) => (b.effortDays||0) - (a.effortDays||0));
+        const target = cellTasks[0];
+        const overflow = Math.max(0, wkRoll.days - wkRoll.effective);
+        const splitDays = target ? Math.min(
+          Math.round(overflow * 2) / 2,
+          Math.max(0, (target.effortDays||0) - 0.5)
+        ) : 0;
+        const splitInto = (target && splitDays > 0)
+          ? nextAvailableWeek(p.id, splitDays, TASKS, WEEKS.slice(WEEKS.indexOf(w) + 1))
+          : null;
+        const pctTxt = `${Math.round(wkRoll.pct * 100)}%`;
+        if (target && splitInto && splitDays > 0) {
+          overMarker = `<div class="cap-over-marker" onclick="event.stopPropagation();" title="Over capacity — split ${stripTrailingZero(splitDays)}d into ${escHTML(splitInto)}">
+            <span class="com-pct">${pctTxt}</span>
+            <button type="button" class="com-act"
+              onclick="event.stopPropagation(); applyRecSplit('${target.id}','${escHTML(splitInto)}',${splitDays})">Split ${stripTrailingZero(splitDays)}d&nbsp;&rarr;</button>
+          </div>`;
+        } else {
+          overMarker = `<div class="cap-over-marker" onclick="event.stopPropagation();" title="Over capacity — no later week has room for an automatic split">
+            <span class="com-pct">${pctTxt}</span>
+            <span class="com-act" style="cursor:default;background:transparent;border-color:transparent;">over</span>
+          </div>`;
+        }
+      }
       html += `<td class="week-cell ${isCur?'cur-week':''} ${isReduced?'is-reduced':''}"
         data-person="${p.id}" data-week="${escHTML(w)}"
         ondragover="onCellDragOver(event,this)"
@@ -2573,17 +2787,25 @@ function renderAllocationGrid() {
         ondrop="onCellDrop(event,this)"
         onclick="onCellClick(event,this,'${p.id}','${escHTML(w)}')">
         ${capBadge}
+        ${overMarker}
         <div class="week-cell-inner">`;
-      list.forEach(t => {
+      list.forEach(({ task: t, isSplit }) => {
         const proj = projectById(t.projectId) || { color:'#94A3B8', name:'?' };
         const isParked = t.state === 'in_review';
         const isDone   = t.state === 'done';
+        const daysHere = effortInWeek(t, w);
         // Parked tooltip is loud on purpose: capacity is still consumed,
         // we want anyone scanning the planner to understand "don't book over."
         const stateTitle = isParked
           ? ` · ⏸ in review with ${t.reviewOwner ? reviewOwnerFull(t.reviewOwner).toLowerCase() : 'reviewer'} — slot freed, assignee can pick up other work this week`
           : isDone ? ' · done' : '';
+        const splitTitle = isSplit
+          ? ` · continued from ${t.weekLabel.replace('w/o ','wk of ')} (${stripTrailingZero(t.effortDays - (t.splitDays||0))}d there + ${stripTrailingZero(t.splitDays||0)}d here)`
+          : (t.splitWeek && (t.splitDays||0) > 0
+              ? ` · split: ${stripTrailingZero((t.effortDays||0) - (t.splitDays||0))}d this week + ${stripTrailingZero(t.splitDays||0)}d in ${t.splitWeek.replace('w/o ','wk of ')}`
+              : '');
         const stateCls = isParked ? 'is-parked' : isDone ? 'is-done' : '';
+        const splitCls = isSplit ? 'is-split-cont' : ((t.splitDays||0) > 0 ? 'is-split-primary' : '');
         // Tiny ⏸ pip + sub-line so the parked state is unmissable, but the
         // chip stays the same height so the cell layout doesn't jump.
         const parkedTag = isParked
@@ -2592,28 +2814,50 @@ function renderAllocationGrid() {
                in review
              </span>`
           : '';
-        html += `<div class="task-chip ${stateCls}" draggable="true"
+        // Continuation pip on the split week so it reads as "this is the same
+        // task spilling over" rather than a duplicate. Primary chip gets a
+        // subtler "→" hint pointing at where the spillover lives.
+        const splitTag = isSplit
+          ? `<span class="tc-cont" title="Continuation of the split task in ${escHTML(t.weekLabel)}">cont.</span>`
+          : ((t.splitDays||0) > 0
+              ? `<span class="tc-split-arrow" title="Splits ${stripTrailingZero(t.splitDays||0)}d into ${escHTML(t.splitWeek||'')}">→</span>`
+              : '');
+        // Continuation chips are not draggable — splits are managed via the
+        // recommendation panel, the chip's × (unsplit), or the Edit Task modal.
+        // This keeps the model simple and prevents "drag the cont. chip" from
+        // creating tangled state where a split's primary and split flip.
+        html += `<div class="task-chip ${stateCls} ${splitCls}" ${isSplit ? '' : 'draggable="true"'}
           data-tid="${t.id}"
           style="border-left-color:${proj.color};"
-          ondragstart="onChipDragStart(event,'${t.id}')"
-          ondragend="onChipDragEnd(event)"
+          ${isSplit ? '' : `ondragstart="onChipDragStart(event,'${t.id}')"
+          ondragend="onChipDragEnd(event)"`}
           onclick="event.stopPropagation(); openCellModalForEdit('${t.id}')"
-          title="${escHTML(proj.name)} · ${escHTML(t.name)}${escHTML(stateTitle)}">
+          title="${escHTML(proj.name)} · ${escHTML(t.name)}${escHTML(stateTitle)}${escHTML(splitTitle)}">
           <span class="tc-name">${escHTML(t.name)}</span>
-          <span class="tc-days">${daysLabel(t.effortDays)}</span>
-          ${t.reviewBufferDays ? `<span class="tc-rev" title="+${t.reviewBufferDays}d review wait${t.reviewOwner ? ` · ${reviewOwnerFull(t.reviewOwner).toLowerCase()}` : ''} — calendar time the project is parked. Does not burn this person's capacity.">+${t.reviewBufferDays}d</span>` : ''}
+          <span class="tc-days">${daysLabel(daysHere)}</span>
+          ${t.reviewBufferDays && !isSplit ? `<span class="tc-rev" title="+${t.reviewBufferDays}d review wait${t.reviewOwner ? ` · ${reviewOwnerFull(t.reviewOwner).toLowerCase()}` : ''} — calendar time the project is parked. Does not burn this person's capacity.">+${t.reviewBufferDays}d</span>` : ''}
           ${parkedTag}
-          <span class="tc-x" onclick="event.stopPropagation(); unassignTask('${t.id}')" title="Unassign">×</span>
+          ${splitTag}
+          <span class="tc-x" onclick="event.stopPropagation(); ${isSplit ? `unsplitTask('${t.id}')` : `unassignTask('${t.id}')`}" title="${isSplit ? 'Remove the split (move all days back to primary week)' : 'Unassign'}">×</span>
         </div>`;
       });
       html += `</div></td>`;
     });
     const totalPct = Math.round(cur.pct * 100);
-    const capLabel = cur.capacity === 0 ? 'PTO' : `${cur.capacity}d`;
+    // Denominator is EFFECTIVE capacity (raw availability − meetings). PTO
+    // (raw cap = 0) reads "PTO"; otherwise show a number. Meetings tag
+    // surfaces only when meetings > 0 so the no-meetings case stays clean.
+    const capLabel = cur.capacity === 0
+      ? 'PTO'
+      : `${stripTrailingZero(cur.effective)}d`;
     const capCls   = cur.capacity < DEFAULT_CAPACITY ? 'total-days-reduced' : '';
+    const meetingsTag = (cur.meetings > 0 && cur.capacity > 0)
+      ? `<div class="total-meet" title="Recurring meetings reduce this week's effective capacity by ${stripTrailingZero(cur.meetings)}d">+${stripTrailingZero(cur.meetings)}d meetings</div>`
+      : '';
     html += `<td class="total-cell">
       <div class="total-pct ${pctCls}">${totalPct}%</div>
-      <div class="total-days ${capCls}">${cur.days}d of ${capLabel}</div>
+      <div class="total-days ${capCls}">${stripTrailingZero(cur.days)}d of ${capLabel}</div>
+      ${meetingsTag}
     </td>`;
     html += '</tr>';
   });
@@ -2660,6 +2904,143 @@ function jumpToWeek(idx) {
 function onCellClick(ev, cellEl, personId, weekLabel) {
   if (ev.target !== cellEl && !ev.target.classList.contains('week-cell-inner')) return;
   openCellModalForNew(personId, weekLabel);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RECOMMENDATIONS — "Vizor noticed" panel
+// ══════════════════════════════════════════════════════════════════
+// Session-only dismissal. Persistent dismissal would feel too sticky for v1
+// — if the over-cap is still real next session, we want to surface it again.
+const _dismissedRecs = new Set();
+// Most recent recommendation set, used by the narrator to "tell me how things look".
+let _lastRecs = [];
+
+function recDismissId(rec) {
+  if (rec.kind === 'over_cap') return `over_cap:${rec.personId}:${rec.weekLabel}`;
+  return `${rec.kind}:${rec.personId || ''}`;
+}
+
+// Build the recommendation list from current state. Today: over-capacity
+// person×week pairs, capped at the 5 worst so the panel doesn't sprawl.
+// Each rec carries enough state to render itself AND to drive the inline
+// over-cap marker on the cell (same data, two surfaces).
+function computeRecommendations(rollup = computeRollup()) {
+  const recs = [];
+  PEOPLE.forEach(p => {
+    WEEKS.forEach(w => {
+      const r = rollup[p.id][w];
+      if (!r || r.pct <= 1.0) return;
+      // Pick the largest "doing" task in this person×week cell. That's the
+      // best candidate to split — biggest reduction for one action.
+      const cellTasks = tasksForCell(p.id, w).filter(x =>
+        x.task.state !== 'in_review' && x.task.state !== 'done' && !x.isSplit
+      );
+      const target = cellTasks
+        .map(x => x.task)
+        .filter(t => (t.effortDays || 0) > 0.5) // can't split a 0.5d task — would leave 0 in primary
+        .sort((a, b) => (b.effortDays||0) - (a.effortDays||0))[0];
+      // Spillover days needed to bring this week to 100%.
+      const overflow = Math.max(0, r.days - r.effective);
+      const splitDays = target ? Math.min(
+        Math.round(overflow * 2) / 2,
+        Math.max(0, (target.effortDays||0) - 0.5)
+      ) : 0;
+      // Find the next week with room for those days under THIS person.
+      const splitInto = target && splitDays > 0
+        ? nextAvailableWeek(p.id, splitDays, TASKS, WEEKS.slice(WEEKS.indexOf(w) + 1))
+        : null;
+      recs.push({
+        kind: 'over_cap',
+        personId: p.id,
+        personName: p.name,
+        weekLabel: w,
+        pct: Math.round(r.pct * 100),
+        used: r.days,
+        capacity: r.effective,
+        target,
+        splitDays,
+        splitInto,
+      });
+    });
+  });
+  // Worst over-cap first, capped at 5 so the panel stays scannable.
+  recs.sort((a, b) => b.pct - a.pct);
+  return recs.slice(0, 5);
+}
+
+// Render the panel into the right rail. Hides itself when there are no
+// outstanding recommendations (the section header is also hidden).
+function renderRecommendationsPanel() {
+  const sec = document.getElementById('recsSection');
+  const el  = document.getElementById('recsPanel');
+  if (!sec || !el) return;
+  const all = computeRecommendations();
+  const recs = all.filter(r => !_dismissedRecs.has(recDismissId(r)));
+  _lastRecs = recs;
+  if (!recs.length) {
+    sec.style.display = 'none';
+    el.innerHTML = '';
+    if (typeof maybeAutoNarrate === 'function') maybeAutoNarrate(recs);
+    return;
+  }
+  sec.style.display = '';
+  el.innerHTML = recs.map(r => recCardHTML(r)).join('');
+  // Show or hide the "Tell me" button based on narrator availability
+  if (typeof applyVoiceUi === 'function') applyVoiceUi();
+  if (typeof maybeAutoNarrate === 'function') maybeAutoNarrate(recs);
+}
+
+function recCardHTML(rec) {
+  if (rec.kind !== 'over_cap') return '';
+  const wkShort = rec.weekLabel.replace('w/o ','wk of ');
+  const sev = rec.pct > 120 ? 'rec-over' : 'rec-warn';
+  const taskName = rec.target ? escHTML(rec.target.name) : null;
+  const canSplit = rec.target && rec.splitDays > 0 && rec.splitInto;
+  let action = '';
+  if (canSplit) {
+    const intoShort = rec.splitInto.replace('w/o ','wk of ');
+    action = `<button class="rec-btn primary"
+      onclick="applyRecSplit('${rec.target.id}','${escHTML(rec.splitInto)}',${rec.splitDays})"
+      title="Move ${stripTrailingZero(rec.splitDays)}d of '${taskName}' from ${escHTML(wkShort)} into ${escHTML(intoShort)}">
+      Split ${stripTrailingZero(rec.splitDays)}d into ${escHTML(intoShort)}
+    </button>`;
+  } else if (rec.target && rec.splitDays > 0 && !rec.splitInto) {
+    action = `<span class="rec-text" style="font-size:10.5px;color:var(--muted);font-style:italic;">No later week has room — try unassigning or rescheduling.</span>`;
+  }
+  const taskLine = rec.target
+    ? `Largest task here: <b>${taskName}</b> (${stripTrailingZero(rec.target.effortDays || 0)}d).`
+    : `Re-balance their week or push something out.`;
+  return `<div class="rec ${sev}">
+    <div class="rec-text">
+      <b>${escHTML(rec.personName)}</b> is at <b>${rec.pct}%</b> the ${escHTML(wkShort)}
+      (${stripTrailingZero(rec.used)}d of ${stripTrailingZero(rec.capacity)}d). ${taskLine}
+    </div>
+    <div class="rec-actions">
+      ${action}
+      <button class="rec-btn dismiss" onclick="dismissRec('${escHTML(recDismissId(rec))}')" title="Dismiss for this session">Dismiss</button>
+    </div>
+  </div>`;
+}
+
+// Action wrappers — keep the recommendation panel decoupled from the
+// underlying split / dismiss mechanics.
+function applyRecSplit(taskId, targetWeek, days) {
+  const ok = splitTaskInto(taskId, targetWeek, days);
+  if (ok && typeof vizorToast === 'function') {
+    const t = TASKS.find(x => x.id === taskId);
+    vizorToast(`Split ${stripTrailingZero(days)}d of "${t ? t.name : 'task'}" into ${targetWeek.replace('w/o ','wk of ')}`, 'ok');
+  }
+}
+function dismissRec(id) {
+  _dismissedRecs.add(id);
+  renderRecommendationsPanel();
+}
+
+// Narrator hook — speaks the current recommendations. Defined fully in the
+// narrator phase; this is a stub so the button works as a no-op until then.
+function narrateRecommendations() {
+  if (typeof speakRecommendations === 'function') return speakRecommendations(_lastRecs);
+  if (typeof vizorToast === 'function') vizorToast('Add an OpenAI key under Settings → Voice control to enable the narrator.', 'info', 4000);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -3207,6 +3588,8 @@ function openCellModalForNew(personId=null, weekLabel=null) {
   ).join('');
   document.getElementById('cmDelete').style.display = 'none';
   document.getElementById('cmSave').textContent = 'Add';
+  const splitField = document.getElementById('cmSplitField');
+  if (splitField) splitField.style.display = 'none';
   setCmStatus('', null);
   document.getElementById('cellModal').classList.add('show');
 }
@@ -3274,8 +3657,39 @@ function openCellModalForEdit(taskId) {
   }
   document.getElementById('cmDelete').style.display = isStaffed(t) ? '' : 'none';
   document.getElementById('cmSave').textContent = 'Save';
+  // Split-status panel: only show when this task is currently split
+  paintCmSplit(t);
   setCmStatus('', null);
   document.getElementById('cellModal').classList.add('show');
+}
+
+function paintCmSplit(t) {
+  const field = document.getElementById('cmSplitField');
+  const txt   = document.getElementById('cmSplitText');
+  if (!field || !txt) return;
+  if (!t || !t.splitWeek || !t.splitDays) {
+    field.style.display = 'none';
+    return;
+  }
+  const total    = t.effortDays || 0;
+  const splitD   = t.splitDays || 0;
+  const primaryD = Math.max(0, total - splitD);
+  const primaryWk = String(t.weekLabel || '').replace('w/o ', 'wk of ');
+  const splitWk   = String(t.splitWeek || '').replace('w/o ', 'wk of ');
+  txt.innerHTML = `Currently split: <b>${stripTrailingZero(primaryD)}d</b> in ${escHTML(primaryWk)} &middot; <b>${stripTrailingZero(splitD)}d</b> in ${escHTML(splitWk)} (continuation).`;
+  field.style.display = '';
+}
+
+function unsplitFromModal() {
+  const ms = _modalState;
+  if (!ms || !ms.taskId) return;
+  const t = TASKS.find(x => x.id === ms.taskId);
+  if (!t || !t.splitWeek) return;
+  if (typeof unsplitTask === 'function') {
+    unsplitTask(ms.taskId);
+    paintCmSplit(t); // hide row now that splitWeek is gone
+    if (typeof setCmStatus === 'function') setCmStatus('Split removed.', 'ok');
+  }
 }
 
 // Paint the segmented control to match the given state and update the
@@ -3394,6 +3808,41 @@ function unassignTask(taskId) {
   const t = TASKS.find(x => x.id === taskId);
   if (!t) return;
   delete t.assigneeId; delete t.weekLabel;
+  // An unassigned task can't have a split. Clean it up so it doesn't
+  // resurface as orphan data when the task is re-staffed.
+  delete t.splitWeek; delete t.splitDays;
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+  renderAll();
+}
+
+// ── Split helpers ─────────────────────────────────────────────
+// Move some days of a task from its primary week into a later week. Used by
+// the "Split into next week" recommendation and by the Edit Task modal.
+// `targetWeek` must come AFTER the primary week in the WEEKS list and must
+// not equal it. `days` is the spillover; clamped to (0, effortDays).
+function splitTaskInto(taskId, targetWeek, days) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t || !t.weekLabel) return false;
+  const primaryIdx = WEEKS.indexOf(t.weekLabel);
+  const targetIdx  = WEEKS.indexOf(targetWeek);
+  if (primaryIdx < 0 || targetIdx < 0 || targetIdx <= primaryIdx) return false;
+  const total = t.effortDays || 0;
+  let d = +days;
+  if (isNaN(d) || d <= 0) return false;
+  d = Math.min(d, total - 0.5); // leave at least 0.5d in the primary week
+  d = Math.round(d * 2) / 2;    // snap to half-days
+  if (d <= 0) return false;
+  t.splitWeek = targetWeek;
+  t.splitDays = d;
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+  renderAll();
+  return true;
+}
+// Remove a split — all days return to the primary week.
+function unsplitTask(taskId) {
+  const t = TASKS.find(x => x.id === taskId);
+  if (!t) return;
+  delete t.splitWeek; delete t.splitDays;
   if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
   renderAll();
 }
@@ -3406,6 +3855,9 @@ let _pmSelectedColor  = null;
 // Draft of this person's weekly capacity. Shape: { [weekLabel]: days }.
 // Populated on modal open from CAPACITY_OVERRIDES (plus defaults); committed on save.
 let _pmCapDraft = {};
+// Draft of this person's standing meeting overhead in days/week. Single value
+// since meetings are recurring; per-week override would be overkill for v1.
+let _pmMeetingsDraft = 0;
 
 function initialsFromName(name) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -3444,6 +3896,8 @@ function openPersonModalForNew() {
   // Fresh person starts with no overrides (all weeks default to 5d).
   _pmCapDraft = {};
   WEEKS.forEach(w => { _pmCapDraft[w] = DEFAULT_CAPACITY; });
+  _pmMeetingsDraft = 0;
+  renderPmMeetings();
   renderPmCapList();
   document.getElementById('personModal').classList.add('show');
   setTimeout(() => document.getElementById('pmName').focus(), 50);
@@ -3467,6 +3921,8 @@ function openPersonModalForEdit(personId) {
   // Load this person's actual capacity per week (override if set, else default).
   _pmCapDraft = {};
   WEEKS.forEach(w => { _pmCapDraft[w] = getCapacity(personId, w); });
+  _pmMeetingsDraft = getMeetingDays(personId);
+  renderPmMeetings();
   renderPmCapList();
   document.getElementById('personModal').classList.add('show');
 }
@@ -3520,6 +3976,43 @@ function pmResetCapacity() {
   renderPmCapList();
 }
 
+// ── Standing meetings editor ──────────────────────────────────
+// Single value, applies to every week. Snap to 0.5 increments, clamp to [0,5].
+// Render keeps the quick-chip "active" highlight in sync with the input value
+// and updates the percentage hint based on a 5-day reference week.
+function renderPmMeetings() {
+  const v = _pmMeetingsDraft;
+  const inp = document.getElementById('pmMeetInput');
+  if (inp) inp.value = v;
+  const hint = document.getElementById('pmMeetHint');
+  if (hint) {
+    const pct = Math.round((v / DEFAULT_CAPACITY) * 100);
+    hint.textContent = `= ${pct}% of a 5-day week`;
+  }
+  // Quick-button active state — only highlight when value matches exactly.
+  const map = { 0:'pmMeetQ0', 0.5:'pmMeetQ05', 1:'pmMeetQ1', 1.5:'pmMeetQ15', 2:'pmMeetQ2' };
+  Object.entries(map).forEach(([n, id]) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.toggle('active', parseFloat(n) === v);
+  });
+}
+function pmSetMeetings(days) {
+  _pmMeetingsDraft = Math.max(0, Math.min(DEFAULT_CAPACITY, +days || 0));
+  renderPmMeetings();
+}
+function pmUpdateMeetings(raw) {
+  let v = parseFloat(raw);
+  if (isNaN(v)) v = 0;
+  v = Math.max(0, Math.min(DEFAULT_CAPACITY, v));
+  v = Math.round(v * 2) / 2; // snap to 0.5
+  _pmMeetingsDraft = v;
+  // Re-render only when value lands on a quick-button to refresh the active
+  // state; the hint updates inline below either way.
+  const hint = document.getElementById('pmMeetHint');
+  if (hint) hint.textContent = `= ${Math.round((v / DEFAULT_CAPACITY) * 100)}% of a 5-day week`;
+  if ([0, 0.5, 1, 1.5, 2].includes(v)) renderPmMeetings();
+}
+
 function savePersonModal() {
   const name  = document.getElementById('pmName').value.trim();
   const role  = document.getElementById('pmRole').value;
@@ -3536,16 +4029,29 @@ function savePersonModal() {
     _pmCapDraft[wLbl] = v;
   });
 
+  // Snapshot meetings input in case user typed and hit Save before blurring.
+  const mInp = document.getElementById('pmMeetInput');
+  if (mInp) {
+    let mv = parseFloat(mInp.value);
+    if (isNaN(mv)) mv = 0;
+    _pmMeetingsDraft = Math.round(Math.max(0, Math.min(DEFAULT_CAPACITY, mv)) * 2) / 2;
+  }
+
   let personId;
   if (_personModalState.mode === 'new') {
     const idBase = name.toLowerCase().replace(/[^a-z0-9]+/g,'') || 'person';
     personId = idBase + '_' + Date.now().toString(36);
-    PEOPLE.push({ id:personId, name, role, color, initials: initialsFromName(name) });
+    const newP = { id:personId, name, role, color, initials: initialsFromName(name) };
+    if (_pmMeetingsDraft > 0) newP.meetingDays = _pmMeetingsDraft;
+    PEOPLE.push(newP);
   } else {
     const p = personById(_personModalState.personId);
     if (!p) { setPmStatus('Person not found.', 'err'); return; }
     p.name = name; p.role = role; p.color = color;
     p.initials = initialsFromName(name);
+    // Only persist meetingDays when > 0 to keep serialized state minimal.
+    if (_pmMeetingsDraft > 0) p.meetingDays = _pmMeetingsDraft;
+    else                       delete p.meetingDays;
     personId = p.id;
   }
 
@@ -3916,6 +4422,8 @@ function openCellModalForNewInProject(projectId) {
   updateReviewOwnerVisibility();
   document.getElementById('cmDelete').style.display = 'none';
   document.getElementById('cmSave').textContent = 'Add';
+  const splitFieldP = document.getElementById('cmSplitField');
+  if (splitFieldP) splitFieldP.style.display = 'none';
   setCmStatus('', null);
   // Force task dropdown into "__new__" state for save logic
   const sel = document.getElementById('cmTask');
@@ -3958,6 +4466,17 @@ function onCellDrop(e, cell) {
   if (!t) return;
   t.assigneeId = cell.dataset.person;
   t.weekLabel  = cell.dataset.week;
+  // If the new primary lands on or after the existing splitWeek, the split
+  // is no longer valid (split must come AFTER primary). Drop it cleanly so
+  // we don't leave a stale spillover anchor pointing to the past.
+  if (t.splitWeek) {
+    const newIdx   = WEEKS.indexOf(t.weekLabel);
+    const splitIdx = WEEKS.indexOf(t.splitWeek);
+    if (newIdx < 0 || splitIdx < 0 || splitIdx <= newIdx) {
+      delete t.splitWeek; delete t.splitDays;
+    }
+  }
+  if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
   renderAll();
 }
 
@@ -4241,7 +4760,7 @@ function computeUtilizationFor(weeks) {
   const perWeek = weeks.map(w => {
     let used = 0, cap = 0;
     PEOPLE.forEach(p => {
-      cap  += getCapacity(p.id, w);
+      cap  += getEffectiveCapacity(p.id, w);
       used += weeklyDays(p.id, w);
     });
     const pct = cap > 0 ? (used / cap) : (used > 0 ? 10 : 0);
@@ -4415,7 +4934,7 @@ function renderUtilizationByRole(weeks) {
       // days are whatever tasks they're staffed on, regardless of task role.
       let cap = 0, used = 0;
       people.forEach(p => {
-        cap  += getCapacity(p.id, w);
+        cap  += getEffectiveCapacity(p.id, w);
         used += weeklyDays(p.id, w);
       });
       const pct = cap > 0 ? (used / cap) : (used > 0 ? 10 : 0);
@@ -4600,18 +5119,22 @@ function renderOverviewPersonCard(person) {
   const activeWeek = weekWindow[offset];
 
   // Sum this person's staffed days by project — for the SELECTED week only.
+  // Split-aware: a task that spills from another week contributes only its
+  // splitDays portion to THIS week, so the donut reflects what's actually
+  // happening here, not the task's full effort.
   const byProj = {}; // projId → days
   TASKS.forEach(t => {
     if (!isStaffed(t) || t.assigneeId !== person.id) return;
-    if (t.weekLabel !== activeWeek.label) return;
-    byProj[t.projectId] = (byProj[t.projectId] || 0) + (t.effortDays || 0);
+    const here = effortInWeek(t, activeWeek.label);
+    if (here <= 0) return;
+    byProj[t.projectId] = (byProj[t.projectId] || 0) + here;
   });
   const totalDays = Object.values(byProj).reduce((a, b) => a + b, 0);
-  // Capacity for THIS person THIS week — 5d default, less for PTO/part-time.
-  // Percentages in the legend are days / capacity so they read as "share of
-  // your week", not "share of your work" (which always summed to 100% and was
-  // misleading on over-cap weeks like 9d / 5d).
-  const capacity = getCapacity(person.id, activeWeek.label);
+  // Capacity for THIS person THIS week — effective capacity (raw availability
+  // minus standing meetings). Percentages in the legend are days / effective
+  // so they read as "share of your project-work week" — meetings are excluded
+  // from the denominator since they're not project time.
+  const capacity = getEffectiveCapacity(person.id, activeWeek.label);
   const entries = Object.entries(byProj)
     .map(([pid, days]) => ({ proj: projectById(pid), days }))
     .filter(e => e.proj)
@@ -4619,8 +5142,10 @@ function renderOverviewPersonCard(person) {
 
   // Pre-compute which tabs have any allocation, so empty weeks dim slightly
   // (still clickable — useful to confirm "yep, they're free that week").
+  // Split-aware: a week is non-empty if any task contributes effort there,
+  // primary or spillover.
   const weekHasWork = weekWindow.map(w =>
-    TASKS.some(t => isStaffed(t) && t.assigneeId === person.id && t.weekLabel === w.label)
+    TASKS.some(t => isStaffed(t) && t.assigneeId === person.id && effortInWeek(t, w.label) > 0)
   );
 
   const tabs = `<div class="ov-card-tabs" role="tablist" aria-label="Week">
@@ -5294,6 +5819,7 @@ function renderAll() {
   renderSidebar();
   renderAllocationGrid();
   renderHeatmap();
+  renderRecommendationsPanel();
   renderWaitingPanel();
   renderUpcomingPanel();
   // Board/Projects/Overview re-render on tab switch, but keep them fresh too:
@@ -5412,7 +5938,9 @@ function bootApp() {
 // ══════════════════════════════════════════════════════════════════
 const VOICE_KEY = 'vizor.voice.v1';
 const VOICE_MODEL = 'claude-sonnet-4-5-20250929';
-let _voice = { enabled: false, key: '' };
+// _voice.ttsMode: 'silent' | 'ondemand' | 'auto'
+let _voice = { enabled: false, key: '', ttsKey: '', ttsMode: 'ondemand' };
+let _vmTtsModeDraft = 'ondemand';
 
 function loadVoiceCfg() {
   try {
@@ -5421,6 +5949,8 @@ function loadVoiceCfg() {
       const v = JSON.parse(raw);
       _voice.enabled = !!v.enabled;
       _voice.key     = v.key || '';
+      _voice.ttsKey  = v.ttsKey || '';
+      _voice.ttsMode = (v.ttsMode === 'silent' || v.ttsMode === 'auto') ? v.ttsMode : 'ondemand';
     }
   } catch (_) {}
   applyVoiceUi();
@@ -5433,10 +5963,18 @@ function applyVoiceUi() {
   if (fab) fab.hidden = !(_voice.enabled && _voice.key);
   const meta = document.getElementById('voiceMenuMeta');
   if (meta) {
-    const on = !!(_voice.enabled && _voice.key);
-    meta.textContent = on ? 'On' : 'Off';
-    meta.style.color = on ? 'var(--green)' : 'var(--muted)';
+    const speak = !!(_voice.ttsKey && _voice.ttsMode !== 'silent');
+    const listen = !!(_voice.enabled && _voice.key);
+    let label = 'Off';
+    if (listen && speak) label = 'On · 2-way';
+    else if (listen) label = 'Listening';
+    else if (speak) label = 'Narrating';
+    meta.textContent = label;
+    meta.style.color = (listen || speak) ? 'var(--green)' : 'var(--muted)';
   }
+  // Show / hide the "Tell me" narrator button on the recs panel
+  const nb = document.getElementById('recsNarrateBtn');
+  if (nb) nb.style.display = (_voice.ttsKey && _voice.ttsMode !== 'silent') ? '' : 'none';
 }
 
 function openVoiceModal() {
@@ -5444,9 +5982,20 @@ function openVoiceModal() {
   const m = document.getElementById('voiceModal');
   if (!m) return;
   document.getElementById('vmApiKey').value    = _voice.key || '';
+  document.getElementById('vmTtsKey').value    = _voice.ttsKey || '';
   document.getElementById('vmEnabled').checked = !!_voice.enabled;
+  _vmTtsModeDraft = _voice.ttsMode || 'ondemand';
+  renderVmTtsMode();
   setVmStatus('', '');
   m.classList.add('show');
+}
+function renderVmTtsMode() {
+  const wrap = document.getElementById('vmTtsMode');
+  if (!wrap) return;
+  wrap.querySelectorAll('.sm-seg').forEach(b => {
+    b.classList.toggle('is-on', b.dataset.mode === _vmTtsModeDraft);
+    b.onclick = () => { _vmTtsModeDraft = b.dataset.mode; renderVmTtsMode(); };
+  });
 }
 function closeVoiceModal() {
   const m = document.getElementById('voiceModal');
@@ -5459,15 +6008,22 @@ function setVmStatus(msg, kind) {
   el.className = 'sm-status' + (msg ? ' show ' + (kind || '') : '');
 }
 function saveVoiceSettings() {
-  const key = document.getElementById('vmApiKey').value.trim();
-  const en  = document.getElementById('vmEnabled').checked;
+  const key    = document.getElementById('vmApiKey').value.trim();
+  const ttsKey = document.getElementById('vmTtsKey').value.trim();
+  const en     = document.getElementById('vmEnabled').checked;
   if (en && !key) {
-    setVmStatus('Add an API key (or uncheck Enable voice control).', 'err'); return;
+    setVmStatus('Add an Anthropic API key (or uncheck Enable voice control).', 'err'); return;
   }
   if (en && !('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
     setVmStatus('This browser does not support speech recognition. Try Chrome.', 'err'); return;
   }
-  _voice.key = key;
+  if (_vmTtsModeDraft !== 'silent' && !ttsKey) {
+    // Silently fall back to silent if they want narration but didn't add a key
+    _vmTtsModeDraft = 'silent';
+  }
+  _voice.key     = key;
+  _voice.ttsKey  = ttsKey;
+  _voice.ttsMode = _vmTtsModeDraft;
   _voice.enabled = en;
   saveVoiceCfg();
   applyVoiceUi();
@@ -5476,11 +6032,16 @@ function saveVoiceSettings() {
 }
 function clearVoiceKey() {
   _voice.key = '';
+  _voice.ttsKey = '';
   _voice.enabled = false;
+  _voice.ttsMode = 'ondemand';
   saveVoiceCfg();
   applyVoiceUi();
   const k = document.getElementById('vmApiKey'); if (k) k.value = '';
+  const t = document.getElementById('vmTtsKey'); if (t) t.value = '';
   const e = document.getElementById('vmEnabled'); if (e) e.checked = false;
+  _vmTtsModeDraft = 'ondemand';
+  renderVmTtsMode();
   setVmStatus('Cleared.', 'ok');
 }
 
@@ -5894,6 +6455,176 @@ function runVoiceTool(name, args) {
     default:
       return { error: 'unknown tool: ' + name };
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// NARRATOR — OpenAI TTS for "Vizor noticed" recommendations
+// Uses tts-1 (fast, ~$0.015 / 1k chars) with the "fable" voice — a
+// warm British timbre that fits the documentary cadence we want
+// without trying to impersonate a real person. The narrator is
+// strictly opt-in: it only speaks when the user has saved an OpenAI
+// key AND clicks "Tell me", or when ttsMode is 'auto' and a *new*
+// over-capacity rec just appeared. Audio blobs are cached by an LRU
+// keyed on the spoken text so repeating the same observation costs
+// nothing after the first synth.
+// ══════════════════════════════════════════════════════════════════
+const NARRATOR_MODEL = 'tts-1';
+const NARRATOR_VOICE = 'fable';
+const NARRATOR_CACHE_MAX = 24;
+const _narratorCache = new Map(); // text -> objectURL
+let _narratorAudio = null;
+let _narratorBusy = false;
+let _autoNarrateLastSig = '';
+
+function _narratorRemember(text, url) {
+  if (_narratorCache.has(text)) _narratorCache.delete(text);
+  _narratorCache.set(text, url);
+  while (_narratorCache.size > NARRATOR_CACHE_MAX) {
+    const oldest = _narratorCache.keys().next().value;
+    const u = _narratorCache.get(oldest);
+    _narratorCache.delete(oldest);
+    try { URL.revokeObjectURL(u); } catch (_) {}
+  }
+}
+
+async function _narratorSynth(text) {
+  const cached = _narratorCache.get(text);
+  if (cached) {
+    // Re-insert to mark as recently used
+    _narratorCache.delete(text);
+    _narratorCache.set(text, cached);
+    return cached;
+  }
+  if (!_voice.ttsKey) throw new Error('No OpenAI key');
+  const res = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + _voice.ttsKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: NARRATOR_MODEL,
+      voice: NARRATOR_VOICE,
+      input: text,
+      response_format: 'mp3',
+    }),
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { const j = await res.json(); detail = j && j.error && j.error.message ? ' — ' + j.error.message : ''; } catch (_) {}
+    throw new Error('TTS request failed (' + res.status + ')' + detail);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  _narratorRemember(text, url);
+  return url;
+}
+
+function narratorStop() {
+  if (_narratorAudio) {
+    try { _narratorAudio.pause(); } catch (_) {}
+    _narratorAudio = null;
+  }
+  _narratorBusy = false;
+  _setNarrateBtnState('idle');
+}
+
+function _setNarrateBtnState(state) {
+  const btn = document.getElementById('recsNarrateBtn');
+  if (!btn) return;
+  btn.classList.toggle('is-busy', state === 'thinking');
+  btn.classList.toggle('is-playing', state === 'playing');
+  if (state === 'thinking') btn.textContent = 'Warming up…';
+  else if (state === 'playing') {
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg> Stop';
+    btn.title = 'Stop narration';
+  } else {
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Tell me';
+    btn.title = 'Hear it in narrator voice';
+  }
+}
+
+async function _narratorPlay(text) {
+  if (!text) return;
+  if (_narratorBusy) { narratorStop(); return; }
+  _narratorBusy = true;
+  _setNarrateBtnState('thinking');
+  try {
+    const url = await _narratorSynth(text);
+    if (!_narratorBusy) return; // user cancelled mid-fetch
+    const audio = new Audio(url);
+    _narratorAudio = audio;
+    _setNarrateBtnState('playing');
+    audio.onended = () => { _narratorAudio = null; _narratorBusy = false; _setNarrateBtnState('idle'); };
+    audio.onerror = () => { _narratorAudio = null; _narratorBusy = false; _setNarrateBtnState('idle'); vizorToast('Audio playback failed.', 'err'); };
+    await audio.play();
+  } catch (err) {
+    _narratorBusy = false;
+    _setNarrateBtnState('idle');
+    vizorToast(err && err.message ? err.message : 'Narrator failed.', 'err', 4500);
+  }
+}
+
+// Compose a calm, observational narration for the current rec set.
+// Stays in present-tense ("we find Andre…") and never names software
+// vendors, real people beyond the team, or anything that would feel
+// like impersonation of a real narrator.
+function _narratorScript(recs) {
+  if (!recs || recs.length === 0) {
+    return 'All quiet across the team this fortnight. Capacity is in balance, and no one is overcommitted. A pleasant sight indeed.';
+  }
+  const intros = [
+    'Let us survey the team.',
+    'A glance across the planner reveals the following.',
+    'Here is what catches the eye this week.',
+  ];
+  const lines = [intros[recs.length % intros.length]];
+  recs.slice(0, 4).forEach(r => {
+    if (r.kind !== 'over_cap') return;
+    const wk = String(r.weekLabel || '').replace('w/o ', 'the week of ');
+    const pct = Math.round((r.pct || 0) * 100);
+    const used = stripTrailingZero(r.used || 0);
+    const cap  = stripTrailingZero(r.capacity || 0);
+    const taskName = r.target && r.target.name ? r.target.name : 'the heaviest task';
+    const into = r.splitInto ? String(r.splitInto).replace('w/o ', 'the week of ') : null;
+    const days = r.splitDays ? stripTrailingZero(r.splitDays) : null;
+    let line = `Observe ${r.personName}, whose plate during ${wk} now carries ${used} days of work against a capacity of ${cap}. That is ${pct} percent — a touch ambitious.`;
+    if (into && days) {
+      line += ` A graceful remedy: shift ${days} ${days === '1' ? 'day' : 'days'} of "${taskName}" forward into ${into}, and balance is restored.`;
+    } else {
+      line += ` There is, alas, no calmer week within reach — a conversation with ${r.personName} may be in order.`;
+    }
+    lines.push(line);
+  });
+  return lines.join(' ');
+}
+
+function speakRecommendations(recs) {
+  if (!_voice.ttsKey) {
+    vizorToast('Add an OpenAI key under Settings → Voice & narration.', 'info', 4500);
+    return;
+  }
+  if (_voice.ttsMode === 'silent') {
+    vizorToast('Narrator is set to Silent. Change it under Settings → Voice & narration.', 'info', 4500);
+    return;
+  }
+  const text = _narratorScript(recs);
+  return _narratorPlay(text);
+}
+
+// Auto-narration trigger — called from renderRecommendationsPanel
+// after the panel re-renders. Speaks once per distinct rec signature
+// to avoid chattering during normal drag-drop work.
+function maybeAutoNarrate(recs) {
+  if (_voice.ttsMode !== 'auto') return;
+  if (!_voice.ttsKey) return;
+  if (!recs || recs.length === 0) { _autoNarrateLastSig = ''; return; }
+  const sig = recs.map(r => r.id).join('|');
+  if (sig === _autoNarrateLastSig) return;
+  _autoNarrateLastSig = sig;
+  // Don't interrupt an in-flight narration
+  if (_narratorBusy) return;
+  speakRecommendations(recs);
 }
 
 // Initial UI sync (FAB visibility + Settings menu meta).
