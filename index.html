@@ -6485,6 +6485,41 @@ const _narratorCache = new Map(); // text -> objectURL
 let _narratorAudio = null;
 let _narratorBusy = false;
 let _autoNarrateLastSig = '';
+let _audioUnlocked = false;
+let _pendingAutoNarrate = null; // recs queued because audio wasn't unlocked yet
+
+// Browsers (especially Chrome) block audio.play() that isn't initiated
+// from inside a user-gesture stack. After an async fetch the gesture
+// expires, so auto-narrate fired from a render cycle gets denied. We
+// "unlock" audio on the first user gesture by playing a silent buffer
+// through both Web Audio and an HTMLAudio element, then flush any
+// queued auto-narration.
+function _unlockAudio() {
+  if (_audioUnlocked) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) {
+      const ctx = new Ctx();
+      if (ctx.state === 'suspended') ctx.resume();
+      const buf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+    }
+    _audioUnlocked = true;
+    if (_pendingAutoNarrate) {
+      const recs = _pendingAutoNarrate;
+      _pendingAutoNarrate = null;
+      // Reset signature so this fires now
+      _autoNarrateLastSig = '';
+      maybeAutoNarrate(recs);
+    }
+  } catch (_) { /* keep listener live for next gesture */ }
+}
+['click', 'keydown', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, _unlockAudio, { capture: true });
+});
 
 function _narratorRemember(text, url) {
   if (_narratorCache.has(text)) _narratorCache.delete(text);
@@ -6690,6 +6725,14 @@ function maybeAutoNarrate(recs) {
   _autoNarrateLastSig = sig;
   // Don't interrupt an in-flight narration
   if (_narratorBusy) return;
+  // If the user hasn't interacted with the page yet, audio.play() will
+  // be blocked by the browser. Queue the narration and play it after
+  // the next click/keydown/touch.
+  if (!_audioUnlocked) {
+    _pendingAutoNarrate = recs;
+    vizorToast('Click anywhere to enable auto-narration.', 'info', 3500);
+    return;
+  }
   speakRecommendations(recs);
 }
 
