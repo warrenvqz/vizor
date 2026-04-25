@@ -3590,8 +3590,14 @@ function openCellModalForNew(personId=null, weekLabel=null) {
   document.getElementById('cmSave').textContent = 'Add';
   const splitField = document.getElementById('cmSplitField');
   if (splitField) splitField.style.display = 'none';
+  document.getElementById('cmNewName').value = '';
   setCmStatus('', null);
   document.getElementById('cellModal').classList.add('show');
+  // Apply visibility for the default selection (__new__) and focus the name input.
+  onModalTaskChange();
+  if (sel.value === '__new__') {
+    setTimeout(() => document.getElementById('cmNewName').focus(), 50);
+  }
 }
 
 function onModalTaskChange() {
