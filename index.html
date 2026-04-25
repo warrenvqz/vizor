@@ -4707,6 +4707,24 @@ function saveState() {
     }));
   } catch (e) { /* quota exceeded or storage disabled — skip silently */ }
 }
+// Pre-2026 saved states may have shorter WEEKS arrays (e.g. 4 weeks).
+// The current default is a 12-week planning horizon, so silently top up
+// any saved state that's shorter by walking forward one week at a time
+// from the last known label. Returns true if any change was made so the
+// caller can persist the fix.
+function migrateWeeksLength() {
+  const TARGET = 12;
+  if (!Array.isArray(WEEKS) || WEEKS.length >= TARGET) return false;
+  let last = WEEKS.length
+    ? guessDateFromLabel(WEEKS[WEEKS.length - 1])
+    : mondayOf(new Date());
+  while (WEEKS.length < TARGET) {
+    last = new Date(last.getFullYear(), last.getMonth(), last.getDate() + 7);
+    WEEKS.push('w/o ' + (last.getMonth() + 1) + '/' + last.getDate());
+  }
+  return true;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -4724,7 +4742,8 @@ function loadState() {
     const colorsFixed  = migrateLegacyColors();
     const ownersFixed  = migrateLegacyReviewOwners();
     const statesFixed  = migrateTaskStates();
-    if (colorsFixed || ownersFixed || statesFixed) {
+    const weeksFixed   = migrateWeeksLength();
+    if (colorsFixed || ownersFixed || statesFixed || weeksFixed) {
       // persist the fix so we don't re-run on every load
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify({
         PEOPLE, PROJECTS, TASKS, WEEKS, CUR_WEEK, _nextTaskId, CAPACITY_OVERRIDES
@@ -5190,6 +5209,9 @@ function bootApp() {
   // Run the migration here so freshly-loaded users get state:'doing' on
   // every task instead of undefined.
   migrateTaskStates();
+  // Top up WEEKS to the 12-week default for users whose saved state
+  // pre-dates the longer planning horizon.
+  migrateWeeksLength();
   ASANA.load();
   if (isCloudConnected()) {
     setCloudStatus('syncing');
