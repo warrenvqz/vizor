@@ -1835,6 +1835,10 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <label class="sm-label">OpenAI API key <span class="sm-tag-opt">optional</span></label>
       <input type="password" class="sm-input" id="vmTtsKey" placeholder="sk-..." autocomplete="off">
       <div class="sm-help">Create one at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com / API keys</a>. Used for the narrator only (OpenAI <code>tts-1</code>, &ldquo;fable&rdquo; voice). Skip this and the &ldquo;Tell me&rdquo; button stays quiet.</div>
+      <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+        <button type="button" class="sm-btn" id="vmTtsTest" onclick="testNarratorFromModal()" style="font-size:11px; padding:5px 10px;">Test narrator</button>
+        <span id="vmTtsTestStatus" style="font-size:10.5px; color:var(--muted);"></span>
+      </div>
     </div>
     <div class="sm-field">
       <label class="sm-label">Narrator chattiness</label>
@@ -6616,6 +6620,62 @@ function speakRecommendations(recs) {
   }
   const text = _narratorScript(recs);
   return _narratorPlay(text);
+}
+
+// Voice modal — fire a short test phrase against whatever key is currently
+// typed in the OpenAI input (no save required). Surfaces success/failure
+// inline next to the button AND as a toast, so the user can verify their
+// key + billing without needing recommendations to exist.
+async function testNarratorFromModal() {
+  const btn    = document.getElementById('vmTtsTest');
+  const status = document.getElementById('vmTtsTestStatus');
+  const keyEl  = document.getElementById('vmTtsKey');
+  const key    = keyEl ? keyEl.value.trim() : '';
+  if (!key) {
+    if (status) { status.textContent = 'Paste a key first.'; status.style.color = 'var(--red)'; }
+    vizorToast('Paste your OpenAI key first.', 'info', 3500);
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Testing…'; }
+  if (status) { status.textContent = ''; status.style.color = 'var(--muted)'; }
+  try {
+    const res = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: NARRATOR_MODEL,
+        voice: NARRATOR_VOICE,
+        input: 'Greetings. The narrator is working as expected.',
+        response_format: 'mp3',
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = j && j.error && j.error.message ? ' — ' + j.error.message : ''; } catch (_) {}
+      const msg = 'TTS request failed (' + res.status + ')' + detail;
+      if (status) { status.textContent = msg; status.style.color = 'var(--red)'; }
+      vizorToast(msg, 'err', 6500);
+      return;
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => { try { URL.revokeObjectURL(url); } catch (_) {} };
+    audio.onerror = () => {
+      if (status) { status.textContent = 'Audio playback failed in this browser.'; status.style.color = 'var(--red)'; }
+      vizorToast('Audio playback failed in this browser.', 'err', 5000);
+      try { URL.revokeObjectURL(url); } catch (_) {}
+    };
+    await audio.play();
+    if (status) { status.textContent = 'Working — key + billing OK.'; status.style.color = 'var(--green)'; }
+    vizorToast('Narrator test succeeded.', 'ok', 3500);
+  } catch (err) {
+    const msg = err && err.message ? err.message : 'Test failed.';
+    if (status) { status.textContent = msg; status.style.color = 'var(--red)'; }
+    vizorToast(msg, 'err', 6000);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Test narrator'; }
+  }
 }
 
 // Auto-narration trigger — called from renderRecommendationsPanel
