@@ -4996,13 +4996,16 @@ function applyCloudState(s) {
     }
     const colorsFixed = migrateLegacyColors();
     const ownersFixed = migrateLegacyReviewOwners();
-    migrated = colorsFixed || ownersFixed;
+    const statesFixed = migrateTaskStates();
+    const weeksFixed  = migrateWeeksLength();
+    migrated = colorsFixed || ownersFixed || statesFixed || weeksFixed;
   } finally {
     // next tick, so the renderAll → saveState that follows doesn't trigger a push
     setTimeout(() => {
       _cloudSuppressPush = false;
-      // If we touched legacy data, push the fix back up so teammates pick it up too
-      if (migrated) { saveState(); }
+      // If we touched legacy data (colors, owners, task states, or the WEEKS
+      // length top-up), push the fix back up so other devices pick it up too.
+      if (migrated) { saveState(); pushToCloud(false); }
     }, 0);
   }
 }
