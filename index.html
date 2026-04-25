@@ -1089,6 +1089,69 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 700;
 }
+
+/* ── VOICE CONTROL: floating mic, transcript banner, toast ── */
+.mic-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 250;
+  width: 56px; height: 56px; border-radius: 50%; border: none;
+  background: var(--cyan); color: var(--dark);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+  cursor: pointer; font-family: inherit;
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.mic-fab:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(15, 23, 42, 0.32); }
+.mic-fab[hidden] { display: none; }
+.mic-fab.active { background: #E28A8A; color: #fff; animation: micPulse 1.2s ease-out infinite; }
+.mic-fab.thinking { background: #B298D4; color: #fff; }
+.mic-fab svg { width: 22px; height: 22px; }
+@keyframes micPulse {
+  0%   { box-shadow: 0 6px 18px rgba(226,138,138,0.4), 0 0 0 0 rgba(226,138,138,0.55); }
+  70%  { box-shadow: 0 6px 18px rgba(226,138,138,0.4), 0 0 0 18px rgba(226,138,138,0); }
+  100% { box-shadow: 0 6px 18px rgba(226,138,138,0.4), 0 0 0 0 rgba(226,138,138,0); }
+}
+.voice-banner {
+  position: fixed; right: 24px; bottom: 92px; z-index: 250;
+  max-width: 360px; min-width: 220px;
+  background: var(--white); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 12px; font-size: 12px; line-height: 1.4;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
+  display: none;
+}
+.voice-banner.show { display: block; }
+.voice-banner .vb-lbl {
+  font-size: 10px; font-weight: 700; letter-spacing: .04em;
+  color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.voice-banner .vb-lbl-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #E28A8A;
+  animation: vbDot 1.1s ease-in-out infinite;
+}
+@keyframes vbDot { 0%,100% { opacity:.4; } 50% { opacity:1; } }
+.voice-banner .vb-text { color: var(--text); font-weight: 500; }
+.voice-banner .vb-text.empty { color: var(--muted); font-style: italic; font-weight: 400; }
+.toast-wrap {
+  position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%);
+  z-index: 260; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none; align-items: center;
+}
+.toast {
+  background: var(--dark); color: #fff; padding: 10px 16px;
+  border-radius: 8px; font-size: 12px; line-height: 1.4;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.35);
+  max-width: min(420px, 92vw);
+  animation: toastIn .2s ease-out;
+  pointer-events: auto;
+}
+.toast.err { background: #8B4545; }
+.toast.ok  { background: #4A6E4F; }
+@keyframes toastIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+@media (max-width: 720px) {
+  .mic-fab { right: 14px; bottom: 14px; }
+  .voice-banner { right: 14px; left: 14px; max-width: none; bottom: 80px; }
+}
 </style>
 <script>
   // Apply saved theme BEFORE first paint to avoid a flash of light mode.
@@ -1141,6 +1204,7 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <div class="sm-field">
         <label class="sm-label">Days</label>
         <input type="number" min="0.5" max="5" step="0.5" class="sm-input" id="cmDays" value="1">
+        <div style="font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.35;">Hands-on work only — review wait goes in the Review buffer below.</div>
       </div>
       <div class="sm-field">
         <label class="sm-label">Role</label>
@@ -1575,6 +1639,35 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   </div>
 </div>
 
+<!-- VOICE / ANTHROPIC API KEY MODAL -->
+<div class="modal-bg" id="voiceModal" onclick="if(event.target===this)closeVoiceModal()">
+  <div class="modal-card" style="max-width:520px;">
+    <div class="sm-title">Voice control</div>
+    <div class="sm-sub">Hold <code>Space</code> (or click the mic button) and speak &mdash; Vizor fills the open Edit Task modal, or runs quick edits like &ldquo;move Section layouts to Andre next week.&rdquo;</div>
+    <div class="sm-field">
+      <label class="sm-label">Anthropic API key</label>
+      <input type="password" class="sm-input" id="vmApiKey" placeholder="sk-ant-..." autocomplete="off">
+      <div class="sm-help">Create one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com / Settings / API keys</a>. Stored only in this browser's localStorage.</div>
+    </div>
+    <div class="sm-field">
+      <label class="sm-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="vmEnabled" style="margin:0;width:auto;"> Enable voice control
+      </label>
+      <div class="sm-help">When off, the mic button hides and Space behaves normally.</div>
+    </div>
+    <div class="sm-hint">
+      <b>How it works:</b> the browser transcribes your voice locally with Web Speech API, then sends the text plus your current Vizor state to Claude (via your API key) to figure out what to do. Your key never leaves this device except to call Anthropic directly.
+    </div>
+    <div class="sm-status" id="vmStatus"></div>
+    <div class="sm-row">
+      <button class="sm-btn danger" id="vmClear" onclick="clearVoiceKey()">Clear key</button>
+      <div class="spacer"></div>
+      <button class="sm-btn" onclick="closeVoiceModal()">Cancel</button>
+      <button class="sm-btn primary" onclick="saveVoiceSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOP NAV -->
 <nav class="topnav">
   <button class="mb-tog mb-tog-sidebar" onclick="toggleMobileDrawer('sidebar')" aria-label="Open menu">
@@ -1605,6 +1698,7 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
     <div class="sgear-pop" id="settingsPop" hidden>
       <div class="sgear-grp">
         <button class="sgear-item" onclick="openAsanaModal()">Asana sync&hellip;<span id="asnMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Off</span></button>
+        <button class="sgear-item" onclick="openVoiceModal()">Voice control&hellip;<span id="voiceMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Off</span></button>
         <button class="sgear-item" onclick="openBaselinesModal()">Review baselines&hellip;</button>
       </div>
       <div class="sgear-grp">
@@ -2315,7 +2409,14 @@ function tasksFor(personId, weekLabel, tasks = TASKS) {
   return tasks.filter(t => t.assigneeId === personId && t.weekLabel === weekLabel);
 }
 function weeklyDays(personId, weekLabel, tasks = TASKS) {
-  return tasksFor(personId, weekLabel, tasks).reduce((s,t) => s + (t.effortDays||0), 0);
+  // Capacity rule: state === 'in_review' frees the slot. The work is parked
+  // with someone else (reviewer / stakeholder), so the assignee can pick up
+  // other work during the wait. Done tasks are also free. Only 'doing' (the
+  // default) burns this person's weekly capacity.
+  return tasksFor(personId, weekLabel, tasks).reduce((s,t) => {
+    if (t.state === 'in_review' || t.state === 'done') return s;
+    return s + (t.effortDays || 0);
+  }, 0);
 }
 // How many days this person is actually available in this week
 // (accounts for PTO / partial availability overrides).
@@ -2407,13 +2508,13 @@ function renderAllocationGrid() {
         // Parked tooltip is loud on purpose: capacity is still consumed,
         // we want anyone scanning the planner to understand "don't book over."
         const stateTitle = isParked
-          ? ` · ⏸ in review with ${t.reviewOwner ? reviewOwnerFull(t.reviewOwner).toLowerCase() : 'reviewer'} — slot still reserved, not free`
+          ? ` · ⏸ in review with ${t.reviewOwner ? reviewOwnerFull(t.reviewOwner).toLowerCase() : 'reviewer'} — slot freed, assignee can pick up other work this week`
           : isDone ? ' · done' : '';
         const stateCls = isParked ? 'is-parked' : isDone ? 'is-done' : '';
         // Tiny ⏸ pip + sub-line so the parked state is unmissable, but the
         // chip stays the same height so the cell layout doesn't jump.
         const parkedTag = isParked
-          ? `<span class="tc-park" title="In review — capacity still held for the same person">
+          ? `<span class="tc-park" title="In review — capacity freed; the assignee is open to take other work">
                <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg>
                in review
              </span>`
@@ -3115,9 +3216,9 @@ function paintCmState(state) {
   const hint = document.getElementById('cmStateHint');
   if (hint) {
     hint.textContent = state === 'in_review'
-      ? 'Slot stays reserved for the same person — capacity isn\'t freed. Toggle back to Doing when feedback is in.'
+      ? 'Parked with a reviewer — the assignee\'s capacity is freed for other work this week. Toggle back to Doing when feedback is in.'
       : state === 'done'
-      ? 'Marked done. Capacity for this slot is unchanged for the planning view.'
+      ? 'Marked done. Capacity is freed.'
       : 'Active work. Counts toward this person\'s allocation as normal.';
   }
 }
@@ -4597,12 +4698,12 @@ function migrateLegacyReviewOwners() {
 // `done` so any older code path that still reads it keeps working — the new
 // state field is the canonical source going forward.
 //
-// IMPORTANT capacity rule: `state === 'in_review'` does NOT free the
-// person's allocation. The day total still counts in weeklyDays(). Marking
-// something parked is a tracking + visibility action, not a capacity move.
-// The reasoning: when feedback comes back the same person has to pick the
-// work back up, so the slot stays reserved. If we freed it, someone else
-// could book on top, and unparking would silently double-book the person.
+// IMPORTANT capacity rule: `state === 'in_review'` FREES the person's
+// allocation for that week — the work is parked with a reviewer, so the
+// assignee can pick up other work during the wait. `done` is also free.
+// Only `doing` (the default) burns weekly capacity. The chip stays visible
+// in the cell with the dashed parked treatment so it's clear what's parked
+// vs. what slot is genuinely empty.
 function migrateTaskStates() {
   let changed = false;
   TASKS.forEach(t => {
@@ -5226,6 +5327,505 @@ function bootApp() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// VOICE CONTROL — push-to-talk via Web Speech API + Anthropic NL→action
+// Hold Space (or tap the mic FAB) to record. On release, the transcript
+// is sent to Claude with tool definitions; the model picks tools and the
+// runners below mutate state and re-render. Two modes:
+//   • Modal mode  — when the cell modal is open, fill its fields.
+//   • Free-form   — otherwise, run actions like move / mark / set effort.
+// API key is the user's personal Anthropic key, stored in localStorage,
+// sent only to api.anthropic.com via the dangerous-direct-browser header.
+// ══════════════════════════════════════════════════════════════════
+const VOICE_KEY = 'vizor.voice.v1';
+const VOICE_MODEL = 'claude-sonnet-4-5-20250929';
+let _voice = { enabled: false, key: '' };
+
+function loadVoiceCfg() {
+  try {
+    const raw = localStorage.getItem(VOICE_KEY);
+    if (raw) {
+      const v = JSON.parse(raw);
+      _voice.enabled = !!v.enabled;
+      _voice.key     = v.key || '';
+    }
+  } catch (_) {}
+  applyVoiceUi();
+}
+function saveVoiceCfg() {
+  try { localStorage.setItem(VOICE_KEY, JSON.stringify(_voice)); } catch (_) {}
+}
+function applyVoiceUi() {
+  const fab = document.getElementById('micFab');
+  if (fab) fab.hidden = !(_voice.enabled && _voice.key);
+  const meta = document.getElementById('voiceMenuMeta');
+  if (meta) {
+    const on = !!(_voice.enabled && _voice.key);
+    meta.textContent = on ? 'On' : 'Off';
+    meta.style.color = on ? 'var(--green)' : 'var(--muted)';
+  }
+}
+
+function openVoiceModal() {
+  if (typeof _hideSettings === 'function') _hideSettings();
+  const m = document.getElementById('voiceModal');
+  if (!m) return;
+  document.getElementById('vmApiKey').value    = _voice.key || '';
+  document.getElementById('vmEnabled').checked = !!_voice.enabled;
+  setVmStatus('', '');
+  m.classList.add('show');
+}
+function closeVoiceModal() {
+  const m = document.getElementById('voiceModal');
+  if (m) m.classList.remove('show');
+}
+function setVmStatus(msg, kind) {
+  const el = document.getElementById('vmStatus');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'sm-status' + (msg ? ' show ' + (kind || '') : '');
+}
+function saveVoiceSettings() {
+  const key = document.getElementById('vmApiKey').value.trim();
+  const en  = document.getElementById('vmEnabled').checked;
+  if (en && !key) {
+    setVmStatus('Add an API key (or uncheck Enable voice control).', 'err'); return;
+  }
+  if (en && !('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    setVmStatus('This browser does not support speech recognition. Try Chrome.', 'err'); return;
+  }
+  _voice.key = key;
+  _voice.enabled = en;
+  saveVoiceCfg();
+  applyVoiceUi();
+  setVmStatus('Saved.', 'ok');
+  setTimeout(closeVoiceModal, 600);
+}
+function clearVoiceKey() {
+  _voice.key = '';
+  _voice.enabled = false;
+  saveVoiceCfg();
+  applyVoiceUi();
+  const k = document.getElementById('vmApiKey'); if (k) k.value = '';
+  const e = document.getElementById('vmEnabled'); if (e) e.checked = false;
+  setVmStatus('Cleared.', 'ok');
+}
+
+// ── Toast helper (also reusable for non-voice feedback) ─────────────
+function vizorToast(msg, kind, ms) {
+  const wrap = document.getElementById('toastWrap');
+  if (!wrap) return;
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => {
+    t.style.transition = 'opacity .25s';
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 280);
+  }, ms || 3500);
+}
+
+// ── Speech recognition wrapper ──────────────────────────────────────
+let _recog = null;
+let _recogActive = false;
+let _recogTranscript = '';
+let _recogShouldSend = false;
+let _spaceHeld = false;
+
+function setVoiceFabState(state) {
+  const fab = document.getElementById('micFab');
+  if (!fab) return;
+  fab.classList.toggle('active',   state === 'recording');
+  fab.classList.toggle('thinking', state === 'thinking');
+}
+function showVoiceBanner(label, text) {
+  const b = document.getElementById('voiceBanner');
+  if (!b) return;
+  document.getElementById('vbLblText').textContent = label || 'Listening';
+  const tx = document.getElementById('vbText');
+  tx.textContent = text || 'Say something\u2026';
+  tx.classList.toggle('empty', !text);
+  b.classList.add('show');
+}
+function hideVoiceBanner() {
+  const b = document.getElementById('voiceBanner');
+  if (b) b.classList.remove('show');
+}
+
+function startVoiceCapture() {
+  if (!_voice.enabled || !_voice.key) {
+    vizorToast('Set up voice control in Settings first.', 'err'); return;
+  }
+  if (_recogActive) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { vizorToast('Speech recognition not supported in this browser.', 'err'); return; }
+  _recog = new SR();
+  _recog.continuous = true;
+  _recog.interimResults = true;
+  _recog.lang = 'en-US';
+  _recogTranscript = '';
+  _recogShouldSend = true;
+  _recog.onresult = (ev) => {
+    let final = '', interim = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      if (r.isFinal) final += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    if (final) _recogTranscript += final;
+    showVoiceBanner('Listening', (_recogTranscript + interim).trim());
+  };
+  _recog.onerror = (ev) => {
+    console.warn('[voice] recog error', ev.error);
+    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+      vizorToast('Microphone permission denied.', 'err');
+      _recogShouldSend = false;
+    } else if (ev.error === 'no-speech') {
+      _recogShouldSend = false;
+    }
+  };
+  _recog.onend = () => {
+    _recogActive = false;
+    setVoiceFabState('idle');
+    const txt = (_recogTranscript || '').trim();
+    if (_recogShouldSend && txt) handleVoiceTranscript(txt);
+    else hideVoiceBanner();
+  };
+  try {
+    _recog.start();
+    _recogActive = true;
+    setVoiceFabState('recording');
+    showVoiceBanner('Listening', '');
+  } catch (e) {
+    console.warn('[voice] start failed', e);
+    vizorToast('Could not start recording: ' + e.message, 'err');
+  }
+}
+function stopVoiceCapture(send) {
+  if (!_recogActive || !_recog) return;
+  _recogShouldSend = send !== false;
+  try { _recog.stop(); } catch (_) {}
+}
+function toggleVoice(ev) {
+  if (ev) ev.stopPropagation();
+  if (_recogActive) stopVoiceCapture(true);
+  else startVoiceCapture();
+}
+
+// Spacebar push-to-talk: hold Space outside any text input / textarea.
+function _voiceTargetIsTypable(t) {
+  if (!t) return false;
+  if (t.isContentEditable) return true;
+  const tag = (t.tagName || '').toLowerCase();
+  if (tag === 'input') {
+    const type = (t.type || 'text').toLowerCase();
+    return ['text','search','email','url','number','password','tel'].includes(type);
+  }
+  return tag === 'textarea';
+}
+window.addEventListener('keydown', (ev) => {
+  if (ev.code !== 'Space' || ev.repeat) return;
+  if (!_voice.enabled || !_voice.key) return;
+  if (_voiceTargetIsTypable(ev.target)) return;
+  ev.preventDefault();
+  _spaceHeld = true;
+  startVoiceCapture();
+});
+window.addEventListener('keyup', (ev) => {
+  if (ev.code !== 'Space') return;
+  if (!_spaceHeld) return;
+  _spaceHeld = false;
+  if (_recogActive) stopVoiceCapture(true);
+});
+
+// ── NL → action (Anthropic API call with tool use) ──────────────────
+async function handleVoiceTranscript(text) {
+  setVoiceFabState('thinking');
+  showVoiceBanner('Thinking', text);
+  try {
+    const result = await callAnthropicForActions(text);
+    hideVoiceBanner();
+    setVoiceFabState('idle');
+    if (result && result.summary) vizorToast(result.summary, 'ok');
+  } catch (e) {
+    console.error('[voice]', e);
+    hideVoiceBanner();
+    setVoiceFabState('idle');
+    vizorToast('Voice failed: ' + e.message, 'err', 5000);
+  }
+}
+
+function _modalContext() {
+  const cell = document.getElementById('cellModal');
+  if (cell && cell.classList.contains('show')) {
+    const isEdit = (typeof _modalState !== 'undefined' && _modalState && _modalState.mode === 'edit');
+    const t = isEdit ? TASKS.find(x => x.id === _modalState.taskId) : null;
+    return {
+      kind: 'cell',
+      mode: isEdit ? 'edit' : 'new',
+      task: t ? { id:t.id, name:t.name, days:t.effortDays, role:t.role,
+                  reviewBufferDays:t.reviewBufferDays || 0,
+                  reviewOwner:t.reviewOwner || null,
+                  state:t.state || 'doing' } : null,
+    };
+  }
+  return { kind: 'none' };
+}
+
+function _stateSnapshot() {
+  return {
+    today: '2026-04-25',
+    weeks: WEEKS,
+    currentWeek: WEEKS[CUR_WEEK] || null,
+    people: PEOPLE.map(p => ({ id:p.id, name:p.name, role:p.role })),
+    projects: PROJECTS.map(p => ({ id:p.id, name:p.name, status:p.status })),
+    tasks: TASKS.map(t => ({
+      id:t.id, name:t.name, projectId:t.projectId, role:t.role,
+      effortDays:t.effortDays, assigneeId:t.assigneeId || null,
+      weekLabel:t.weekLabel || null, state:t.state || 'doing',
+      reviewBufferDays:t.reviewBufferDays || 0,
+      reviewOwner:t.reviewOwner || null,
+    })),
+  };
+}
+
+const VOICE_TOOLS_FREEFORM = [
+  { name: 'set_task_state',
+    description: 'Mark a task as doing (active), in_review (parked with a reviewer; capacity is freed for other work), or done.',
+    input_schema: { type:'object', required:['task_id','state'], properties: {
+      task_id: { type:'string' },
+      state:   { type:'string', enum:['doing','in_review','done'] },
+    }}},
+  { name: 'move_task',
+    description: 'Re-staff a task. Pass empty string for a field you do not want to change.',
+    input_schema: { type:'object', required:['task_id'], properties: {
+      task_id:    { type:'string' },
+      person_id:  { type:'string' },
+      week_label: { type:'string', description:'Week label exactly as in state.weeks.' },
+    }}},
+  { name: 'unassign_task',
+    description: 'Remove a task from its current person/week (it becomes unstaffed).',
+    input_schema: { type:'object', required:['task_id'], properties: { task_id:{ type:'string' } }}},
+  { name: 'set_task_effort',
+    description: 'Set the days of hands-on work for a task (0.5 to 5).',
+    input_schema: { type:'object', required:['task_id','days'], properties: {
+      task_id: { type:'string' }, days: { type:'number' } }}},
+  { name: 'set_task_review_buffer',
+    description: 'Set the review-wait buffer (days) and optional reviewer type. Pass 0 to clear.',
+    input_schema: { type:'object', required:['task_id','review_buffer_days'], properties: {
+      task_id: { type:'string' }, review_buffer_days: { type:'number' },
+      review_owner: { type:'string', enum:['','final_approval','stakeholder_approval','stakeholder_feedback','internal','legal','other'] } }}},
+  { name: 'add_task',
+    description: 'Create a new task and optionally staff it on someone\u2019s week.',
+    input_schema: { type:'object', required:['name','project_id','role','days'], properties: {
+      name: { type:'string' }, project_id: { type:'string' },
+      role: { type:'string', enum:['design','copy'] },
+      days: { type:'number' },
+      person_id: { type:'string' }, week_label: { type:'string' },
+      review_buffer_days: { type:'number' } }}},
+];
+
+const VOICE_TOOLS_MODAL = [
+  { name: 'update_open_modal',
+    description: 'Fill or update fields on the currently-open Edit Task modal. Only include fields the user is changing. Set save:true to click Save after applying.',
+    input_schema: { type:'object', properties: {
+      days:               { type:'number' },
+      role:               { type:'string', enum:['design','copy'] },
+      review_buffer_days: { type:'number' },
+      review_owner:       { type:'string', enum:['','final_approval','stakeholder_approval','stakeholder_feedback','internal','legal','other'] },
+      state:              { type:'string', enum:['doing','in_review','done'], description:'Only valid in edit mode.' },
+      save:               { type:'boolean' },
+    }}},
+];
+
+async function callAnthropicForActions(userText) {
+  const ctx = _modalContext();
+  const isModal = ctx.kind === 'cell';
+  const tools = isModal ? VOICE_TOOLS_MODAL : VOICE_TOOLS_FREEFORM;
+  const snap = _stateSnapshot();
+  const sys =
+    'You are Vizor\u2019s voice control. The user is a creative-team lead managing weekly capacity. ' +
+    'Convert the user\u2019s spoken instruction into one or more tool calls, then return ONE short ' +
+    'confirmation sentence under 14 words describing what you did. Be decisive \u2014 fuzzy-match names ' +
+    'against state.tasks[].name and state.people[].name; pick the closest week label from state.weeks[]. ' +
+    'Do not ask clarifying questions; pick the best interpretation and act.\n\n' +
+    'Today: ' + snap.today + '. Current week: ' + (snap.currentWeek || 'unknown') + '.\n\n' +
+    'Vizor state:\n' + JSON.stringify(snap) +
+    (isModal
+      ? '\n\nThe Edit Task modal is currently open. Modal context: ' + JSON.stringify(ctx) +
+        '\nPrefer the update_open_modal tool unless the user clearly references a different task.'
+      : '\n\nNo modal is open \u2014 use the free-form action tools.');
+
+  let messages = [{ role:'user', content: userText }];
+  let summary = '';
+  let safety = 0;
+  while (safety++ < 4) {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': _voice.key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: VOICE_MODEL,
+        max_tokens: 600,
+        system: sys,
+        tools,
+        messages,
+      }),
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error('API ' + resp.status + ': ' + txt.slice(0, 240));
+    }
+    const data = await resp.json();
+    const blocks = data.content || [];
+    const toolUses = blocks.filter(b => b.type === 'tool_use');
+    const textBlk  = blocks.filter(b => b.type === 'text').map(b => b.text).join(' ').trim();
+    if (textBlk) summary = textBlk;
+    if (!toolUses.length || data.stop_reason !== 'tool_use') {
+      return { summary: summary || 'Done.' };
+    }
+    const toolResults = [];
+    for (const u of toolUses) {
+      let out;
+      try { out = runVoiceTool(u.name, u.input || {}); }
+      catch (e) { out = { error: e.message }; }
+      toolResults.push({ type:'tool_result', tool_use_id: u.id, content: JSON.stringify(out) });
+    }
+    messages.push({ role:'assistant', content: blocks });
+    messages.push({ role:'user', content: toolResults });
+  }
+  return { summary: summary || 'Done.' };
+}
+
+// ── Tool runners ────────────────────────────────────────────────────
+function _findTask(id)    { return TASKS.find(t => t.id === id); }
+function _findPerson(id)  { return PEOPLE.find(p => p.id === id); }
+function _findProject(id) { return PROJECTS.find(p => p.id === id); }
+
+function runVoiceTool(name, args) {
+  switch (name) {
+    case 'set_task_state': {
+      const t = _findTask(args.task_id);
+      if (!t) return { error: 'task not found: ' + args.task_id };
+      if (args.state === 'in_review')  markInReview(t.id);
+      else if (args.state === 'done')  setTaskDone(t.id, true);
+      else if (args.state === 'doing') {
+        if (t.state === 'in_review') markReceived(t.id);
+        else setTaskDone(t.id, false);
+      }
+      return { ok:true, task:t.name, state:t.state };
+    }
+    case 'move_task': {
+      const t = _findTask(args.task_id);
+      if (!t) return { error: 'task not found' };
+      if (args.person_id) {
+        if (!_findPerson(args.person_id)) return { error:'person not found: ' + args.person_id };
+        t.assigneeId = args.person_id;
+      }
+      if (args.week_label) {
+        if (!WEEKS.includes(args.week_label)) return { error:'unknown week: ' + args.week_label };
+        t.weekLabel = args.week_label;
+      }
+      if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+      renderAll();
+      return { ok:true, task:t.name, assigneeId:t.assigneeId, weekLabel:t.weekLabel };
+    }
+    case 'unassign_task': {
+      const t = _findTask(args.task_id);
+      if (!t) return { error: 'task not found' };
+      unassignTask(t.id);
+      return { ok:true, task:t.name };
+    }
+    case 'set_task_effort': {
+      const t = _findTask(args.task_id);
+      if (!t) return { error: 'task not found' };
+      let d = parseFloat(args.days);
+      if (!d || d < 0.5 || d > 5) return { error:'days must be 0.5\u20135' };
+      t.effortDays = d;
+      if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+      renderAll();
+      return { ok:true, task:t.name, days:t.effortDays };
+    }
+    case 'set_task_review_buffer': {
+      const t = _findTask(args.task_id);
+      if (!t) return { error: 'task not found' };
+      let d = parseFloat(args.review_buffer_days);
+      if (isNaN(d) || d < 0) d = 0;
+      if (d > 20) d = 20;
+      if (d > 0) t.reviewBufferDays = d; else delete t.reviewBufferDays;
+      if (d > 0 && args.review_owner) t.reviewOwner = args.review_owner; else delete t.reviewOwner;
+      if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+      renderAll();
+      return { ok:true, task:t.name,
+               reviewBufferDays:t.reviewBufferDays || 0,
+               reviewOwner:t.reviewOwner || null };
+    }
+    case 'add_task': {
+      if (!_findProject(args.project_id)) return { error:'project not found: ' + args.project_id };
+      let d = parseFloat(args.days);
+      if (!d || d < 0.5 || d > 5) d = 1;
+      const t = {
+        id: 't' + (_nextTaskId++),
+        projectId: args.project_id,
+        name: String(args.name || 'New task').trim(),
+        role: args.role === 'copy' ? 'copy' : 'design',
+        effortDays: d,
+        state: 'doing',
+        reviewLog: [],
+      };
+      if (args.person_id && _findPerson(args.person_id)) t.assigneeId = args.person_id;
+      if (args.week_label && WEEKS.includes(args.week_label)) t.weekLabel = args.week_label;
+      if (args.review_buffer_days && args.review_buffer_days > 0) t.reviewBufferDays = args.review_buffer_days;
+      TASKS.push(t);
+      if (typeof ASANA !== 'undefined') ASANA.markDirty(t.id);
+      renderAll();
+      return { ok:true, task:t.name, id:t.id };
+    }
+    case 'update_open_modal': {
+      const ctx = _modalContext();
+      if (ctx.kind !== 'cell') return { error:'no cell modal open' };
+      const applied = [];
+      if (typeof args.days === 'number') {
+        const el = document.getElementById('cmDays');
+        if (el) { el.value = args.days; applied.push('days'); }
+      }
+      if (args.role === 'design' || args.role === 'copy') {
+        const el = document.getElementById('cmRole');
+        if (el) { el.value = args.role; applied.push('role'); }
+      }
+      if (typeof args.review_buffer_days === 'number') {
+        const el = document.getElementById('cmReviewBuf');
+        if (el) {
+          el.value = args.review_buffer_days;
+          if (typeof updateReviewOwnerVisibility === 'function') updateReviewOwnerVisibility();
+          applied.push('reviewBuffer');
+        }
+      }
+      if (typeof args.review_owner === 'string') {
+        const el = document.getElementById('cmReviewOwner');
+        if (el) { el.value = args.review_owner; applied.push('reviewOwner'); }
+      }
+      if (args.state && ctx.mode === 'edit' && typeof setCmState === 'function') {
+        setCmState(args.state); applied.push('state');
+      }
+      if (args.save && typeof saveCellModal === 'function') {
+        saveCellModal(); applied.push('saved');
+      }
+      return { ok:true, applied };
+    }
+    default:
+      return { error: 'unknown tool: ' + name };
+  }
+}
+
+// Initial UI sync (FAB visibility + Settings menu meta).
+loadVoiceCfg();
+
 if (isUnlocked()) {
   const gate = document.getElementById('authGate');
   if (gate) gate.remove();
@@ -5233,5 +5833,19 @@ if (isUnlocked()) {
 }
 // else: gate is already visible and waiting for submitAuth(); nothing else runs.
 </script>
+<!-- VOICE: floating mic + transcript banner + toast -->
+<div class="voice-banner" id="voiceBanner" aria-live="polite">
+  <div class="vb-lbl"><span class="vb-lbl-dot"></span><span id="vbLblText">Listening</span></div>
+  <div class="vb-text empty" id="vbText">Say something&hellip;</div>
+</div>
+<button class="mic-fab" id="micFab" hidden onclick="toggleVoice(event)" title="Hold Space or click to talk to Vizor" aria-label="Talk to Vizor">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="9" y="3" width="6" height="12" rx="3"/>
+    <path d="M5 11a7 7 0 0 0 14 0"/>
+    <line x1="12" y1="18" x2="12" y2="22"/>
+    <line x1="8"  y1="22" x2="16" y2="22"/>
+  </svg>
+</button>
+<div class="toast-wrap" id="toastWrap"></div>
 </body>
 </html>
