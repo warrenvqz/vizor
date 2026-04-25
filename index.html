@@ -561,6 +561,27 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
 .ab-flow-sub { font-size:11px; color:var(--muted); line-height:1.45; }
 .ab-flow-arrow { display:flex; align-items:center; color:var(--muted); flex-shrink:0; padding:0 2px; }
 
+/* In-section contrast: "In Asana / In Vizor" two-up */
+.ab-vs { display:flex; gap:0; margin:12px 0 4px; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.ab-vs-col { flex:1; padding:11px 13px; font-size:11.5px; line-height:1.55; color:var(--text); }
+.ab-vs-col.asana { background:rgba(148,163,184,0.06); border-right:1px solid var(--border); }
+.ab-vs-col.vizor { background:rgba(127,200,212,0.07); }
+.ab-vs-lbl { display:block; font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+.ab-vs-col.asana .ab-vs-lbl { color:var(--muted); }
+.ab-vs-col.vizor .ab-vs-lbl { color:var(--cyan); }
+.ab-vs-col b { font-weight:700; }
+.ab-vs-col i { font-style:italic; color:var(--muted); }
+
+/* Division-of-labor card: "Vizor owns / Asana owns" */
+.ab-owns { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 4px; }
+.ab-owns-col { background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+.ab-owns-col.vizor { background:rgba(127,200,212,0.07); border-color:rgba(127,200,212,0.28); }
+.ab-owns-hdr { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+.ab-owns-col.asana .ab-owns-hdr { color:var(--muted); }
+.ab-owns-col.vizor .ab-owns-hdr { color:var(--cyan); }
+.ab-owns-list { margin:0; padding-left:16px; display:flex; flex-direction:column; gap:5px; }
+.ab-owns-list li { font-size:11.5px; line-height:1.5; color:var(--text); }
+
 /* 60-second start */
 .ab-start { padding:22px 36px 8px; background:rgba(127,200,212,0.05); border-top:1px solid var(--border); }
 .ab-start-hdr { font-size:13px; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
@@ -1332,6 +1353,16 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
             </div>
           </div>
           <p class="ab-meta"><b>Why it works:</b> no story points, no abstract estimates. <b>1d = 20% of a 5-day week.</b> Anyone on the team can read the grid in 5 seconds.</p>
+          <div class="ab-vs">
+            <div class="ab-vs-col asana">
+              <span class="ab-vs-lbl">In Asana</span>
+              Effort lives in hours, then Workload spreads it <i>evenly</i> between a task's start and end dates. A 3-week project never tells you which week the crunch actually lands in.
+            </div>
+            <div class="ab-vs-col vizor">
+              <span class="ab-vs-lbl">In Vizor</span>
+              Days are pinned to the week they actually happen. <b>1d = 20% of a 5-day week</b>, and a heavy week reads as a heavy week — not as a thin slice of an averaged-out bar.
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1364,6 +1395,16 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
             </div>
           </div>
           <p class="ab-meta"><b>Why it works:</b> over-allocation isn't a flag you have to chase — it's the first thing your eye lands on. PTO and partial weeks are first-class, so a 3-day week reads as 3 days, not 5.</p>
+          <div class="ab-vs">
+            <div class="ab-vs-col asana">
+              <span class="ab-vs-lbl">In Asana</span>
+              Capacity Planning is gated behind <b>Enterprise &amp; Enterprise+</b>, and even then it's a single weekly capacity number per person. PTO and partial weeks live somewhere else entirely.
+            </div>
+            <div class="ab-vs-col vizor">
+              <span class="ab-vs-lbl">In Vizor</span>
+              Per-week availability is built into the grid for everyone — drop Hay to 3d for a Friday off, and her totals re-color across the quarter. No plan tier, no second tool.
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1371,8 +1412,8 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
       <section class="ab-sec">
         <div class="ab-sec-num">3</div>
         <div class="ab-sec-body">
-          <h2 class="ab-h2">Track review rounds without losing the slot</h2>
-          <p class="ab-p">When a task goes out for stakeholder feedback or legal sign-off, toggle <span class="ab-tag-park"><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg> in review</span>. The chip dims so no one books over the slot — but the capacity stays reserved for the same person, because they'll need to pick the work back up.</p>
+          <h2 class="ab-h2">Track review rounds without losing the person</h2>
+          <p class="ab-p">When a task goes out for stakeholder feedback or legal sign-off, toggle <span class="ab-tag-park"><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1" width="2" height="6" rx="0.5"/><rect x="4.5" y="1" width="2" height="6" rx="0.5"/></svg> in review</span>. The chip dims and <b>frees the assignee's capacity</b> so they can pick up other work — meanwhile a stopwatch starts on the wait, measured against your baseline for that reviewer type.</p>
           <div class="ab-demo ab-demo-chips">
             <div class="ab-demo-chip-pair">
               <div class="ab-demo-chip-lbl">Active work</div>
@@ -1383,7 +1424,7 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
             </div>
             <div class="ab-demo-chip-arrow">→ toggle to In review →</div>
             <div class="ab-demo-chip-pair">
-              <div class="ab-demo-chip-lbl">Parked &middot; slot still held</div>
+              <div class="ab-demo-chip-lbl">Parked &middot; capacity freed, wait timed</div>
               <div class="task-chip is-parked" style="border-left-color:#9BB5DD; cursor:default;">
                 <span class="tc-name">Brand guidelines</span>
                 <span class="tc-days">3d</span>
@@ -1393,6 +1434,16 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
           </div>
           <p class="ab-p" style="margin-top:14px;">The Waiting On rail tracks <b>actual elapsed days vs. your baseline</b> for that reviewer type — so "stakeholder feedback usually takes 2 days, this one's been parked 5" turns into a coloured bar instead of a Slack thread.</p>
           <p class="ab-meta"><b>Why it works:</b> reviews are where projects actually slip. Vizor makes the slip visible <i>while it's happening</i>, and over time you'll see which reviewer types drag — tune the baselines under <code>Settings → Review baselines</code>.</p>
+          <div class="ab-vs">
+            <div class="ab-vs-col asana">
+              <span class="ab-vs-lbl">In Asana</span>
+              Approvals turn a task into a "Pending" status, but it still counts against the assignee's workload and there's no expected wait. You can't tell at a glance whether a parked task is dragging — or whether the person waiting on it has room to start something else.
+            </div>
+            <div class="ab-vs-col vizor">
+              <span class="ab-vs-lbl">In Vizor</span>
+              <b>In review</b> frees the assignee for other work and starts a baseline-aware stopwatch on the reviewer. Slips turn into coloured bars in the Waiting On rail — visible the day they happen, not in a retro three weeks later.
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1425,7 +1476,29 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
               <div class="ab-flow-sub">Comments, files, sub-tasks — keep that where it already lives.</div>
             </div>
           </div>
-          <p class="ab-meta"><b>Why it works:</b> Asana is excellent for execution and a poor fit for capacity planning — the assignment dropdown can't tell you that Andre is already at 110% next week. Vizor handles the planning conversation; Asana handles the doing.</p>
+          <p class="ab-meta"><b>Why it works:</b> Asana's assignment dropdown can't tell you that Andre is already at 110% next week, and Workload won't tell you which week the crunch lands in. Vizor owns the planning conversation; Asana owns the doing.</p>
+          <div class="ab-owns">
+            <div class="ab-owns-col vizor">
+              <div class="ab-owns-hdr">Vizor owns</div>
+              <ul class="ab-owns-list">
+                <li>Per-week capacity heatmap across the team</li>
+                <li>PTO &amp; partial-week availability, no plan tier</li>
+                <li>Review buffers with baseline-tracked wait</li>
+                <li>"In review" frees the assignee for other work</li>
+                <li>Voice control for fast re-planning</li>
+              </ul>
+            </div>
+            <div class="ab-owns-col asana">
+              <div class="ab-owns-hdr">Asana owns</div>
+              <ul class="ab-owns-list">
+                <li>Day-to-day task execution</li>
+                <li>Comments, sub-tasks, files, mentions</li>
+                <li>Approvals workflow &amp; status fields</li>
+                <li>Project sections, custom fields, automations</li>
+                <li>The single source of truth for "is it done?"</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1438,13 +1511,13 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
         <li><b>Pick a person</b> in the grid. The right rail shows their full quarter as a heatmap.</li>
         <li><b>Drag an unstaffed task</b> from the right rail onto a week. Watch the total update.</li>
         <li><b>Add a review buffer</b> on a task (Edit → Review buffer). It shows up in the Waiting On panel.</li>
-        <li><b>Toggle "In review"</b> on a chip — the slot stays reserved, but the chip dims so no one books over it.</li>
+        <li><b>Toggle "In review"</b> on a chip — capacity frees up so the assignee can pick up other work, and the wait gets timed against your baseline.</li>
         <li><b>Open Overview</b> for the team-level read: utilization heatmap by role, parked work by reviewer, pipeline.</li>
       </ol>
     </div>
 
     <div class="ab-foot">
-      <div class="ab-foot-tip">Pro tip: connect Asana under <code>Settings → Asana sync</code> when you're ready to push.</div>
+      <div class="ab-foot-tip">Pro tip: connect Asana under <code>Settings → Asana sync</code> to push plans, and add an Anthropic key under <code>Settings → Voice control</code> to re-plan by voice.</div>
       <button class="sm-btn primary" onclick="closeAboutModal()">Got it — take me back</button>
     </div>
   </div>
