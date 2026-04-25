@@ -1143,6 +1143,82 @@ select.chip.jump-sel:hover { border-color:var(--cyan); color:var(--cyan); }
   .topnav .av { display:none; }
 }
 
+/* ── MOBILE RECOMMENDATIONS (floating chip + bottom sheet) ─────────
+   Recommendations are buried in the rail drawer on mobile. Lift them
+   into a floating chip above the canvas so they're glanceable, and
+   open a half-height bottom sheet for the full list + actions. */
+.mb-recs-fab { display:none; }
+.mb-recs-sheet { display:none; }
+.mb-recs-backdrop { display:none; }
+
+@media (max-width: 768px) {
+  /* Hide the rail copy of the panel — bottom sheet replaces it */
+  .rp-sec-recs { display:none !important; }
+
+  /* Floating pill anchored to bottom-center of the viewport */
+  .mb-recs-fab {
+    display:flex; align-items:center; gap:9px;
+    position:fixed; left:50%; bottom:14px; transform:translateX(-50%);
+    z-index:130; padding:10px 14px;
+    background:var(--white); border:1px solid var(--border); border-radius:999px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.18);
+    font-size:12px; font-weight:600; color:var(--text);
+    cursor:pointer; max-width:88vw; font-family:inherit;
+  }
+  .mb-recs-fab.is-hidden { display:none !important; }
+  .mb-recs-fab:active { transform:translateX(-50%) scale(0.97); }
+  .mb-recs-fab-ico { width:14px; height:14px; color:var(--amber); flex-shrink:0; }
+  .mb-recs-fab-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mb-recs-fab-cta {
+    font-size:10px; color:var(--cyan); font-weight:800; flex-shrink:0;
+    text-transform:uppercase; letter-spacing:.08em;
+    padding:3px 8px; border:1px solid rgba(127,200,212,.4); border-radius:999px;
+  }
+  body.mb-drawer-open .mb-recs-fab { display:none !important; }
+
+  /* Bottom sheet — slides up, half-screen, scrollable body */
+  .mb-recs-sheet {
+    display:flex; flex-direction:column; position:fixed;
+    left:0; right:0; bottom:0; max-height:78vh; z-index:201;
+    background:var(--white); border-top:1px solid var(--border);
+    border-radius:14px 14px 0 0; box-shadow:0 -8px 32px rgba(0,0,0,0.22);
+    transform:translateY(100%); transition:transform .22s ease;
+  }
+  body.mb-recs-open .mb-recs-sheet { transform:translateY(0); }
+  body.mb-recs-open .mb-recs-backdrop {
+    display:block; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.32);
+  }
+  .mb-recs-handle {
+    width:40px; height:4px; background:var(--border);
+    border-radius:2px; margin:8px auto 0;
+  }
+  .mb-recs-hdr {
+    display:flex; align-items:center; gap:6px; padding:10px 14px 10px;
+    border-bottom:1px solid var(--border);
+  }
+  .mb-recs-hdr-title {
+    font-size:11px; font-weight:800; flex:1;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--text);
+  }
+  .mb-recs-hdr-narrate {
+    font-size:11px; color:var(--cyan); font-weight:700; cursor:pointer;
+    background:transparent; border:1px solid rgba(127,200,212,.45);
+    padding:4px 9px; border-radius:5px; font-family:inherit;
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  .mb-recs-close {
+    background:none; border:none; padding:4px 8px;
+    color:var(--muted); font-size:20px; cursor:pointer; line-height:1;
+    font-family:inherit;
+  }
+  .mb-recs-body {
+    overflow-y:auto; padding:10px 12px 22px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .mb-recs-body .rec { margin-bottom:8px; }
+}
+
 /* ── KAMERIK 105 (Book for body, Bold for display) ───── */
 @font-face {
   font-family: 'Kamerik';
@@ -1256,8 +1332,15 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
     try {
       var saved = localStorage.getItem('vizor.theme');
       if (!saved) {
-        saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-          ? 'dark' : 'light';
+        // Mobile defaults to light regardless of OS preference — readability
+        // outdoors and one-thumb scanning both favor light. Desktop honors OS.
+        var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile) {
+          saved = 'light';
+        } else {
+          saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ? 'dark' : 'light';
+        }
       }
       if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     } catch (_) { /* localStorage blocked — stay light */ }
@@ -1895,6 +1978,7 @@ body { font-family: 'Kamerik', -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
         <button class="sgear-item" onclick="openAsanaModal()">Asana sync&hellip;<span id="asnMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Off</span></button>
         <button class="sgear-item" onclick="openVoiceModal()">Voice control&hellip;<span id="voiceMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Off</span></button>
         <button class="sgear-item" onclick="openBaselinesModal()">Review baselines&hellip;</button>
+        <button class="sgear-item" onclick="toggleTheme()">Appearance<span id="themeMenuMeta" style="float:right;color:var(--muted);font-size:11px;">Light</span></button>
       </div>
       <div class="sgear-grp">
         <button class="sgear-item" onclick="confirmReset()">Reset all data&hellip;</button>
@@ -2055,9 +2139,16 @@ function toggleTheme() {
   if (next === 'dark') root.setAttribute('data-theme', 'dark');
   else root.removeAttribute('data-theme');
   try { localStorage.setItem('vizor.theme', next); } catch (_) {}
+  refreshThemeMenuLabel();
   // Re-render dynamic views that paint inline colors (heatmap cells use
   // CSS vars already, but the sidebar / rails re-read computed styles).
   if (typeof renderAll === 'function') renderAll();
+}
+
+function refreshThemeMenuLabel() {
+  const meta = document.getElementById('themeMenuMeta');
+  if (!meta) return;
+  meta.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? 'Dark' : 'Light';
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2984,15 +3075,45 @@ function renderRecommendationsPanel() {
   if (!recs.length) {
     sec.style.display = 'none';
     el.innerHTML = '';
+    paintMbRecs(recs);
     if (typeof maybeAutoNarrate === 'function') maybeAutoNarrate(recs);
     return;
   }
   sec.style.display = '';
   el.innerHTML = recs.map(r => recCardHTML(r)).join('');
+  paintMbRecs(recs);
   // Show or hide the "Tell me" button based on narrator availability
   if (typeof applyVoiceUi === 'function') applyVoiceUi();
   if (typeof maybeAutoNarrate === 'function') maybeAutoNarrate(recs);
 }
+
+// Mobile mirror: floating chip shows count, bottom sheet shows full cards.
+// Same recCardHTML reused so Split / Dismiss buttons work identically.
+function paintMbRecs(recs) {
+  const fab     = document.getElementById('mbRecsFab');
+  const fabText = document.getElementById('mbRecsFabText');
+  const body    = document.getElementById('mbRecsBody');
+  const narrate = document.getElementById('mbRecsNarrate');
+  if (!fab || !fabText || !body) return;
+  if (!recs || recs.length === 0) {
+    fab.classList.add('is-hidden');
+    body.innerHTML = '';
+    document.body.classList.remove('mb-recs-open');
+    return;
+  }
+  fab.classList.remove('is-hidden');
+  fabText.textContent = recs.length === 1
+    ? '1 person over capacity'
+    : recs.length + ' people over capacity';
+  body.innerHTML = recs.map(r => recCardHTML(r)).join('');
+  if (narrate) {
+    const can = (typeof _voice !== 'undefined') && _voice.ttsKey && _voice.ttsMode !== 'silent';
+    narrate.style.display = can ? '' : 'none';
+  }
+}
+
+function openMbRecsSheet() { document.body.classList.add('mb-recs-open'); }
+function closeMbRecsSheet() { document.body.classList.remove('mb-recs-open'); }
 
 function recCardHTML(rec) {
   if (rec.kind !== 'over_cap') return '';
@@ -5982,9 +6103,12 @@ function applyVoiceUi() {
     meta.textContent = label;
     meta.style.color = (listen || speak) ? 'var(--green)' : 'var(--muted)';
   }
-  // Show / hide the "Tell me" narrator button on the recs panel
+  // Show / hide the "Tell me" narrator button on the recs panel (rail + mobile sheet)
+  const can = !!(_voice.ttsKey && _voice.ttsMode !== 'silent');
   const nb = document.getElementById('recsNarrateBtn');
-  if (nb) nb.style.display = (_voice.ttsKey && _voice.ttsMode !== 'silent') ? '' : 'none';
+  if (nb) nb.style.display = can ? '' : 'none';
+  const mb = document.getElementById('mbRecsNarrate');
+  if (mb) mb.style.display = can ? '' : 'none';
 }
 
 function openVoiceModal() {
@@ -6738,6 +6862,7 @@ function maybeAutoNarrate(recs) {
 
 // Initial UI sync (FAB visibility + Settings menu meta).
 loadVoiceCfg();
+refreshThemeMenuLabel();
 
 if (isUnlocked()) {
   const gate = document.getElementById('authGate');
@@ -6760,5 +6885,25 @@ if (isUnlocked()) {
   </svg>
 </button>
 <div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MOBILE: recommendations chip + bottom sheet -->
+<button class="mb-recs-fab is-hidden" id="mbRecsFab" type="button" onclick="openMbRecsSheet()" aria-label="Show capacity insights">
+  <svg class="mb-recs-fab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+  <span class="mb-recs-fab-text" id="mbRecsFabText">Vizor noticed something</span>
+  <span class="mb-recs-fab-cta">View</span>
+</button>
+<div class="mb-recs-backdrop" onclick="closeMbRecsSheet()"></div>
+<div class="mb-recs-sheet" id="mbRecsSheet" role="dialog" aria-label="Vizor noticed">
+  <div class="mb-recs-handle" aria-hidden="true"></div>
+  <div class="mb-recs-hdr">
+    <span class="mb-recs-hdr-title">Vizor noticed</span>
+    <button type="button" class="mb-recs-hdr-narrate" id="mbRecsNarrate" onclick="narrateRecommendations()" style="display:none;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+      Tell me
+    </button>
+    <button type="button" class="mb-recs-close" onclick="closeMbRecsSheet()" aria-label="Close">&times;</button>
+  </div>
+  <div class="mb-recs-body" id="mbRecsBody"></div>
+</div>
 </body>
 </html>
